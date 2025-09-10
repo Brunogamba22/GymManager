@@ -7,6 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GymManager.Models;
+using GymManager.Utils;
+
 
 namespace GymManager.Forms
 {
@@ -16,5 +19,13 @@ namespace GymManager.Forms
         {
             InitializeComponent();
         }
+
+        private void CargarContenido(UserControl uc)
+        {
+            panelContenido.Controls.Clear();   // Limpia el área central
+            uc.Dock = DockStyle.Fill;        // Que ocupe todo el espacio
+            panelContenido.Controls.Add(uc);   // Inserta el UserControl
+        }
+
     }
 }
