@@ -32,11 +32,14 @@
             this.panelFooter = new System.Windows.Forms.Panel();
             this.panelNavbar = new System.Windows.Forms.Panel();
             this.panelContenido = new System.Windows.Forms.Panel();
+            this.lblBienvenida = new System.Windows.Forms.Label();
+            this.panelHeader.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelHeader
             // 
             this.panelHeader.BackColor = System.Drawing.SystemColors.MenuHighlight;
+            this.panelHeader.Controls.Add(this.lblBienvenida);
             this.panelHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelHeader.Location = new System.Drawing.Point(0, 0);
             this.panelHeader.Name = "panelHeader";
@@ -69,6 +72,16 @@
             this.panelContenido.Size = new System.Drawing.Size(600, 360);
             this.panelContenido.TabIndex = 3;
             // 
+            // lblBienvenida
+            // 
+            this.lblBienvenida.AutoSize = true;
+            this.lblBienvenida.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblBienvenida.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBienvenida.Location = new System.Drawing.Point(0, 0);
+            this.lblBienvenida.Name = "lblBienvenida";
+            this.lblBienvenida.Size = new System.Drawing.Size(0, 21);
+            this.lblBienvenida.TabIndex = 0;
+            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -83,6 +96,9 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "GymManager";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.Load += new System.EventHandler(this.FrmMain_Load);
+            this.panelHeader.ResumeLayout(false);
+            this.panelHeader.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -93,5 +109,6 @@
         private System.Windows.Forms.Panel panelFooter;
         private System.Windows.Forms.Panel panelNavbar;
         private System.Windows.Forms.Panel panelContenido;
+        private System.Windows.Forms.Label lblBienvenida;
     }
 }

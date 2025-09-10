@@ -27,5 +27,32 @@ namespace GymManager.Forms
             panelContenido.Controls.Add(uc);   // Inserta el UserControl
         }
 
+        private void FrmMain_Load(object sender, EventArgs e)
+        {
+            if (Sesion.Actual == null)
+            {
+                MessageBox.Show("No hay sesión iniciada");
+                this.Close();
+                return;
+            }
+
+            //Mensaje dinámico en el header
+            lblBienvenida.Text = $"Bienvenido {Sesion.Actual.Nombre} ({Sesion.Actual.Rol})";
+
+            //Cargar el UserControl según el rol
+            switch (Sesion.Actual.Rol)
+            {
+                case Rol.Administrador:
+                    CargarContenido(new Views.UcAdminDashboard());
+                    break;
+                case Rol.Profesor:
+                    CargarContenido(new Views.UcProfesorDashboard());
+                    break;
+                case Rol.Recepcionista:
+                    CargarContenido(new Views.UcRecepcionistaDashboard());
+                    break;
+            }
+        }
+
     }
 }

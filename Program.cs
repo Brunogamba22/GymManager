@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GymManager.Models;
+using GymManager.Utils;
 
 namespace GymManager
 {
@@ -16,7 +18,17 @@ namespace GymManager
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Forms.FrmLogin());
+
+            //Simulacion de login
+            Sesion.Actual = new Usuario
+            {
+                Id = 1,
+                Nombre = "MC Bruninho",
+                Email = "mc@gmail.com",
+                Rol = Rol.Administrador
+            };
+
+            Application.Run(new Forms.FrmMain());
         }
     }
 }
