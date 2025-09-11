@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.panelHeader = new System.Windows.Forms.Panel();
+            this.lblBienvenida = new System.Windows.Forms.Label();
             this.panelFooter = new System.Windows.Forms.Panel();
             this.panelNavbar = new System.Windows.Forms.Panel();
             this.panelContenido = new System.Windows.Forms.Panel();
-            this.lblBienvenida = new System.Windows.Forms.Label();
             this.panelHeader.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -45,6 +45,16 @@
             this.panelHeader.Name = "panelHeader";
             this.panelHeader.Size = new System.Drawing.Size(800, 60);
             this.panelHeader.TabIndex = 0;
+            // 
+            // lblBienvenida
+            // 
+            this.lblBienvenida.AutoSize = true;
+            this.lblBienvenida.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblBienvenida.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblBienvenida.Location = new System.Drawing.Point(0, 0);
+            this.lblBienvenida.Name = "lblBienvenida";
+            this.lblBienvenida.Size = new System.Drawing.Size(0, 21);
+            this.lblBienvenida.TabIndex = 0;
             // 
             // panelFooter
             // 
@@ -71,16 +81,6 @@
             this.panelContenido.Name = "panelContenido";
             this.panelContenido.Size = new System.Drawing.Size(600, 360);
             this.panelContenido.TabIndex = 3;
-            // 
-            // lblBienvenida
-            // 
-            this.lblBienvenida.AutoSize = true;
-            this.lblBienvenida.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblBienvenida.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblBienvenida.Location = new System.Drawing.Point(0, 0);
-            this.lblBienvenida.Name = "lblBienvenida";
-            this.lblBienvenida.Size = new System.Drawing.Size(0, 21);
-            this.lblBienvenida.TabIndex = 0;
             // 
             // FrmMain
             // 
