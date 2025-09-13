@@ -60,5 +60,30 @@ namespace GymManager.Forms
                 txtPassword.PasswordChar = '\0'; // Muestra el texto normalmente
             }
         }
+
+        private void FrmLogin_Load(object sender, EventArgs e)
+        {
+
+        }
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            // Obtenemos los valores ingresados
+            string email = txtEmail.Text.Trim();
+            string password = txtPassword.Text;
+
+            // Validamos (esto es solo un ejemplo básico)
+            if (email == "admin@gmail.com" && password == "1234")
+            {
+                MessageBox.Show("Inicio de sesión exitoso", "Login", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Acá podrías abrir el formulario principal y cerrar este
+                // new FrmMain().Show();
+                // this.Hide();
+            }
+            else
+            {
+                MessageBox.Show("Credenciales inválidas. Intente nuevamente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
     }
 }
