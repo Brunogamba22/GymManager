@@ -116,6 +116,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
@@ -145,6 +146,8 @@
     <Content Include="Resources\1026713.png" />
     <Content Include="Resources\11438089.png" />
     <Content Include="Resources\ChatGPT Image 8 sept 2025, 18_03_32.png" />
+    <None Include="Resources\logo-contraseña.png" />
+    <None Include="Resources\logo-usuario.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
