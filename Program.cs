@@ -37,7 +37,7 @@ namespace GymManager
                 Id = 1,                                 // ID del usuario simulado
                 Nombre = "MC Bruninho",                 // Nombre ficticio del usuario
                 Email = "mc@gmail.com",                 // Email ficticio del usuario
-                Rol = Rol.Administrador                // Rol del usuario (Administrador, Profesor, etc.)
+                Rol = Rol.Profesor              // Rol del usuario (Administrador, Profesor, etc.)
             };
 
             // ----------------------------------------

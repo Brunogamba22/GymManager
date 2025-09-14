@@ -15,6 +15,12 @@ namespace GymManager.Views
         public UcAdminDashboard()
         {
             InitializeComponent();
+            
         }
+
+  
+
+        
+
     }
 }

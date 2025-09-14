@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GymManager.Controllers;
+using GymManager.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,6 +14,7 @@ namespace GymManager.Forms
 {
     public partial class FrmLogin : Form
     {
+        private UsuarioController usuarioController = new UsuarioController();
         public FrmLogin()
         {
             InitializeComponent();
@@ -71,18 +74,22 @@ namespace GymManager.Forms
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text;
 
+            var usuario = usuarioController.Login(email, password);
+
             // Validamos (esto es solo un ejemplo básico)
-            if (email == "admin@gmail.com" && password == "1234")
+            if (usuario != null)
             {
-                MessageBox.Show("Inicio de sesión exitoso", "Login", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                // Acá podrías abrir el formulario principal y cerrar este
-                // new FrmMain().Show();
-                // this.Hide();
+                Sesion.Actual = usuario;
+                FrmMain frm = new FrmMain();
+                frm.Show();
+                this.Hide();
             }
             else
             {
-                MessageBox.Show("Credenciales inválidas. Intente nuevamente.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Credenciales Invalidas.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+                
         }
 
     }
