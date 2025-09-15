@@ -82,10 +82,17 @@
     <Compile Include="Forms\FrmRecepcionista.Designer.cs">
       <DependentUpon>FrmRecepcionista.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\Ejercicio.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Sesion.cs" />
+    <Compile Include="Views\UcGestionEjercicios.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcGestionEjercicios.Designer.cs">
+      <DependentUpon>UcGestionEjercicios.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\UcProfesorDashboard.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -123,6 +130,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Views\UcGestionEjercicios.resx">
+      <DependentUpon>UcGestionEjercicios.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\UcProfesorDashboard.resx">
       <DependentUpon>UcProfesorDashboard.cs</DependentUpon>
     </EmbeddedResource>
