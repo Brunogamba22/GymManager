@@ -93,6 +93,12 @@
     <Compile Include="Views\UcGestionEjercicios.Designer.cs">
       <DependentUpon>UcGestionEjercicios.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\UcGestionUsuarios.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcGestionUsuarios.Designer.cs">
+      <DependentUpon>UcGestionUsuarios.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\UcProfesorDashboard.cs">
       <SubType>UserControl</SubType>
     </Compile>

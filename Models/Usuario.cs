@@ -28,6 +28,9 @@ namespace GymManager.Models
         // Correo electrónico del usuario (también se podría usar como login).
         public string Email { get; set; } = "";
 
+        //contraseña del usuario
+        public string Password { get; set; } = "";
+
         // Rol asignado (Admin / Profesor / Recepcionista).
         // Determina los permisos que tendrá dentro de la aplicación.
         public Rol Rol { get; set; }
