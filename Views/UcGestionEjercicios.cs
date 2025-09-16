@@ -123,8 +123,12 @@ namespace GymManager.Views
                     txt.ForeColor = Color.Gray;
                 }
             };
+
+
         }
 
 
     }
 }
+
+
