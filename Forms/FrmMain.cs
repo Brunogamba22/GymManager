@@ -74,7 +74,7 @@ namespace GymManager.Forms
             if (rol == Rol.Administrador)
             {
                 AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcAdminDashboard()));
-                AgregarBotonNav("Usuarios", () => MessageBox.Show("Vista de usuarios (a crear)"));
+                AgregarBotonNav("Usuarios", () => CargarVista(new Views.UcGestionUsuarios()));
                 AgregarBotonNav("Reportes", () => MessageBox.Show("Vista de reportes (a crear)"));
             }
 
