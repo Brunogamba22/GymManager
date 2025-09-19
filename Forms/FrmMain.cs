@@ -55,20 +55,26 @@ namespace GymManager.Forms
             // Botón "Inicio" (siempre visible)
             AgregarBotonNav("Inicio", () => MostrarDashboard(rol));
 
-            // ---- Profesor ----
+            // Si es profesor, muestra opciones relacionadas a rutinas
             if (rol == Rol.Profesor)
             {
-                // Pantalla principal de rutinas (dashboard del profesor)
                 AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcProfesorDashboard()));
 
-                // Lugar para editar rutinas (UserControl a implementar)
                 AgregarBotonNav("Editar Rutina", () =>
-                    MessageBox.Show("Aquí se cargará la vista de edición de rutinas"));
+                {
+                    // De momento mostramos un placeholder hasta crear el UserControl
+                    //MessageBox.Show("Aquí se cargará la vista de edición de rutinas");
+                    CargarVista(new Views.UcEditarRutina());
+                });
 
-                // Planillas de rutinas generadas (UserControl a implementar)
                 AgregarBotonNav("Planillas", () =>
-                    MessageBox.Show("Aquí se cargará la vista de planillas"));
+                {
+                    // Placeholder de planillas
+                    MessageBox.Show("Aquí se cargará la vista de planillas");
+                    // Ejemplo futuro: CargarVista(new Views.UcPlanillasRutinas());
+                });
             }
+
 
             // ---- Administrador ----
             if (rol == Rol.Administrador)
