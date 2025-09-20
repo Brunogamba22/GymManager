@@ -123,6 +123,12 @@
     <Compile Include="Views\UcAdminDashboard.Designer.cs">
       <DependentUpon>UcAdminDashboard.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\UcReportes.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcReportes.Designer.cs">
+      <DependentUpon>UcReportes.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Forms\FrmLogin.resx">
       <DependentUpon>FrmLogin.cs</DependentUpon>
     </EmbeddedResource>
@@ -148,8 +154,14 @@
     <EmbeddedResource Include="Views\UcGestionEjercicios.resx">
       <DependentUpon>UcGestionEjercicios.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\UcGestionUsuarios.resx">
+      <DependentUpon>UcGestionUsuarios.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\UcProfesorDashboard.resx">
       <DependentUpon>UcProfesorDashboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\UcReportes.resx">
+      <DependentUpon>UcReportes.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />

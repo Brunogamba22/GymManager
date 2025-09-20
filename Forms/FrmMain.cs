@@ -81,7 +81,7 @@ namespace GymManager.Forms
             {
                 AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcAdminDashboard()));
                 AgregarBotonNav("Usuarios", () => CargarVista(new Views.UcGestionUsuarios()));
-                AgregarBotonNav("Reportes", () => MessageBox.Show("Vista de reportes (a crear)"));
+                AgregarBotonNav("Reportes", () => CargarVista(new Views.UcReportes()));
             }
 
             // ---- Recepcionista ----

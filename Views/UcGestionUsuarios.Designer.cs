@@ -29,9 +29,6 @@
 
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-
-            // Inicialización de controles
             this.txtNombre = new System.Windows.Forms.TextBox();
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
@@ -44,83 +41,135 @@
             this.lblEmail = new System.Windows.Forms.Label();
             this.lblPassword = new System.Windows.Forms.Label();
             this.lblRol = new System.Windows.Forms.Label();
-
-            // Diseño general del UserControl
-            this.Size = new System.Drawing.Size(700, 400);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // txtNombre
+            // 
+            this.txtNombre.Location = new System.Drawing.Point(100, 20);
+            this.txtNombre.Name = "txtNombre";
+            this.txtNombre.Size = new System.Drawing.Size(200, 20);
+            this.txtNombre.TabIndex = 1;
+            // 
+            // txtEmail
+            // 
+            this.txtEmail.Location = new System.Drawing.Point(100, 60);
+            this.txtEmail.Name = "txtEmail";
+            this.txtEmail.Size = new System.Drawing.Size(200, 20);
+            this.txtEmail.TabIndex = 3;
+            // 
+            // txtPassword
+            // 
+            this.txtPassword.Location = new System.Drawing.Point(100, 100);
+            this.txtPassword.Name = "txtPassword";
+            this.txtPassword.PasswordChar = '*';
+            this.txtPassword.Size = new System.Drawing.Size(200, 20);
+            this.txtPassword.TabIndex = 5;
+            // 
+            // cmbRol
+            // 
+            this.cmbRol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbRol.Items.AddRange(new object[] {
+            "Administrador",
+            "Profesor",
+            "Recepcionista"});
+            this.cmbRol.Location = new System.Drawing.Point(100, 140);
+            this.cmbRol.Name = "cmbRol";
+            this.cmbRol.Size = new System.Drawing.Size(200, 21);
+            this.cmbRol.TabIndex = 7;
+            // 
+            // btnAgregar
+            // 
+            this.btnAgregar.Location = new System.Drawing.Point(330, 20);
+            this.btnAgregar.Name = "btnAgregar";
+            this.btnAgregar.Size = new System.Drawing.Size(75, 23);
+            this.btnAgregar.TabIndex = 8;
+            this.btnAgregar.Text = "Agregar";
+            this.btnAgregar.Click += new System.EventHandler(this.btnAgregar_Click);
+            // 
+            // btnEditar
+            // 
+            this.btnEditar.Location = new System.Drawing.Point(330, 60);
+            this.btnEditar.Name = "btnEditar";
+            this.btnEditar.Size = new System.Drawing.Size(75, 23);
+            this.btnEditar.TabIndex = 9;
+            this.btnEditar.Text = "Editar";
+            this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
+            // 
+            // btnEliminar
+            // 
+            this.btnEliminar.Location = new System.Drawing.Point(330, 100);
+            this.btnEliminar.Name = "btnEliminar";
+            this.btnEliminar.Size = new System.Drawing.Size(75, 23);
+            this.btnEliminar.TabIndex = 10;
+            this.btnEliminar.Text = "Eliminar";
+            this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
+            // 
+            // dgvUsuarios
+            // 
+            this.dgvUsuarios.AllowUserToAddRows = false;
+            this.dgvUsuarios.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvUsuarios.Location = new System.Drawing.Point(20, 200);
+            this.dgvUsuarios.Name = "dgvUsuarios";
+            this.dgvUsuarios.ReadOnly = true;
+            this.dgvUsuarios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvUsuarios.Size = new System.Drawing.Size(650, 180);
+            this.dgvUsuarios.TabIndex = 11;
+            this.dgvUsuarios.SelectionChanged += new System.EventHandler(this.dgvUsuarios_SelectionChanged);
+            // 
+            // lblNombre
+            // 
+            this.lblNombre.Location = new System.Drawing.Point(20, 20);
+            this.lblNombre.Name = "lblNombre";
+            this.lblNombre.Size = new System.Drawing.Size(74, 23);
+            this.lblNombre.TabIndex = 0;
+            this.lblNombre.Text = "Nombre:";
+            // 
+            // lblEmail
+            // 
+            this.lblEmail.Location = new System.Drawing.Point(20, 60);
+            this.lblEmail.Name = "lblEmail";
+            this.lblEmail.Size = new System.Drawing.Size(60, 23);
+            this.lblEmail.TabIndex = 2;
+            this.lblEmail.Text = "Email:";
+            // 
+            // lblPassword
+            // 
+            this.lblPassword.Location = new System.Drawing.Point(20, 100);
+            this.lblPassword.Name = "lblPassword";
+            this.lblPassword.Size = new System.Drawing.Size(74, 23);
+            this.lblPassword.TabIndex = 4;
+            this.lblPassword.Text = "Contraseña:";
+            // 
+            // lblRol
+            // 
+            this.lblRol.Location = new System.Drawing.Point(20, 140);
+            this.lblRol.Name = "lblRol";
+            this.lblRol.Size = new System.Drawing.Size(60, 23);
+            this.lblRol.TabIndex = 6;
+            this.lblRol.Text = "Rol:";
+            // 
+            // UcGestionUsuarios
+            // 
             this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.lblNombre);
+            this.Controls.Add(this.txtNombre);
+            this.Controls.Add(this.lblEmail);
+            this.Controls.Add(this.txtEmail);
+            this.Controls.Add(this.lblPassword);
+            this.Controls.Add(this.txtPassword);
+            this.Controls.Add(this.lblRol);
+            this.Controls.Add(this.cmbRol);
+            this.Controls.Add(this.btnAgregar);
+            this.Controls.Add(this.btnEditar);
+            this.Controls.Add(this.btnEliminar);
+            this.Controls.Add(this.dgvUsuarios);
+            this.Name = "UcGestionUsuarios";
+            this.Size = new System.Drawing.Size(700, 400);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
 
-            // Label Nombre
-            lblNombre.Text = "Nombre:";
-            lblNombre.Location = new System.Drawing.Point(20, 20);
-
-            // TextBox Nombre
-            txtNombre.Location = new System.Drawing.Point(100, 20);
-            txtNombre.Width = 200;
-
-            // Label Email
-            lblEmail.Text = "Email:";
-            lblEmail.Location = new System.Drawing.Point(20, 60);
-
-            // TextBox Email
-            txtEmail.Location = new System.Drawing.Point(100, 60);
-            txtEmail.Width = 200;
-
-            // Label Password
-            lblPassword.Text = "Contraseña:";
-            lblPassword.Location = new System.Drawing.Point(20, 100);
-
-            // TextBox Password
-            txtPassword.Location = new System.Drawing.Point(100, 100);
-            txtPassword.Width = 200;
-            txtPassword.PasswordChar = '*';
-
-            // Label Rol
-            lblRol.Text = "Rol:";
-            lblRol.Location = new System.Drawing.Point(20, 140);
-
-            // ComboBox Rol
-            cmbRol.Location = new System.Drawing.Point(100, 140);
-            cmbRol.Width = 200;
-            cmbRol.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            cmbRol.Items.AddRange(new object[] { "Administrador", "Profesor", "Recepcionista" });
-
-            // Botón Agregar
-            btnAgregar.Text = "Agregar";
-            btnAgregar.Location = new System.Drawing.Point(330, 20);
-            btnAgregar.Click += new System.EventHandler(this.btnAgregar_Click);
-
-            // Botón Editar
-            btnEditar.Text = "Editar";
-            btnEditar.Location = new System.Drawing.Point(330, 60);
-            btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
-
-            // Botón Eliminar
-            btnEliminar.Text = "Eliminar";
-            btnEliminar.Location = new System.Drawing.Point(330, 100);
-            btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
-
-            // DataGridView Usuarios
-            dgvUsuarios.Location = new System.Drawing.Point(20, 200);
-            dgvUsuarios.Size = new System.Drawing.Size(650, 180);
-            dgvUsuarios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            dgvUsuarios.ReadOnly = true;
-            dgvUsuarios.AllowUserToAddRows = false;
-            dgvUsuarios.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            dgvUsuarios.SelectionChanged += new System.EventHandler(this.dgvUsuarios_SelectionChanged);
-
-            // Agregar controles al UserControl
-            this.Controls.Add(lblNombre);
-            this.Controls.Add(txtNombre);
-            this.Controls.Add(lblEmail);
-            this.Controls.Add(txtEmail);
-            this.Controls.Add(lblPassword);
-            this.Controls.Add(txtPassword);
-            this.Controls.Add(lblRol);
-            this.Controls.Add(cmbRol);
-            this.Controls.Add(btnAgregar);
-            this.Controls.Add(btnEditar);
-            this.Controls.Add(btnEliminar);
-            this.Controls.Add(dgvUsuarios);
         }
     }
 }
