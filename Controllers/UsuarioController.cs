@@ -20,7 +20,7 @@ namespace GymManager.Controllers
 
         // ID incremental para nuevos usuarios
         private int proximoId = 4;
-
+  
         /// <summary>
         /// Devuelve una copia de todos los usuarios
         /// </summary>
