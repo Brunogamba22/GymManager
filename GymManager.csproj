@@ -105,6 +105,12 @@
     <Compile Include="Views\UcGestionUsuarios.Designer.cs">
       <DependentUpon>UcGestionUsuarios.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\UcPlanillasRutinas.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcPlanillasRutinas.Designer.cs">
+      <DependentUpon>UcPlanillasRutinas.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\UcProfesorDashboard.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -156,6 +162,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Views\UcGestionUsuarios.resx">
       <DependentUpon>UcGestionUsuarios.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\UcPlanillasRutinas.resx">
+      <DependentUpon>UcPlanillasRutinas.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\UcProfesorDashboard.resx">
       <DependentUpon>UcProfesorDashboard.cs</DependentUpon>

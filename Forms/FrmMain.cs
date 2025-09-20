@@ -60,19 +60,19 @@ namespace GymManager.Forms
             {
                 AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcProfesorDashboard()));
 
-                AgregarBotonNav("Editar Rutina", () =>
+                AgregarBotonNav("Editar Rutina", () => CargarVista(new Views.UcEditarRutina()));
                 {
                     // De momento mostramos un placeholder hasta crear el UserControl
                     //MessageBox.Show("Aquí se cargará la vista de edición de rutinas");
                     CargarVista(new Views.UcEditarRutina());
-                });
+                };
 
-                AgregarBotonNav("Planillas", () =>
+                AgregarBotonNav("Planillas", () => CargarVista(new Views.UcPlanillasRutinas()));
                 {
                     // Placeholder de planillas
-                    MessageBox.Show("Aquí se cargará la vista de planillas");
-                    // Ejemplo futuro: CargarVista(new Views.UcPlanillasRutinas());
-                });
+                    //MessageBox.Show("Aquí se cargará la vista de planillas");
+                    CargarVista(new Views.UcPlanillasRutinas());
+                };
             }
 
 
