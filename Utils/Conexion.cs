@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-
 using System.Configuration;
 
 namespace GymManager.Utils
@@ -13,7 +11,7 @@ namespace GymManager.Utils
     public static class Conexion
     {
         // Propiedad de solo lectura que obtiene la cadena de conexión desde App.config
-        public static string CadenaConexion =>
-            ConfigurationManager.ConnectionStrings["GymDB"].ConnectionString;
+        public static string Cadena =>
+            ConfigurationManager.ConnectionStrings["GymManagerDB"].ConnectionString;
     }
 }
