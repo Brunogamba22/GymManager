@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <connectionStrings>
+    <!-- 
+    Editá el valor de 'Server=' con el nombre de tu PC o 'localhost\SQLEXPRESS'.
+    Ejemplos:
+      Server=localhost\SQLEXPRESS
+      Server=DESKTOP-TUNOMBRE\SQLEXPRESS
+    -->
+    <add name="GymManagerDB" 
+         connectionString="Server=localhost\SQLEXPRESS;Database=GymManagerDB;Trusted_Connection=True;"
+         providerName="System.Data.SqlClient" />
+  </connectionStrings>
+
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7.2" />
+  </startup>
+</configuration>

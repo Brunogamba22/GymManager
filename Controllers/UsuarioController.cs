@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using GymManager.Models;
-using GymManager.Utils; // Usamos Conexion.cs para obtener la cadena de conexión
+using GymManager.Utils;
 
 namespace GymManager.Controllers
 {
@@ -19,28 +18,29 @@ namespace GymManager.Controllers
         {
             List<Usuario> lista = new List<Usuario>();
 
-            // Usamos un using para manejar automáticamente la conexión
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
-                string query = "SELECT * FROM Usuarios";
+                string query = @"
+                    SELECT u.dni, u.nombre, u.apellido, u.email, 
+                           u.password, r.tipo_rol
+                    FROM dbo.Usuarios u
+                    INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        // Leemos cada fila y la convertimos en objeto Usuario
                         while (reader.Read())
                         {
                             Usuario u = new Usuario
                             {
-                                Id = (int)reader["Id"],
-                                Nombre = reader["Nombre"].ToString(),
-                                Email = reader["Email"].ToString(),
-                                Password = reader["Password"].ToString(),
-                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["Rol"].ToString())
-
+                                Id = reader["dni"].ToString(),   // dni como string
+                                Nombre = reader["nombre"].ToString(),
+                                Email = reader["email"].ToString(),
+                                Password = reader["password"].ToString(),
+                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
                             };
 
                             lista.Add(u);
@@ -61,14 +61,19 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                string query = "INSERT INTO Usuarios (Nombre, Email, Password, Rol) VALUES (@Nombre, @Email, @Password, @Rol)";
+                string query = @"
+                    INSERT INTO dbo.Usuarios (dni, nombre, apellido, email, password, id_rol)
+                    VALUES (@Dni, @Nombre, @Apellido, @Email, @Password, @IdRol)";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@Dni", u.Id);
                     cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
+                    cmd.Parameters.AddWithValue("@Apellido", u.Apellido);
                     cmd.Parameters.AddWithValue("@Email", u.Email);
                     cmd.Parameters.AddWithValue("@Password", u.Password);
-                    cmd.Parameters.AddWithValue("@Rol", u.Rol.ToString());
+                    cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
+                    // +1 porque en la DB los id_rol arrancan en 1
 
                     cmd.ExecuteNonQuery();
                 }
@@ -84,15 +89,20 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                string query = "UPDATE Usuarios SET Nombre = @Nombre, Email = @Email, Password = @Password, Rol = @Rol WHERE Id = @Id";
+                string query = @"
+                    UPDATE dbo.Usuarios 
+                    SET nombre = @Nombre, apellido = @Apellido, email = @Email, 
+                        password = @Password, id_rol = @IdRol
+                    WHERE dni = @Dni";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@Dni", u.Id);
                     cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
+                    cmd.Parameters.AddWithValue("@Apellido", u.Apellido);
                     cmd.Parameters.AddWithValue("@Email", u.Email);
                     cmd.Parameters.AddWithValue("@Password", u.Password);
-                    cmd.Parameters.AddWithValue("@Rol", u.Rol.ToString());
-                    cmd.Parameters.AddWithValue("@Id", u.Id);
+                    cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -100,19 +110,19 @@ namespace GymManager.Controllers
         }
 
         /// <summary>
-        /// Elimina un usuario de la base de datos por ID.
+        /// Elimina un usuario de la base de datos por DNI.
         /// </summary>
-        public void Eliminar(int id)
+        public void Eliminar(string dni)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
-                string query = "DELETE FROM Usuarios WHERE Id = @Id";
+                string query = "DELETE FROM dbo.Usuarios WHERE dni = @Dni";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@Dni", dni);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -121,13 +131,18 @@ namespace GymManager.Controllers
         /// <summary>
         /// Busca un usuario por email y contraseña para login.
         /// </summary>
-        public Usuario? Login(string email, string password)
+        public Usuario Login(string email, string password)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
-            { 
+            {
                 conn.Open();
 
-                string query = "SELECT * FROM Usuarios WHERE Email = @Email AND Password = @Password";
+                string query = @"
+                    SELECT u.dni, u.nombre, u.apellido, u.email, 
+                           u.password, r.tipo_rol
+                    FROM dbo.Usuarios u
+                    INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
+                    WHERE u.email = @Email AND u.password = @Password";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -140,19 +155,18 @@ namespace GymManager.Controllers
                         {
                             return new Usuario
                             {
-                                Id = (int)reader["Id"],
-                                Nombre = reader["Nombre"].ToString(),
-                                Email = reader["Email"].ToString(),
-                                Password = reader["Password"].ToString(),
-                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["Rol"].ToString())
-
+                                Id = reader["dni"].ToString(),
+                                Nombre = reader["nombre"].ToString(),
+                                Email = reader["email"].ToString(),
+                                Password = reader["password"].ToString(),
+                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
                             };
                         }
                     }
                 }
             }
 
-            return null; // Si no se encontró el usuario
+            return null; // si no se encontró
         }
     }
 }

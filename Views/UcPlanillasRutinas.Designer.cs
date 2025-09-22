@@ -24,40 +24,62 @@
             this.btnExportar = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvPlanillas)).BeginInit();
             this.SuspendLayout();
-
+            // 
             // dgvPlanillas
+            // 
             this.dgvPlanillas.AllowUserToAddRows = false;
             this.dgvPlanillas.AllowUserToDeleteRows = false;
             this.dgvPlanillas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvPlanillas.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                this.colNombre,
-                this.colProfesor,
-                this.colFecha});
+            this.colNombre,
+            this.colProfesor,
+            this.colFecha});
             this.dgvPlanillas.Dock = System.Windows.Forms.DockStyle.Top;
-            this.dgvPlanillas.Height = 300;
-            this.dgvPlanillas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvPlanillas.Location = new System.Drawing.Point(0, 0);
             this.dgvPlanillas.MultiSelect = false;
+            this.dgvPlanillas.Name = "dgvPlanillas";
             this.dgvPlanillas.ReadOnly = true;
-
-            // Columnas
+            this.dgvPlanillas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvPlanillas.Size = new System.Drawing.Size(927, 300);
+            this.dgvPlanillas.TabIndex = 0;
+            // 
+            // colNombre
+            // 
             this.colNombre.HeaderText = "Nombre de la Rutina";
+            this.colNombre.Name = "colNombre";
+            this.colNombre.ReadOnly = true;
+            // 
+            // colProfesor
+            // 
             this.colProfesor.HeaderText = "Profesor";
+            this.colProfesor.Name = "colProfesor";
+            this.colProfesor.ReadOnly = true;
+            // 
+            // colFecha
+            // 
             this.colFecha.HeaderText = "Fecha Creación";
-
+            this.colFecha.Name = "colFecha";
+            this.colFecha.ReadOnly = true;
+            // 
             // btnExportar
-            this.btnExportar.Text = "Exportar Rutina";
+            // 
             this.btnExportar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnExportar.Height = 40;
+            this.btnExportar.Location = new System.Drawing.Point(0, 473);
+            this.btnExportar.Name = "btnExportar";
+            this.btnExportar.Size = new System.Drawing.Size(927, 40);
+            this.btnExportar.TabIndex = 1;
+            this.btnExportar.Text = "Exportar Rutina";
             this.btnExportar.Click += new System.EventHandler(this.btnExportar_Click);
-
+            // 
             // UcPlanillasRutinas
+            // 
             this.Controls.Add(this.dgvPlanillas);
             this.Controls.Add(this.btnExportar);
-            this.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Size = new System.Drawing.Size(800, 400);
-
+            this.Name = "UcPlanillasRutinas";
+            this.Size = new System.Drawing.Size(927, 513);
             ((System.ComponentModel.ISupportInitialize)(this.dgvPlanillas)).EndInit();
             this.ResumeLayout(false);
+
         }
     }
 }

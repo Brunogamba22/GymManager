@@ -14,7 +14,7 @@ namespace GymManager.Utils
     {
         // Usuario que está actualmente logueado.
         // Puede ser null si nadie inició sesión todavía.
-        public static Usuario? Actual { get; set; }
+        public static Usuario Actual { get; set; }
 
         // Método helper: permite preguntar rápido si el usuario actual tiene cierto rol.
         // Ejemplo: if (Sesion.Es(Rol.Profesor)) { ... } 

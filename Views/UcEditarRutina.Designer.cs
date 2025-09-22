@@ -45,19 +45,19 @@ namespace GymManager.Views
             // 
             // colEjercicio
             // 
-            this.colEjercicio.Name = "colEjercicio";
+            this.colEjercicio.Name = "Ejercicio";
             // 
             // colSeries
             // 
-            this.colSeries.Name = "colSeries";
+            this.colSeries.Name = "Series";
             // 
             // colRepeticiones
             // 
-            this.colRepeticiones.Name = "colRepeticiones";
+            this.colRepeticiones.Name = "Repeticiones";
             // 
             // colDescanso
             // 
-            this.colDescanso.Name = "colDescanso";
+            this.colDescanso.Name = "Descanso";
             // 
             // btnGuardar
             // 
