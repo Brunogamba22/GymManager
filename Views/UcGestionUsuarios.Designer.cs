@@ -6,6 +6,7 @@
 
         // Controles
         private System.Windows.Forms.TextBox txtNombre;
+        private System.Windows.Forms.TextBox txtApellido;
         private System.Windows.Forms.TextBox txtEmail;
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.ComboBox cmbRol;
@@ -14,6 +15,7 @@
         private System.Windows.Forms.Button btnEliminar;
         private System.Windows.Forms.DataGridView dgvUsuarios;
         private System.Windows.Forms.Label lblNombre;
+        private System.Windows.Forms.Label lblApellido;
         private System.Windows.Forms.Label lblEmail;
         private System.Windows.Forms.Label lblPassword;
         private System.Windows.Forms.Label lblRol;
@@ -30,6 +32,7 @@
         private void InitializeComponent()
         {
             this.txtNombre = new System.Windows.Forms.TextBox();
+            this.txtApellido = new System.Windows.Forms.TextBox();
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.cmbRol = new System.Windows.Forms.ComboBox();
@@ -38,6 +41,7 @@
             this.btnEliminar = new System.Windows.Forms.Button();
             this.dgvUsuarios = new System.Windows.Forms.DataGridView();
             this.lblNombre = new System.Windows.Forms.Label();
+            this.lblApellido = new System.Windows.Forms.Label();
             this.lblEmail = new System.Windows.Forms.Label();
             this.lblPassword = new System.Windows.Forms.Label();
             this.lblRol = new System.Windows.Forms.Label();
@@ -51,20 +55,27 @@
             this.txtNombre.Size = new System.Drawing.Size(200, 20);
             this.txtNombre.TabIndex = 1;
             // 
+            // txtApellido
+            // 
+            this.txtApellido.Location = new System.Drawing.Point(100, 50);
+            this.txtApellido.Name = "txtApellido";
+            this.txtApellido.Size = new System.Drawing.Size(200, 20);
+            this.txtApellido.TabIndex = 2;
+            // 
             // txtEmail
             // 
-            this.txtEmail.Location = new System.Drawing.Point(100, 60);
+            this.txtEmail.Location = new System.Drawing.Point(100, 80);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(200, 20);
             this.txtEmail.TabIndex = 3;
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(100, 100);
+            this.txtPassword.Location = new System.Drawing.Point(100, 110);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(200, 20);
-            this.txtPassword.TabIndex = 5;
+            this.txtPassword.TabIndex = 4;
             // 
             // cmbRol
             // 
@@ -76,14 +87,14 @@
             this.cmbRol.Location = new System.Drawing.Point(100, 140);
             this.cmbRol.Name = "cmbRol";
             this.cmbRol.Size = new System.Drawing.Size(200, 21);
-            this.cmbRol.TabIndex = 7;
+            this.cmbRol.TabIndex = 5;
             // 
             // btnAgregar
             // 
             this.btnAgregar.Location = new System.Drawing.Point(330, 20);
             this.btnAgregar.Name = "btnAgregar";
             this.btnAgregar.Size = new System.Drawing.Size(75, 23);
-            this.btnAgregar.TabIndex = 8;
+            this.btnAgregar.TabIndex = 6;
             this.btnAgregar.Text = "Agregar";
             this.btnAgregar.Click += new System.EventHandler(this.btnAgregar_Click);
             // 
@@ -92,7 +103,7 @@
             this.btnEditar.Location = new System.Drawing.Point(330, 60);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(75, 23);
-            this.btnEditar.TabIndex = 9;
+            this.btnEditar.TabIndex = 7;
             this.btnEditar.Text = "Editar";
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
             // 
@@ -101,7 +112,7 @@
             this.btnEliminar.Location = new System.Drawing.Point(330, 100);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(75, 23);
-            this.btnEliminar.TabIndex = 10;
+            this.btnEliminar.TabIndex = 8;
             this.btnEliminar.Text = "Eliminar";
             this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
             // 
@@ -114,7 +125,7 @@
             this.dgvUsuarios.ReadOnly = true;
             this.dgvUsuarios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvUsuarios.Size = new System.Drawing.Size(650, 180);
-            this.dgvUsuarios.TabIndex = 11;
+            this.dgvUsuarios.TabIndex = 9;
             this.dgvUsuarios.SelectionChanged += new System.EventHandler(this.dgvUsuarios_SelectionChanged);
             // 
             // lblNombre
@@ -125,20 +136,28 @@
             this.lblNombre.TabIndex = 0;
             this.lblNombre.Text = "Nombre:";
             // 
+            // lblApellido
+            // 
+            this.lblApellido.Location = new System.Drawing.Point(20, 50);
+            this.lblApellido.Name = "lblApellido";
+            this.lblApellido.Size = new System.Drawing.Size(74, 23);
+            this.lblApellido.TabIndex = 10;
+            this.lblApellido.Text = "Apellido:";
+            // 
             // lblEmail
             // 
-            this.lblEmail.Location = new System.Drawing.Point(20, 60);
+            this.lblEmail.Location = new System.Drawing.Point(20, 80);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(60, 23);
-            this.lblEmail.TabIndex = 2;
+            this.lblEmail.TabIndex = 11;
             this.lblEmail.Text = "Email:";
             // 
             // lblPassword
             // 
-            this.lblPassword.Location = new System.Drawing.Point(20, 100);
+            this.lblPassword.Location = new System.Drawing.Point(20, 110);
             this.lblPassword.Name = "lblPassword";
             this.lblPassword.Size = new System.Drawing.Size(74, 23);
-            this.lblPassword.TabIndex = 4;
+            this.lblPassword.TabIndex = 12;
             this.lblPassword.Text = "Contraseña:";
             // 
             // lblRol
@@ -146,7 +165,7 @@
             this.lblRol.Location = new System.Drawing.Point(20, 140);
             this.lblRol.Name = "lblRol";
             this.lblRol.Size = new System.Drawing.Size(60, 23);
-            this.lblRol.TabIndex = 6;
+            this.lblRol.TabIndex = 13;
             this.lblRol.Text = "Rol:";
             // 
             // UcGestionUsuarios
@@ -154,6 +173,8 @@
             this.BackColor = System.Drawing.Color.White;
             this.Controls.Add(this.lblNombre);
             this.Controls.Add(this.txtNombre);
+            this.Controls.Add(this.lblApellido);
+            this.Controls.Add(this.txtApellido);
             this.Controls.Add(this.lblEmail);
             this.Controls.Add(this.txtEmail);
             this.Controls.Add(this.lblPassword);
@@ -169,7 +190,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
     }
 }

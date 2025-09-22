@@ -38,6 +38,7 @@ namespace GymManager.Controllers
                             {
                                 Id = reader["dni"].ToString(),   // dni como string
                                 Nombre = reader["nombre"].ToString(),
+                                Apellido = reader["apellido"].ToString(), // 👈 agregado
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
@@ -117,13 +118,40 @@ namespace GymManager.Controllers
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
-
-                string query = "DELETE FROM dbo.Usuarios WHERE dni = @Dni";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (var tx = conn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@Dni", dni);
-                    cmd.ExecuteNonQuery();
+                    // 1) Obtener rol del usuario a borrar
+                    var getRol = new SqlCommand(
+                        "SELECT id_rol FROM dbo.Usuarios WHERE dni=@dni", conn, tx);
+                    getRol.Parameters.AddWithValue("@dni", dni);
+                    var rolObj = getRol.ExecuteScalar();
+
+                    if (rolObj == null)
+                        throw new InvalidOperationException("El usuario no existe.");
+
+                    int idRol = Convert.ToInt32(rolObj);
+
+                    // ⚠️ Regla: rol 1 = Administrador
+                    if (idRol == 1)
+                    {
+                        // Si querés prohibir borrar cualquier admin, descomentá:
+                        // throw new InvalidOperationException("No se puede eliminar un Administrador.");
+
+                        // Si solo querés evitar borrar el ÚLTIMO admin:
+                        var countAdmins = new SqlCommand(
+                            "SELECT COUNT(*) FROM dbo.Usuarios WHERE id_rol = 1", conn, tx);
+                        int admins = (int)countAdmins.ExecuteScalar();
+                        if (admins <= 1)
+                            throw new InvalidOperationException("No se puede eliminar el último Administrador.");
+                    }
+
+                    // 2) Borrar
+                    var del = new SqlCommand(
+                        "DELETE FROM dbo.Usuarios WHERE dni=@dni", conn, tx);
+                    del.Parameters.AddWithValue("@dni", dni);
+                    del.ExecuteNonQuery();
+
+                    tx.Commit();
                 }
             }
         }
@@ -157,6 +185,7 @@ namespace GymManager.Controllers
                             {
                                 Id = reader["dni"].ToString(),
                                 Nombre = reader["nombre"].ToString(),
+                                Apellido = reader["apellido"].ToString(), // 👈 agregado
                                 Email = reader["email"].ToString(),
                                 Password = reader["password"].ToString(),
                                 Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)

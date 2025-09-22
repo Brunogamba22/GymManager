@@ -174,7 +174,7 @@
     <EmbeddedResource Include="Views\UcReportes.resx">
       <DependentUpon>UcReportes.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="App.config.example" />
+    <None Include="App.config" />
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
     <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
     <None Include="obj\Debug\GymManager.csproj.AssemblyReference.cache" />
@@ -188,9 +188,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\Debug\" />
