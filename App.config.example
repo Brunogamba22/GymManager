@@ -2,7 +2,7 @@
 <configuration>
   <connectionStrings>
     <!-- 
-    Editá el valor de 'Server=' con el nombre de tu PC o 'localhost\SQLEXPRESS'.
+    Editï¿½ el valor de 'Server=' con el nombre de tu PC o 'localhost\SQLEXPRESS'.
     Ejemplos:
       Server=localhost\SQLEXPRESS
       Server=DESKTOP-TUNOMBRE\SQLEXPRESS
