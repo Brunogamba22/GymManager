@@ -48,7 +48,6 @@ namespace GymManager.Views
             this.dgvEjercicios = new System.Windows.Forms.DataGridView();
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).BeginInit();
             this.SuspendLayout();
-
             // 
             // lblTitulo
             // 
@@ -56,24 +55,23 @@ namespace GymManager.Views
             this.lblTitulo.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblTitulo.Location = new System.Drawing.Point(20, 20);
             this.lblTitulo.Name = "lblTitulo";
-            this.lblTitulo.Size = new System.Drawing.Size(250, 25);
+            this.lblTitulo.Size = new System.Drawing.Size(193, 25);
+            this.lblTitulo.TabIndex = 0;
             this.lblTitulo.Text = "Gestión de Ejercicios";
-
             // 
             // txtNombre
             // 
             this.txtNombre.Location = new System.Drawing.Point(25, 60);
             this.txtNombre.Name = "txtNombre";
             this.txtNombre.Size = new System.Drawing.Size(200, 20);
-            // Placeholder aplicado en el código.
-
+            this.txtNombre.TabIndex = 1;
             // 
             // txtMusculo
             // 
             this.txtMusculo.Location = new System.Drawing.Point(25, 90);
             this.txtMusculo.Name = "txtMusculo";
             this.txtMusculo.Size = new System.Drawing.Size(200, 20);
-
+            this.txtMusculo.TabIndex = 2;
             // 
             // txtDescripcion
             // 
@@ -81,49 +79,49 @@ namespace GymManager.Views
             this.txtDescripcion.Multiline = true;
             this.txtDescripcion.Name = "txtDescripcion";
             this.txtDescripcion.Size = new System.Drawing.Size(200, 60);
-
+            this.txtDescripcion.TabIndex = 3;
             // 
             // btnAgregar
             // 
             this.btnAgregar.Location = new System.Drawing.Point(250, 60);
             this.btnAgregar.Name = "btnAgregar";
             this.btnAgregar.Size = new System.Drawing.Size(100, 25);
+            this.btnAgregar.TabIndex = 4;
             this.btnAgregar.Text = "Agregar";
             this.btnAgregar.UseVisualStyleBackColor = true;
             this.btnAgregar.Click += new System.EventHandler(this.btnAgregar_Click);
-
             // 
             // btnEditar
             // 
             this.btnEditar.Location = new System.Drawing.Point(250, 90);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(100, 25);
+            this.btnEditar.TabIndex = 5;
             this.btnEditar.Text = "Editar";
             this.btnEditar.UseVisualStyleBackColor = true;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
-
             // 
             // btnEliminar
             // 
             this.btnEliminar.Location = new System.Drawing.Point(250, 120);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(100, 25);
+            this.btnEliminar.TabIndex = 6;
             this.btnEliminar.Text = "Eliminar";
             this.btnEliminar.UseVisualStyleBackColor = true;
             this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
-
             // 
             // dgvEjercicios
             // 
             this.dgvEjercicios.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvEjercicios.Location = new System.Drawing.Point(25, 200);
+            this.dgvEjercicios.MultiSelect = false;
             this.dgvEjercicios.Name = "dgvEjercicios";
-            this.dgvEjercicios.Size = new System.Drawing.Size(500, 200);
-            this.dgvEjercicios.SelectionMode = DataGridViewSelectionMode.FullRowSelect; // Selección de fila completa.
-            this.dgvEjercicios.MultiSelect = false; // Solo una fila a la vez.
-            this.dgvEjercicios.ReadOnly = true;     // No editable directamente.
+            this.dgvEjercicios.ReadOnly = true;
+            this.dgvEjercicios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvEjercicios.Size = new System.Drawing.Size(500, 333);
+            this.dgvEjercicios.TabIndex = 7;
             this.dgvEjercicios.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvEjercicios_SelectionChanged);
-
             // 
             // UcGestionEjercicios
             // 
@@ -136,10 +134,11 @@ namespace GymManager.Views
             this.Controls.Add(this.btnEliminar);
             this.Controls.Add(this.dgvEjercicios);
             this.Name = "UcGestionEjercicios";
-            this.Size = new System.Drawing.Size(600, 420);
+            this.Size = new System.Drawing.Size(600, 536);
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
     }
 }

@@ -6,14 +6,8 @@ using GymManager.Utils;
 
 namespace GymManager.Controllers
 {
-    /// <summary>
-    /// Controlador que maneja el acceso a la tabla Usuarios desde la base de datos.
-    /// </summary>
     public class UsuarioController
     {
-        /// <summary>
-        /// Devuelve una lista con todos los usuarios de la base de datos.
-        /// </summary>
         public List<Usuario> ObtenerTodos()
         {
             List<Usuario> lista = new List<Usuario>();
@@ -29,23 +23,21 @@ namespace GymManager.Controllers
                     INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
+                        Usuario u = new Usuario
                         {
-                            Usuario u = new Usuario
-                            {
-                                Id = reader["dni"].ToString(),   // dni como string
-                                Nombre = reader["nombre"].ToString(),
-                                Apellido = reader["apellido"].ToString(), // 👈 agregado
-                                Email = reader["email"].ToString(),
-                                Password = reader["password"].ToString(),
-                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
-                            };
+                            Id = reader["dni"].ToString(),
+                            Nombre = reader["nombre"].ToString(),
+                            Apellido = reader["apellido"].ToString(),
+                            Email = reader["email"].ToString(),
+                            Password = reader["password"].ToString(), // ⚠️ guardado como hash
+                            Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
+                        };
 
-                            lista.Add(u);
-                        }
+                        lista.Add(u);
                     }
                 }
             }
@@ -53,9 +45,6 @@ namespace GymManager.Controllers
             return lista;
         }
 
-        /// <summary>
-        /// Inserta un nuevo usuario en la base de datos.
-        /// </summary>
         public void Agregar(Usuario u)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
@@ -72,18 +61,16 @@ namespace GymManager.Controllers
                     cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
                     cmd.Parameters.AddWithValue("@Apellido", u.Apellido);
                     cmd.Parameters.AddWithValue("@Email", u.Email);
-                    cmd.Parameters.AddWithValue("@Password", u.Password);
-                    cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
-                    // +1 porque en la DB los id_rol arrancan en 1
 
+                    // Guardamos la contraseña hasheada
+                    cmd.Parameters.AddWithValue("@Password", PasswordHelper.HashPassword(u.Password));
+
+                    cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        /// <summary>
-        /// Actualiza los datos de un usuario existente.
-        /// </summary>
         public void Editar(Usuario u)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
@@ -102,17 +89,16 @@ namespace GymManager.Controllers
                     cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
                     cmd.Parameters.AddWithValue("@Apellido", u.Apellido);
                     cmd.Parameters.AddWithValue("@Email", u.Email);
-                    cmd.Parameters.AddWithValue("@Password", u.Password);
-                    cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
 
+                    // Re-hasheamos por si cambió la contraseña
+                    cmd.Parameters.AddWithValue("@Password", PasswordHelper.HashPassword(u.Password));
+
+                    cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        /// <summary>
-        /// Elimina un usuario de la base de datos por DNI.
-        /// </summary>
         public void Eliminar(string dni)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
@@ -120,7 +106,6 @@ namespace GymManager.Controllers
                 conn.Open();
                 using (var tx = conn.BeginTransaction())
                 {
-                    // 1) Obtener rol del usuario a borrar
                     var getRol = new SqlCommand(
                         "SELECT id_rol FROM dbo.Usuarios WHERE dni=@dni", conn, tx);
                     getRol.Parameters.AddWithValue("@dni", dni);
@@ -131,13 +116,8 @@ namespace GymManager.Controllers
 
                     int idRol = Convert.ToInt32(rolObj);
 
-                    // ⚠️ Regla: rol 1 = Administrador
                     if (idRol == 1)
                     {
-                        // Si querés prohibir borrar cualquier admin, descomentá:
-                        // throw new InvalidOperationException("No se puede eliminar un Administrador.");
-
-                        // Si solo querés evitar borrar el ÚLTIMO admin:
                         var countAdmins = new SqlCommand(
                             "SELECT COUNT(*) FROM dbo.Usuarios WHERE id_rol = 1", conn, tx);
                         int admins = (int)countAdmins.ExecuteScalar();
@@ -145,7 +125,6 @@ namespace GymManager.Controllers
                             throw new InvalidOperationException("No se puede eliminar el último Administrador.");
                     }
 
-                    // 2) Borrar
                     var del = new SqlCommand(
                         "DELETE FROM dbo.Usuarios WHERE dni=@dni", conn, tx);
                     del.Parameters.AddWithValue("@dni", dni);
@@ -156,9 +135,6 @@ namespace GymManager.Controllers
             }
         }
 
-        /// <summary>
-        /// Busca un usuario por email y contraseña para login.
-        /// </summary>
         public Usuario Login(string email, string password)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
@@ -170,32 +146,56 @@ namespace GymManager.Controllers
                            u.password, r.tipo_rol
                     FROM dbo.Usuarios u
                     INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
-                    WHERE u.email = @Email AND u.password = @Password";
+                    WHERE u.email = @Email";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@Password", password);
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            return new Usuario
+                            string storedHash = reader["password"].ToString();
+
+                            // Verificamos contraseña contra el hash guardado
+                            if (PasswordHelper.VerifyPassword(password, storedHash))
                             {
-                                Id = reader["dni"].ToString(),
-                                Nombre = reader["nombre"].ToString(),
-                                Apellido = reader["apellido"].ToString(), // 👈 agregado
-                                Email = reader["email"].ToString(),
-                                Password = reader["password"].ToString(),
-                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
-                            };
+                                return new Usuario
+                                {
+                                    Id = reader["dni"].ToString(),
+                                    Nombre = reader["nombre"].ToString(),
+                                    Apellido = reader["apellido"].ToString(),
+                                    Email = reader["email"].ToString(),
+                                    Password = storedHash,
+                                    Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
+                                };
+                            }
                         }
                     }
                 }
             }
 
-            return null; // si no se encontró
+
+
+            return null;
         }
+
+        public bool ExisteUsuario(string dni)
+        {
+            using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+                string query = "SELECT COUNT(*) FROM dbo.Usuarios WHERE dni = @Dni";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Dni", dni);
+                    int count = (int)cmd.ExecuteScalar();
+                    return count > 0;
+                }
+            }
+        }
+
     }
 }
