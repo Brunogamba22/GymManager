@@ -10,42 +10,56 @@ using System.Windows.Forms;
 
 namespace GymManager.Views
 {
+    /// <summary>
+    /// UserControl principal del Administrador.
+    /// Sirve como panel de inicio para acceder a distintas gestiones
+    /// dentro del sistema (ej: gestión de ejercicios).
+    /// Forma parte de la capa de Vista (MVC).
+    /// </summary>
     public partial class UcAdminDashboard : UserControl
     {
+        /// <summary>
+        /// Constructor del UserControl.
+        /// Inicializa los componentes gráficos y asocia el evento Load.
+        /// </summary>
         public UcAdminDashboard()
         {
-            InitializeComponent(); // Inicializa componentes del diseñador
+            InitializeComponent(); // Inicializa los elementos creados en el diseñador.
 
-            // Evento de carga del control
+            // Se suscribe el método "UcAdminDashboard_Load"
+            // al evento "Load" del UserControl.
             this.Load += UcAdminDashboard_Load;
-
         }
 
-        // Evento que se dispara al cargarse el UserControl
+        /// <summary>
+        /// Evento que se ejecuta al cargarse el UserControl.
+        /// Ideal para inicializar datos o estados visuales.
+        /// </summary>
         private void UcAdminDashboard_Load(object sender, EventArgs e)
         {
-            // Opcional: cargar datos iniciales o estados
+            // Opcional: aquí se podrían cargar datos iniciales del panel.
         }
 
-        // Método que carga un UserControl dentro del panel contenedor
+        /// <summary>
+        /// Método que carga dinámicamente otro UserControl
+        /// dentro del panel de contenido del Administrador.
+        /// </summary>
         private void CargarVista(UserControl vista)
         {
-            panelContenidoAdmin.Controls.Clear();       // Limpia el panel
-            vista.Dock = DockStyle.Fill;                // Ocupa todo el espacio
-            panelContenidoAdmin.Controls.Add(vista);    // Agrega la vista
+            panelContenidoAdmin.Controls.Clear();       // Limpia el panel antes de insertar algo nuevo.
+            vista.Dock = DockStyle.Fill;                // Hace que la vista ocupe todo el espacio disponible.
+            panelContenidoAdmin.Controls.Add(vista);    // Agrega la vista al panel.
         }
 
-        // Evento cuando se hace clic en el botón de gestión de ejercicios
+        /// <summary>
+        /// Evento al hacer clic en el botón "Gestionar Ejercicios".
+        /// Carga el UserControl de gestión de ejercicios dentro del panel.
+        /// </summary>
         private void btnGestionEjercicios_Click(object sender, EventArgs e)
         {
-            CargarVista(new UcGestionEjercicios()); // Carga el UserControl de ejercicios
+            CargarVista(new UcGestionEjercicios()); // Muestra la vista de ejercicios.
         }
 
-        // Aquí podés agregar más métodos para otros botones en el futuro
-
-
-
-
-
+        // Aquí se pueden agregar más métodos para otros botones o funcionalidades futuras.
     }
 }

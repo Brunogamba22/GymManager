@@ -6,34 +6,46 @@ using System.Windows.Forms;
 
 namespace GymManager.Views
 {
+    /// <summary>
+    /// Vista de gestión de ejercicios.
+    /// Permite realizar operaciones CRUD (crear, leer, actualizar, eliminar) 
+    /// sobre los ejercicios mediante el controlador correspondiente.
+    /// </summary>
     public partial class UcGestionEjercicios : UserControl
     {
-        // Controlador que maneja la lógica de los ejercicios (alta, baja, modificación)
+        // Controlador que maneja la lógica de negocio para los ejercicios.
         private EjercicioController controller = new EjercicioController();
 
-        // Constructor
+        /// <summary>
+        /// Constructor del UserControl.
+        /// Inicializa componentes, refresca la grilla y aplica placeholders.
+        /// </summary>
         public UcGestionEjercicios()
         {
             InitializeComponent();
-            RefrescarGrid(); // Carga inicial de los datos
+            RefrescarGrid(); // Carga inicial de la lista de ejercicios.
 
+            // Aplica texto por defecto en los campos de entrada.
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
             AplicarPlaceholder(txtMusculo, "Músculo trabajado");
             AplicarPlaceholder(txtDescripcion, "Descripción");
-
         }
 
-        // Refresca los datos del DataGridView con la lista actual de ejercicios
+        /// <summary>
+        /// Refresca los datos del DataGridView con la lista actual de ejercicios.
+        /// </summary>
         private void RefrescarGrid()
         {
-            dgvEjercicios.DataSource = null; // Limpia la grilla
-            dgvEjercicios.DataSource = controller.ObtenerTodos(); // Carga nueva lista
+            dgvEjercicios.DataSource = null; // Limpia la grilla.
+            dgvEjercicios.DataSource = controller.ObtenerTodos(); // Carga nueva lista desde el controlador.
         }
 
-        // Botón para agregar un nuevo ejercicio
+        /// <summary>
+        /// Botón para agregar un nuevo ejercicio.
+        /// Crea un objeto Ejercicio y lo envía al controlador.
+        /// </summary>
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            // Crea un nuevo ejercicio con los datos de los TextBox
             var nuevo = new Ejercicio
             {
                 Nombre = txtNombre.Text,
@@ -41,51 +53,53 @@ namespace GymManager.Views
                 Descripcion = txtDescripcion.Text
             };
 
-            controller.Agregar(nuevo); // Lo envía al controlador
-            RefrescarGrid();           // Refresca la grilla
-            LimpiarCampos();           // Limpia los campos de entrada
+            controller.Agregar(nuevo); // Envía el nuevo ejercicio al controlador.
+            RefrescarGrid();           // Actualiza la grilla.
+            LimpiarCampos();           // Limpia los campos de entrada.
         }
 
-        // Botón para editar un ejercicio ya existente
+        /// <summary>
+        /// Botón para editar el ejercicio seleccionado.
+        /// </summary>
         private void btnEditar_Click(object sender, EventArgs e)
         {
-            // Si no hay ninguna fila seleccionada, salir
-            if (dgvEjercicios.CurrentRow == null) return;
+            if (dgvEjercicios.CurrentRow == null) return; // Si no hay fila seleccionada, salir.
 
-            // Toma el ejercicio seleccionado en la grilla
+            // Obtiene el ejercicio actualmente seleccionado en la grilla.
             var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
 
-            // Actualiza los campos del ejercicio con los datos actuales
+            // Actualiza sus propiedades con los datos ingresados en los TextBox.
             ejercicio.Nombre = txtNombre.Text;
             ejercicio.Musculo = txtMusculo.Text;
             ejercicio.Descripcion = txtDescripcion.Text;
 
-            controller.Editar(ejercicio); // Llama al controlador para actualizar
-            RefrescarGrid();              // Refresca grilla
-            LimpiarCampos();              // Limpia entrada
+            controller.Editar(ejercicio); // Llama al controlador para actualizar.
+            RefrescarGrid();              // Refresca grilla.
+            LimpiarCampos();              // Limpia entrada.
         }
 
-        // Botón para eliminar un ejercicio seleccionado
+        /// <summary>
+        /// Botón para eliminar el ejercicio seleccionado.
+        /// </summary>
         private void btnEliminar_Click(object sender, EventArgs e)
         {
-            // Si no hay fila seleccionada, salir
-            if (dgvEjercicios.CurrentRow == null) return;
+            if (dgvEjercicios.CurrentRow == null) return; // Si no hay selección, salir.
 
-            // Toma el ejercicio seleccionado
-            var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
+            var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem; // Obtiene el ejercicio.
 
-            controller.Eliminar(ejercicio.Id); // Lo elimina del controlador
-            RefrescarGrid();                   // Refresca grilla
-            LimpiarCampos();                   // Limpia campos
+            controller.Eliminar(ejercicio.Id); // Lo elimina por su Id.
+            RefrescarGrid();                   // Refresca la grilla.
+            LimpiarCampos();                   // Limpia campos.
         }
 
-        // Evento que se dispara cuando se selecciona una fila diferente
+        /// <summary>
+        /// Evento que se dispara al seleccionar una fila en la grilla.
+        /// Carga los datos del ejercicio en los TextBox.
+        /// </summary>
         private void dgvEjercicios_SelectionChanged(object sender, EventArgs e)
         {
-            // Si no hay fila seleccionada, salir
             if (dgvEjercicios.CurrentRow == null) return;
 
-            // Toma el ejercicio actual y muestra sus datos en los TextBox
             var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
 
             txtNombre.Text = ejercicio.Nombre;
@@ -93,7 +107,9 @@ namespace GymManager.Views
             txtDescripcion.Text = ejercicio.Descripcion;
         }
 
-        // Limpia los campos de texto del formulario
+        /// <summary>
+        /// Limpia los campos de entrada (TextBox).
+        /// </summary>
         private void LimpiarCampos()
         {
             txtNombre.Text = "";
@@ -101,11 +117,16 @@ namespace GymManager.Views
             txtDescripcion.Text = "";
         }
 
+        /// <summary>
+        /// Aplica un texto placeholder a un TextBox
+        /// (se muestra en gris cuando está vacío).
+        /// </summary>
         private void AplicarPlaceholder(TextBox txt, string placeholder)
         {
             txt.ForeColor = Color.Gray;
             txt.Text = placeholder;
 
+            // Evento al enfocar el campo.
             txt.Enter += (s, e) =>
             {
                 if (txt.Text == placeholder)
@@ -115,6 +136,7 @@ namespace GymManager.Views
                 }
             };
 
+            // Evento al salir del campo.
             txt.Leave += (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(txt.Text))
@@ -123,12 +145,6 @@ namespace GymManager.Views
                     txt.ForeColor = Color.Gray;
                 }
             };
-
-
         }
-
-
     }
 }
-
-

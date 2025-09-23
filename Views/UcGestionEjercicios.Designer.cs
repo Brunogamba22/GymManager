@@ -2,20 +2,28 @@
 
 namespace GymManager.Views
 {
+    /// <summary>
+    /// Código autogenerado por el Diseñador.
+    /// Define la interfaz visual: etiquetas, campos de texto,
+    /// botones y la grilla para mostrar ejercicios.
+    /// </summary>
     partial class UcGestionEjercicios
     {
         private System.ComponentModel.IContainer components = null;
 
-        // Declaración de controles
-        private System.Windows.Forms.Label lblTitulo;
-        private System.Windows.Forms.TextBox txtNombre;
-        private System.Windows.Forms.TextBox txtMusculo;
-        private System.Windows.Forms.TextBox txtDescripcion;
-        private System.Windows.Forms.Button btnAgregar;
-        private System.Windows.Forms.Button btnEditar;
-        private System.Windows.Forms.Button btnEliminar;
-        private System.Windows.Forms.DataGridView dgvEjercicios;
+        // Controles de la interfaz.
+        private System.Windows.Forms.Label lblTitulo;        // Título del panel.
+        private System.Windows.Forms.TextBox txtNombre;      // Campo nombre del ejercicio.
+        private System.Windows.Forms.TextBox txtMusculo;     // Campo músculo trabajado.
+        private System.Windows.Forms.TextBox txtDescripcion; // Campo descripción.
+        private System.Windows.Forms.Button btnAgregar;      // Botón agregar ejercicio.
+        private System.Windows.Forms.Button btnEditar;       // Botón editar ejercicio.
+        private System.Windows.Forms.Button btnEliminar;     // Botón eliminar ejercicio.
+        private System.Windows.Forms.DataGridView dgvEjercicios; // Tabla de ejercicios.
 
+        /// <summary>
+        /// Libera recursos utilizados por los componentes.
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -25,8 +33,8 @@ namespace GymManager.Views
             base.Dispose(disposing);
         }
 
-        /// <summary> 
-        /// Diseño de la interfaz visual del UserControl
+        /// <summary>
+        /// Inicializa los controles visuales del UserControl.
         /// </summary>
         private void InitializeComponent()
         {
@@ -43,7 +51,7 @@ namespace GymManager.Views
 
             // 
             // lblTitulo
-            // Título principal del panel
+            // 
             this.lblTitulo.AutoSize = true;
             this.lblTitulo.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.lblTitulo.Location = new System.Drawing.Point(20, 20);
@@ -53,32 +61,30 @@ namespace GymManager.Views
 
             // 
             // txtNombre
-            // Campo para ingresar el nombre del ejercicio
+            // 
             this.txtNombre.Location = new System.Drawing.Point(25, 60);
             this.txtNombre.Name = "txtNombre";
             this.txtNombre.Size = new System.Drawing.Size(200, 20);
-            //this.txtNombre.PlaceholderText = "Nombre del ejercicio";
+            // Placeholder aplicado en el código.
 
             // 
             // txtMusculo
-            // Campo para ingresar el músculo trabajado
+            // 
             this.txtMusculo.Location = new System.Drawing.Point(25, 90);
             this.txtMusculo.Name = "txtMusculo";
             this.txtMusculo.Size = new System.Drawing.Size(200, 20);
-            //this.txtMusculo.PlaceholderText = "Músculo trabajado";
 
             // 
             // txtDescripcion
-            // Campo para ingresar una descripción del ejercicio
+            // 
             this.txtDescripcion.Location = new System.Drawing.Point(25, 120);
             this.txtDescripcion.Multiline = true;
             this.txtDescripcion.Name = "txtDescripcion";
             this.txtDescripcion.Size = new System.Drawing.Size(200, 60);
-            //this.txtDescripcion.PlaceholderText = "Descripción";
 
             // 
             // btnAgregar
-            // Botón para agregar un nuevo ejercicio
+            // 
             this.btnAgregar.Location = new System.Drawing.Point(250, 60);
             this.btnAgregar.Name = "btnAgregar";
             this.btnAgregar.Size = new System.Drawing.Size(100, 25);
@@ -88,7 +94,7 @@ namespace GymManager.Views
 
             // 
             // btnEditar
-            // Botón para editar el ejercicio seleccionado
+            // 
             this.btnEditar.Location = new System.Drawing.Point(250, 90);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(100, 25);
@@ -98,7 +104,7 @@ namespace GymManager.Views
 
             // 
             // btnEliminar
-            // Botón para eliminar el ejercicio seleccionado
+            // 
             this.btnEliminar.Location = new System.Drawing.Point(250, 120);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(100, 25);
@@ -108,21 +114,19 @@ namespace GymManager.Views
 
             // 
             // dgvEjercicios
-            // Tabla que muestra todos los ejercicios
+            // 
             this.dgvEjercicios.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvEjercicios.Location = new System.Drawing.Point(25, 200);
             this.dgvEjercicios.Name = "dgvEjercicios";
             this.dgvEjercicios.Size = new System.Drawing.Size(500, 200);
-            this.dgvEjercicios.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            this.dgvEjercicios.MultiSelect = false;
-            this.dgvEjercicios.ReadOnly = true;
+            this.dgvEjercicios.SelectionMode = DataGridViewSelectionMode.FullRowSelect; // Selección de fila completa.
+            this.dgvEjercicios.MultiSelect = false; // Solo una fila a la vez.
+            this.dgvEjercicios.ReadOnly = true;     // No editable directamente.
             this.dgvEjercicios.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvEjercicios_SelectionChanged);
 
             // 
             // UcGestionEjercicios
-            // Configuración general del UserControl
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            // 
             this.Controls.Add(this.lblTitulo);
             this.Controls.Add(this.txtNombre);
             this.Controls.Add(this.txtMusculo);
