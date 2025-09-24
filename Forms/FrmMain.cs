@@ -18,14 +18,6 @@ namespace GymManager.Forms
             InitializeComponent(); // Inicializa todos los controles del formulario (desde el diseñador)
         }
 
-        // Carga un UserControl en el panel principal (centro de la pantalla)
-        private void CargarContenido(UserControl uc)
-        {
-            panelContenido.Controls.Clear();  // Limpia el contenido anterior
-            uc.Dock = DockStyle.Fill;         // Hace que el nuevo UserControl ocupe todo el espacio
-            panelContenido.Controls.Add(uc);  // Agrega el nuevo UserControl al panel
-        }
-
         // Evento que se ejecuta al cargar el formulario
         private void FrmMain_Load(object sender, EventArgs e)
         {
@@ -37,7 +29,22 @@ namespace GymManager.Forms
                 return;
             }
 
-            // Mensaje de bienvenida en el encabezado
+            // --- Estética del panel lateral ---
+            panelNavbar.BackColor = Color.FromArgb(45, 52, 70); // gris azulado oscuro
+
+            // Logo/título arriba
+            Label lblTitulo = new Label
+            {
+                Text = "🏋️ GymManager",
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Dock = DockStyle.Top,
+                Height = 60,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            panelNavbar.Controls.Add(lblTitulo);
+
+            // Mensaje de bienvenida en el encabezado superior
             lblBienvenida.Text = $"Bienvenido {Sesion.Actual.Nombre} ({Sesion.Actual.Rol})";
 
             // Carga el menú lateral dependiendo del rol
@@ -52,65 +59,50 @@ namespace GymManager.Forms
         {
             panelNavbar.Controls.Clear();  // Limpia el menú anterior
 
-            // Botón "Inicio" (siempre visible)
-            AgregarBotonNav("Inicio", () => MostrarDashboard(rol));
+            // Botón "Inicio" (arriba de todo)
+            AgregarBotonNav("Inicio", () => MostrarDashboard(rol), DockStyle.Top);
 
-            // Si es profesor, muestra opciones relacionadas a rutinas
+            // ---- Opciones según rol ----
             if (rol == Rol.Profesor)
             {
-                AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcProfesorDashboard()));
-
-                AgregarBotonNav("Editar Rutina", () => CargarVista(new Views.UcEditarRutina()));
-                {
-                    // De momento mostramos un placeholder hasta crear el UserControl
-                    //MessageBox.Show("Aquí se cargará la vista de edición de rutinas");
-                    CargarVista(new Views.UcEditarRutina());
-                };
-
-                AgregarBotonNav("Planillas", () => CargarVista(new Views.UcPlanillasRutinas()));
-                {
-                    // Placeholder de planillas
-                    //MessageBox.Show("Aquí se cargará la vista de planillas");
-                    CargarVista(new Views.UcPlanillasRutinas());
-                };
+                AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcProfesorDashboard()), DockStyle.Top);
+                AgregarBotonNav("Editar Rutina", () => CargarVista(new Views.UcEditarRutina()), DockStyle.Top);
+                AgregarBotonNav("Planillas", () => CargarVista(new Views.UcPlanillasRutinas()), DockStyle.Top);
             }
 
-
-            // ---- Administrador ----
             if (rol == Rol.Administrador)
             {
-                AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcAdminDashboard()));
-                AgregarBotonNav("Usuarios", () => CargarVista(new Views.UcGestionUsuarios()));
-                AgregarBotonNav("Reportes", () => CargarVista(new Views.UcReportes()));
+                AgregarBotonNav("Usuarios", () => CargarVista(new Views.UcGestionUsuarios()), DockStyle.Top);
+                AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcAdminDashboard()), DockStyle.Top);
+                AgregarBotonNav("Reportes", () => CargarVista(new Views.UcReportes()), DockStyle.Top);
             }
 
-            // ---- Recepcionista ----
             if (rol == Rol.Recepcionista)
             {
-                AgregarBotonNav("Rutina", () => CargarVista(new Views.UcRecepcionistaDashboard()));
-                AgregarBotonNav("Imprimir rutina", () => MessageBox.Show("Aquí se imprimiría la rutina"));
-                AgregarBotonNav("Exportar", () => MessageBox.Show("Aquí se exportaría la rutina"));
+                AgregarBotonNav("Rutina", () => CargarVista(new Views.UcRecepcionistaDashboard()), DockStyle.Top);
+                AgregarBotonNav("Imprimir rutina", () => MessageBox.Show("Aquí se imprimiría la rutina"), DockStyle.Top);
+                AgregarBotonNav("Exportar", () => MessageBox.Show("Aquí se exportaría la rutina"), DockStyle.Top);
             }
 
-            // ---- Botón para cerrar sesión (siempre visible) ----
+            // ---- Botón "Cerrar sesión" (abajo SIEMPRE) ----
             AgregarBotonNav("Cerrar sesión", () =>
             {
                 Sesion.Cerrar();
                 Application.Restart();
-            });
+            }, DockStyle.Bottom);
         }
 
-        // Crea un botón en el navbar con su acción correspondiente
-        private void AgregarBotonNav(string texto, Action onClick)
+        // Modificado para permitir elegir posición (Top o Bottom)
+        private void AgregarBotonNav(string texto, Action onClick, DockStyle dockPos)
         {
             var btn = new Button
             {
                 Text = texto,
-                Dock = DockStyle.Top,
+                Dock = dockPos,   // ahora podés elegir Top o Bottom
                 Height = 50,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                BackColor = Color.RoyalBlue,
+                BackColor = texto == "Cerrar sesión" ? Color.DarkRed : Color.FromArgb(45, 62, 80),
                 ForeColor = Color.White
             };
 
@@ -120,22 +112,32 @@ namespace GymManager.Forms
             panelNavbar.Controls.Add(btn);
         }
 
-        // Muestra el dashboard principal según el rol
+
         private void MostrarDashboard(Rol rol)
         {
-            switch (rol)
+            panelContenido.Controls.Clear();
+
+            Label lbl = new Label
             {
-                case Rol.Administrador:
-                    CargarVista(new Views.UcAdminDashboard());
-                    break;
-                case Rol.Profesor:
-                    CargarVista(new Views.UcProfesorDashboard());
-                    break;
-                case Rol.Recepcionista:
-                    CargarVista(new Views.UcRecepcionistaDashboard());
-                    break;
-            }
+                Text = $"Bienvenido {Sesion.Actual.Nombre}, seleccioná una opción del menú.",
+                Dock = DockStyle.Top,
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                ForeColor = Color.DimGray,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Height = 60
+            };
+
+            PictureBox logo = new PictureBox
+            {
+                Image = Properties.Resources.Logo_gymM13, // agregá una imagen a Resources
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Dock = DockStyle.Fill
+            };
+
+            panelContenido.Controls.Add(logo);
+            panelContenido.Controls.Add(lbl);
         }
+
 
         // Carga una vista (UserControl) en el panel principal
         private void CargarVista(UserControl vista)

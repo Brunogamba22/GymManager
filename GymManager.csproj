@@ -201,6 +201,10 @@
     <Content Include="Resources\1026713.png" />
     <Content Include="Resources\11438089.png" />
     <Content Include="Resources\ChatGPT Image 8 sept 2025, 18_03_32.png" />
+    <None Include="Resources\Logo-gymM13.png" />
+    <None Include="Resources\Logo-gymM12.png" />
+    <None Include="Resources\Logo-gymM10.png" />
+    <None Include="Resources\LogoInicio.bmp" />
     <None Include="Resources\logo-contraseña.png" />
     <None Include="Resources\logo-usuario.png" />
   </ItemGroup>

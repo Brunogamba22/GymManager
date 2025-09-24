@@ -103,6 +103,26 @@ namespace GymManager.Properties {
         /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Logo_gymM12 {
+            get {
+                object obj = ResourceManager.GetObject("Logo_gymM12", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Logo_gymM13 {
+            get {
+                object obj = ResourceManager.GetObject("Logo_gymM13", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca un recurso adaptado de tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap logo_usuario {
             get {
                 object obj = ResourceManager.GetObject("logo-usuario", resourceCulture);
