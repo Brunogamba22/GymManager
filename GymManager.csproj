@@ -114,11 +114,11 @@
     <Compile Include="Views\UcPlanillasRutinas.Designer.cs">
       <DependentUpon>UcPlanillasRutinas.cs</DependentUpon>
     </Compile>
-    <Compile Include="Views\UcProfesorDashboard.cs">
+    <Compile Include="Views\UcGenerarRutinas.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Views\UcProfesorDashboard.Designer.cs">
-      <DependentUpon>UcProfesorDashboard.cs</DependentUpon>
+    <Compile Include="Views\UcGenerarRutinas.Designer.cs">
+      <DependentUpon>UcGenerarRutinas.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\UcRecepcionistaDashboard.cs">
       <SubType>UserControl</SubType>
@@ -169,8 +169,8 @@
     <EmbeddedResource Include="Views\UcPlanillasRutinas.resx">
       <DependentUpon>UcPlanillasRutinas.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\UcProfesorDashboard.resx">
-      <DependentUpon>UcProfesorDashboard.cs</DependentUpon>
+    <EmbeddedResource Include="Views\UcGenerarRutinas.resx">
+      <DependentUpon>UcGenerarRutinas.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\UcReportes.resx">
       <DependentUpon>UcReportes.cs</DependentUpon>

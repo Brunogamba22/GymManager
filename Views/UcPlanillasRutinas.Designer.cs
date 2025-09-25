@@ -1,85 +1,162 @@
-﻿namespace GymManager.Views
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace GymManager.Views
 {
     partial class UcPlanillasRutinas
     {
         private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.DataGridView dgvPlanillas;
-        private System.Windows.Forms.Button btnExportar;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colNombre;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colProfesor;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colFecha;
+
+        private Panel mainPanel;
+        private Panel headerPanel;
+        private Panel contentPanel;
+        private SplitContainer splitContainer;
+        private DataGridView dgvPlanillas;
+        private Panel panelDetalles;
+        private Button btnExportar;
+        private Label lblTitulo;
+        private Label lblDescripcion;
+
+        // Columnas del DataGridView
+        private DataGridViewTextBoxColumn colNombre;
+        private DataGridViewTextBoxColumn colProfesor;
+        private DataGridViewTextBoxColumn colFecha;
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null)) components.Dispose();
+            if (disposing && (components != null))
+                components.Dispose();
             base.Dispose(disposing);
         }
 
         private void InitializeComponent()
         {
-            this.dgvPlanillas = new System.Windows.Forms.DataGridView();
-            this.colNombre = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colProfesor = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colFecha = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.btnExportar = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPlanillas)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // dgvPlanillas
-            // 
-            this.dgvPlanillas.AllowUserToAddRows = false;
-            this.dgvPlanillas.AllowUserToDeleteRows = false;
-            this.dgvPlanillas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvPlanillas.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colNombre,
-            this.colProfesor,
-            this.colFecha});
-            this.dgvPlanillas.Dock = System.Windows.Forms.DockStyle.Top;
-            this.dgvPlanillas.Location = new System.Drawing.Point(0, 0);
-            this.dgvPlanillas.MultiSelect = false;
-            this.dgvPlanillas.Name = "dgvPlanillas";
-            this.dgvPlanillas.ReadOnly = true;
-            this.dgvPlanillas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvPlanillas.Size = new System.Drawing.Size(927, 300);
-            this.dgvPlanillas.TabIndex = 0;
-            // 
-            // colNombre
-            // 
-            this.colNombre.HeaderText = "Nombre de la Rutina";
-            this.colNombre.Name = "colNombre";
-            this.colNombre.ReadOnly = true;
-            // 
-            // colProfesor
-            // 
-            this.colProfesor.HeaderText = "Profesor";
-            this.colProfesor.Name = "colProfesor";
-            this.colProfesor.ReadOnly = true;
-            // 
-            // colFecha
-            // 
-            this.colFecha.HeaderText = "Fecha Creación";
-            this.colFecha.Name = "colFecha";
-            this.colFecha.ReadOnly = true;
-            // 
-            // btnExportar
-            // 
-            this.btnExportar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnExportar.Location = new System.Drawing.Point(0, 473);
-            this.btnExportar.Name = "btnExportar";
-            this.btnExportar.Size = new System.Drawing.Size(927, 40);
-            this.btnExportar.TabIndex = 1;
-            this.btnExportar.Text = "Exportar Rutina";
-            this.btnExportar.Click += new System.EventHandler(this.btnExportar_Click);
-            // 
-            // UcPlanillasRutinas
-            // 
-            this.Controls.Add(this.dgvPlanillas);
-            this.Controls.Add(this.btnExportar);
-            this.Name = "UcPlanillasRutinas";
-            this.Size = new System.Drawing.Size(927, 513);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvPlanillas)).EndInit();
-            this.ResumeLayout(false);
+            this.mainPanel = new Panel();
+            this.headerPanel = new Panel();
+            this.contentPanel = new Panel();
+            this.splitContainer = new SplitContainer();
+            this.dgvPlanillas = new DataGridView();
+            this.panelDetalles = new Panel();
+            this.btnExportar = new Button();
+            this.lblTitulo = new Label();
+            this.lblDescripcion = new Label();
 
+            this.SuspendLayout();
+            this.Size = new Size(1000, 700);
+
+            // Main Panel
+            this.mainPanel.Dock = DockStyle.Fill;
+            this.mainPanel.BackColor = Color.FromArgb(248, 249, 250);
+            this.mainPanel.Padding = new Padding(20);
+
+            // Header Panel
+            this.headerPanel.Dock = DockStyle.Top;
+            this.headerPanel.Height = 100;
+            this.headerPanel.BackColor = Color.White;
+            this.headerPanel.Padding = new Padding(25, 15, 25, 15);
+
+            // Content Panel
+            this.contentPanel.Dock = DockStyle.Fill;
+            this.contentPanel.BackColor = Color.Transparent;
+
+            // Split Container
+            this.splitContainer.Dock = DockStyle.Fill;
+            this.splitContainer.Orientation = Orientation.Horizontal;
+            this.splitContainer.SplitterDistance = 250; // Altura de la lista
+            this.splitContainer.SplitterWidth = 8;
+            this.splitContainer.Panel1.BackColor = Color.Transparent;
+            this.splitContainer.Panel2.BackColor = Color.Transparent;
+
+            // DataGridView
+            this.dgvPlanillas.Dock = DockStyle.Fill;
+            this.dgvPlanillas.Margin = new Padding(0, 10, 0, 0);
+
+            // Panel de Detalles
+            this.panelDetalles.Dock = DockStyle.Fill;
+            this.panelDetalles.AutoScroll = true;
+            this.panelDetalles.Padding = new Padding(10);
+
+            // Botón Exportar
+            this.btnExportar.Text = "📤 EXPORTAR PLANILLA";
+            this.btnExportar.Size = new Size(180, 45);
+            this.btnExportar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+            // Título
+            this.lblTitulo.Text = "📊 HISTORIAL DE PLANILLAS";
+            this.lblTitulo.Dock = DockStyle.Top;
+            this.lblTitulo.Height = 40;
+            this.lblTitulo.Font = new Font("Segoe UI", 16, FontStyle.Bold);
+            this.lblTitulo.ForeColor = Color.FromArgb(46, 134, 171);
+            this.lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
+
+            // Descripción
+            this.lblDescripcion.Text = "Selecciona una planilla para ver los detalles completos de las rutinas generadas.";
+            this.lblDescripcion.Dock = DockStyle.Top;
+            this.lblDescripcion.Height = 30;
+            this.lblDescripcion.Font = new Font("Segoe UI", 9.5f);
+            this.lblDescripcion.ForeColor = Color.FromArgb(100, 100, 100);
+            this.lblDescripcion.TextAlign = ContentAlignment.MiddleLeft;
+
+            // Configurar columnas del DataGridView
+            this.colNombre = new DataGridViewTextBoxColumn();
+            this.colNombre.HeaderText = "NOMBRE DE LA RUTINA";
+            this.colNombre.Name = "colNombre";
+            this.colNombre.FillWeight = 40;
+
+            this.colProfesor = new DataGridViewTextBoxColumn();
+            this.colProfesor.HeaderText = "PROFESOR";
+            this.colProfesor.Name = "colProfesor";
+            this.colProfesor.FillWeight = 30;
+
+            this.colFecha = new DataGridViewTextBoxColumn();
+            this.colFecha.HeaderText = "FECHA CREACIÓN";
+            this.colFecha.Name = "colFecha";
+            this.colFecha.FillWeight = 30;
+
+            this.dgvPlanillas.Columns.AddRange(new DataGridViewColumn[] {
+                this.colNombre,
+                this.colProfesor,
+                this.colFecha
+            });
+
+            // Agregar controles a los paneles
+            this.headerPanel.Controls.Add(lblDescripcion);
+            this.headerPanel.Controls.Add(lblTitulo);
+
+            var panelLista = new Panel();
+            panelLista.Dock = DockStyle.Fill;
+            panelLista.Padding = new Padding(0, 10, 0, 0);
+            panelLista.Controls.Add(dgvPlanillas);
+
+            this.splitContainer.Panel1.Controls.Add(panelLista);
+            this.splitContainer.Panel2.Controls.Add(panelDetalles);
+
+            var panelContentWithButton = new Panel();
+            panelContentWithButton.Dock = DockStyle.Fill;
+            panelContentWithButton.Controls.Add(splitContainer);
+            panelContentWithButton.Controls.Add(btnExportar);
+
+            this.contentPanel.Controls.Add(panelContentWithButton);
+
+            this.mainPanel.Controls.Add(contentPanel);
+            this.mainPanel.Controls.Add(headerPanel);
+
+            this.Controls.Add(mainPanel);
+
+            // Eventos
+            this.btnExportar.Click += new EventHandler(btnExportar_Click);
+
+            // Aplicar estilos después de la inicialización
+            this.Load += (sender, e) => {
+                StyleButton(btnExportar, successColor);
+                btnExportar.Location = new Point(
+                    panelContentWithButton.Width - btnExportar.Width - 20,
+                    panelContentWithButton.Height - btnExportar.Height - 20
+                );
+            };
+
+            this.ResumeLayout(false);
         }
     }
 }

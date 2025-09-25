@@ -65,7 +65,7 @@ namespace GymManager.Forms
             // ---- Opciones según rol ----
             if (rol == Rol.Profesor)
             {
-                AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcProfesorDashboard()), DockStyle.Top);
+                AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcGenerarRutinas()), DockStyle.Top);
                 AgregarBotonNav("Editar Rutina", () => CargarVista(new Views.UcEditarRutina()), DockStyle.Top);
                 AgregarBotonNav("Planillas", () => CargarVista(new Views.UcPlanillasRutinas()), DockStyle.Top);
             }
