@@ -117,6 +117,18 @@ namespace GymManager.Views
             txtDescripcion.Text = "";
         }
 
+        private void txtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            var lista = controller.ObtenerTodos();
+            var filtrados = lista.FindAll(x =>
+                x.Nombre.IndexOf(txtBuscar.Text, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                x.Musculo.IndexOf(txtBuscar.Text, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            dgvEjercicios.DataSource = null;
+            dgvEjercicios.DataSource = filtrados;
+        }
+
+
         /// <summary>
         /// Aplica un texto placeholder a un TextBox
         /// (se muestra en gris cuando está vacío).

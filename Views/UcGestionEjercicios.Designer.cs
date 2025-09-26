@@ -20,6 +20,8 @@ namespace GymManager.Views
         private System.Windows.Forms.Button btnEditar;       // Botón editar ejercicio.
         private System.Windows.Forms.Button btnEliminar;     // Botón eliminar ejercicio.
         private System.Windows.Forms.DataGridView dgvEjercicios; // Tabla de ejercicios.
+        private System.Windows.Forms.TextBox txtBuscar;// buscador
+
 
         /// <summary>
         /// Libera recursos utilizados por los componentes.
@@ -113,6 +115,9 @@ namespace GymManager.Views
             // 
             // dgvEjercicios
             // 
+            this.dgvEjercicios.Anchor = ((AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right));
+            this.dgvEjercicios.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvEjercicios.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dgvEjercicios.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvEjercicios.Location = new System.Drawing.Point(25, 200);
             this.dgvEjercicios.MultiSelect = false;
@@ -133,11 +138,23 @@ namespace GymManager.Views
             this.Controls.Add(this.btnEditar);
             this.Controls.Add(this.btnEliminar);
             this.Controls.Add(this.dgvEjercicios);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Name = "UcGestionEjercicios";
             this.Size = new System.Drawing.Size(600, 536);
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
+            //buscar
+            // txtBuscar
+            this.txtBuscar = new System.Windows.Forms.TextBox();
+            this.txtBuscar.Location = new System.Drawing.Point(25, 170);
+            this.txtBuscar.Name = "txtBuscar";
+            this.txtBuscar.Size = new System.Drawing.Size(200, 20);
+            this.txtBuscar.TabIndex = 8;
+  
+            this.txtBuscar.TextChanged += new System.EventHandler(this.txtBuscar_TextChanged);
+
 
         }
     }

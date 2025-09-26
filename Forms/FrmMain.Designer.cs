@@ -38,12 +38,12 @@
             // 
             // panelHeader
             // 
-            this.panelHeader.BackColor = System.Drawing.SystemColors.MenuHighlight;
+            this.panelHeader.BackColor = System.Drawing.Color.FromArgb(45, 120, 220); // Azul moderno
             this.panelHeader.Controls.Add(this.lblBienvenida);
             this.panelHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelHeader.Location = new System.Drawing.Point(0, 0);
             this.panelHeader.Name = "panelHeader";
-            this.panelHeader.Size = new System.Drawing.Size(800, 60);
+            this.panelHeader.Size = new System.Drawing.Size(1200, 60);
             this.panelHeader.TabIndex = 0;
             // 
             // lblBienvenida
