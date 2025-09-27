@@ -200,8 +200,8 @@ namespace GymManager.Views
 
             btnLimpiar.FlatStyle = FlatStyle.Flat;
             btnLimpiar.UseVisualStyleBackColor = false;
-            btnLimpiar.BackColor = Color.LightGray; // gris clarito
-            btnLimpiar.ForeColor = Color.Black;
+            btnLimpiar.BackColor = Color.RoyalBlue; // azul
+            btnLimpiar.ForeColor = Color.White;
         }
     }
 }

@@ -18,7 +18,9 @@ namespace GymManager.Views
         {
             InitializeComponent();
             CargarUsuarios();
+            FormatearGrid();
             ConfigurarPlaceholder();
+            EstilizarBotones(); // estilo de colores
         }
 
         private List<Usuario> usuariosCache;
@@ -34,6 +36,25 @@ namespace GymManager.Views
             if (dgvUsuarios.Columns["Password"] != null)
                 dgvUsuarios.Columns["Password"].Visible = false;
         }
+
+        private void FormatearGrid()
+        {
+            if (dgvUsuarios.Columns["Id"] != null)
+                dgvUsuarios.Columns["Id"].HeaderText = "ID Usuario";
+            if (dgvUsuarios.Columns["Nombre"] != null)
+                dgvUsuarios.Columns["Nombre"].HeaderText = "Nombre";
+            if (dgvUsuarios.Columns["Apellido"] != null)
+                dgvUsuarios.Columns["Apellido"].HeaderText = "Apellido";
+            if (dgvUsuarios.Columns["Email"] != null)
+                dgvUsuarios.Columns["Email"].HeaderText = "Correo Electrónico";
+            if (dgvUsuarios.Columns["Rol"] != null)
+                dgvUsuarios.Columns["Rol"].HeaderText = "Rol de Usuario";
+
+            // Alternar colores de filas
+            dgvUsuarios.AlternatingRowsDefaultCellStyle.BackColor = Color.LightGray;
+        }
+
+
 
         private void LimpiarCampos()
         {
@@ -217,6 +238,32 @@ namespace GymManager.Views
             };
         }
 
+        private void EstilizarBotones()
+        {
+            btnAgregar.FlatStyle = FlatStyle.Flat;
+            btnAgregar.UseVisualStyleBackColor = false;
+            btnAgregar.BackColor = Color.FromArgb(46, 204, 113); // verde
+            btnAgregar.ForeColor = Color.White;
 
+            btnEditar.FlatStyle = FlatStyle.Flat;
+            btnEditar.UseVisualStyleBackColor = false;
+            btnEditar.BackColor = Color.Gold; // amarillo
+            btnEditar.ForeColor = Color.Black;
+
+            btnEliminar.FlatStyle = FlatStyle.Flat;
+            btnEliminar.UseVisualStyleBackColor = false;
+            btnEliminar.BackColor = Color.FromArgb(231, 76, 60); // rojo
+            btnEliminar.ForeColor = Color.White;
+
+            btnLimpiar.FlatStyle = FlatStyle.Flat;
+            btnLimpiar.UseVisualStyleBackColor = false;
+            btnLimpiar.BackColor = Color.RoyalBlue; // azul
+            btnLimpiar.ForeColor = Color.White;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

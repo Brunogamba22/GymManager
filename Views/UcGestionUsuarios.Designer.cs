@@ -1,4 +1,6 @@
-﻿namespace GymManager.Views
+﻿using System.Windows.Forms;
+
+namespace GymManager.Views
 {
     partial class UcGestionUsuarios
     {
@@ -52,33 +54,34 @@
             this.txtBuscar = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnLimpiar = new System.Windows.Forms.Button();
+            this.lblTitulo = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).BeginInit();
             this.SuspendLayout();
             // 
             // txtNombre
             // 
-            this.txtNombre.Location = new System.Drawing.Point(100, 20);
+            this.txtNombre.Location = new System.Drawing.Point(103, 74);
             this.txtNombre.Name = "txtNombre";
             this.txtNombre.Size = new System.Drawing.Size(200, 20);
             this.txtNombre.TabIndex = 1;
             // 
             // txtApellido
             // 
-            this.txtApellido.Location = new System.Drawing.Point(100, 50);
+            this.txtApellido.Location = new System.Drawing.Point(103, 104);
             this.txtApellido.Name = "txtApellido";
             this.txtApellido.Size = new System.Drawing.Size(200, 20);
             this.txtApellido.TabIndex = 2;
             // 
             // txtEmail
             // 
-            this.txtEmail.Location = new System.Drawing.Point(100, 80);
+            this.txtEmail.Location = new System.Drawing.Point(103, 134);
             this.txtEmail.Name = "txtEmail";
             this.txtEmail.Size = new System.Drawing.Size(200, 20);
             this.txtEmail.TabIndex = 3;
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(100, 110);
+            this.txtPassword.Location = new System.Drawing.Point(103, 164);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(200, 20);
@@ -91,14 +94,14 @@
             "Administrador",
             "Profesor",
             "Recepcionista"});
-            this.cmbRol.Location = new System.Drawing.Point(100, 140);
+            this.cmbRol.Location = new System.Drawing.Point(103, 194);
             this.cmbRol.Name = "cmbRol";
             this.cmbRol.Size = new System.Drawing.Size(200, 21);
             this.cmbRol.TabIndex = 5;
             // 
             // btnAgregar
             // 
-            this.btnAgregar.Location = new System.Drawing.Point(330, 20);
+            this.btnAgregar.Location = new System.Drawing.Point(333, 74);
             this.btnAgregar.Name = "btnAgregar";
             this.btnAgregar.Size = new System.Drawing.Size(75, 23);
             this.btnAgregar.TabIndex = 6;
@@ -107,7 +110,7 @@
             // 
             // btnEditar
             // 
-            this.btnEditar.Location = new System.Drawing.Point(330, 60);
+            this.btnEditar.Location = new System.Drawing.Point(333, 114);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(75, 23);
             this.btnEditar.TabIndex = 7;
@@ -116,7 +119,7 @@
             // 
             // btnEliminar
             // 
-            this.btnEliminar.Location = new System.Drawing.Point(330, 140);
+            this.btnEliminar.Location = new System.Drawing.Point(333, 194);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(75, 23);
             this.btnEliminar.TabIndex = 8;
@@ -132,17 +135,17 @@
             this.dgvUsuarios.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvUsuarios.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dgvUsuarios.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvUsuarios.Location = new System.Drawing.Point(23, 216);
+            this.dgvUsuarios.Location = new System.Drawing.Point(26, 266);
             this.dgvUsuarios.Name = "dgvUsuarios";
             this.dgvUsuarios.ReadOnly = true;
             this.dgvUsuarios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvUsuarios.Size = new System.Drawing.Size(450, 250);
+            this.dgvUsuarios.Size = new System.Drawing.Size(400, 250);
             this.dgvUsuarios.TabIndex = 9;
             this.dgvUsuarios.SelectionChanged += new System.EventHandler(this.dgvUsuarios_SelectionChanged);
             // 
             // lblNombre
             // 
-            this.lblNombre.Location = new System.Drawing.Point(20, 20);
+            this.lblNombre.Location = new System.Drawing.Point(23, 74);
             this.lblNombre.Name = "lblNombre";
             this.lblNombre.Size = new System.Drawing.Size(74, 23);
             this.lblNombre.TabIndex = 0;
@@ -150,7 +153,7 @@
             // 
             // lblApellido
             // 
-            this.lblApellido.Location = new System.Drawing.Point(20, 50);
+            this.lblApellido.Location = new System.Drawing.Point(23, 104);
             this.lblApellido.Name = "lblApellido";
             this.lblApellido.Size = new System.Drawing.Size(74, 23);
             this.lblApellido.TabIndex = 10;
@@ -158,7 +161,7 @@
             // 
             // lblEmail
             // 
-            this.lblEmail.Location = new System.Drawing.Point(20, 80);
+            this.lblEmail.Location = new System.Drawing.Point(23, 134);
             this.lblEmail.Name = "lblEmail";
             this.lblEmail.Size = new System.Drawing.Size(60, 23);
             this.lblEmail.TabIndex = 11;
@@ -166,7 +169,7 @@
             // 
             // lblPassword
             // 
-            this.lblPassword.Location = new System.Drawing.Point(20, 110);
+            this.lblPassword.Location = new System.Drawing.Point(23, 164);
             this.lblPassword.Name = "lblPassword";
             this.lblPassword.Size = new System.Drawing.Size(74, 23);
             this.lblPassword.TabIndex = 12;
@@ -174,7 +177,7 @@
             // 
             // lblRol
             // 
-            this.lblRol.Location = new System.Drawing.Point(20, 140);
+            this.lblRol.Location = new System.Drawing.Point(23, 194);
             this.lblRol.Name = "lblRol";
             this.lblRol.Size = new System.Drawing.Size(60, 23);
             this.lblRol.TabIndex = 13;
@@ -182,7 +185,7 @@
             // 
             // txtBuscar
             // 
-            this.txtBuscar.Location = new System.Drawing.Point(66, 190);
+            this.txtBuscar.Location = new System.Drawing.Point(75, 240);
             this.txtBuscar.Name = "txtBuscar";
             this.txtBuscar.Size = new System.Drawing.Size(130, 20);
             this.txtBuscar.TabIndex = 14;
@@ -191,15 +194,16 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(20, 193);
+            this.label1.Location = new System.Drawing.Point(23, 243);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(40, 13);
+            this.label1.Size = new System.Drawing.Size(46, 13);
             this.label1.TabIndex = 15;
-            this.label1.Text = "Buscar";
+            this.label1.Text = "Buscar :";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // btnLimpiar
             // 
-            this.btnLimpiar.Location = new System.Drawing.Point(330, 105);
+            this.btnLimpiar.Location = new System.Drawing.Point(333, 159);
             this.btnLimpiar.Name = "btnLimpiar";
             this.btnLimpiar.Size = new System.Drawing.Size(75, 23);
             this.btnLimpiar.TabIndex = 9;
@@ -207,9 +211,20 @@
             this.btnLimpiar.UseVisualStyleBackColor = true;
             this.btnLimpiar.Click += new System.EventHandler(this.btnLimpiar_Click);
             // 
+            // lblTitulo
+            // 
+            this.lblTitulo.AutoSize = true;
+            this.lblTitulo.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTitulo.Location = new System.Drawing.Point(25, 27);
+            this.lblTitulo.Name = "lblTitulo";
+            this.lblTitulo.Size = new System.Drawing.Size(216, 25);
+            this.lblTitulo.TabIndex = 16;
+            this.lblTitulo.Text = "👥 Gestión de Usuarios";
+            // 
             // UcGestionUsuarios
             // 
             this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.lblTitulo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lblNombre);
             this.Controls.Add(this.txtNombre);
@@ -227,8 +242,9 @@
             this.Controls.Add(this.dgvUsuarios);
             this.Controls.Add(this.txtBuscar);
             this.Controls.Add(this.btnLimpiar);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Name = "UcGestionUsuarios";
-            this.Size = new System.Drawing.Size(700, 486);
+            this.Size = new System.Drawing.Size(600, 536);
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -236,5 +252,6 @@
         }
 
         private System.Windows.Forms.Label label1;
+        private Label lblTitulo;
     }
 }
