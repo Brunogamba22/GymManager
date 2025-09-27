@@ -159,7 +159,7 @@ namespace GymManager.Views
             };
         }
 
-        // ✅ Inicializa el combo con placeholder
+        //  Inicializa el combo con placeholder
         private void ConfigurarComboMusculos()
         {
             cmbMusculo.Items.Clear();
@@ -180,7 +180,7 @@ namespace GymManager.Views
             };
         }
 
-        // ✅ Colores de los botones
+        // Colores de los botones
         private void EstilizarBotones()
         {
             btnAgregar.FlatStyle = FlatStyle.Flat;
