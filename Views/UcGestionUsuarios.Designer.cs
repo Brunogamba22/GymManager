@@ -19,6 +19,10 @@
         private System.Windows.Forms.Label lblEmail;
         private System.Windows.Forms.Label lblPassword;
         private System.Windows.Forms.Label lblRol;
+        private System.Windows.Forms.TextBox txtBuscar;
+        private System.Windows.Forms.Button btnLimpiar;
+
+
 
         protected override void Dispose(bool disposing)
         {
@@ -45,6 +49,8 @@
             this.lblEmail = new System.Windows.Forms.Label();
             this.lblPassword = new System.Windows.Forms.Label();
             this.lblRol = new System.Windows.Forms.Label();
+            this.txtBuscar = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).BeginInit();
             this.SuspendLayout();
             // 
@@ -124,7 +130,7 @@
             this.dgvUsuarios.Name = "dgvUsuarios";
             this.dgvUsuarios.ReadOnly = true;
             this.dgvUsuarios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvUsuarios.Size = new System.Drawing.Size(650, 180);
+            this.dgvUsuarios.Size = new System.Drawing.Size(650, 268);
             this.dgvUsuarios.TabIndex = 9;
             this.dgvUsuarios.SelectionChanged += new System.EventHandler(this.dgvUsuarios_SelectionChanged);
             // 
@@ -168,9 +174,38 @@
             this.lblRol.TabIndex = 13;
             this.lblRol.Text = "Rol:";
             // 
+            // txtBuscar
+            // 
+            this.txtBuscar.Location = new System.Drawing.Point(470, 174);
+            this.txtBuscar.Name = "txtBuscar";
+            this.txtBuscar.Size = new System.Drawing.Size(200, 20);
+            this.txtBuscar.TabIndex = 14;
+            this.txtBuscar.TextChanged += new System.EventHandler(this.txtBuscar_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(424, 177);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(40, 13);
+            this.label1.TabIndex = 15;
+            this.label1.Text = "Buscar";
+            // 
+            //
+            // btnLimpiar
+            this.btnLimpiar = new System.Windows.Forms.Button();
+            this.btnLimpiar.Location = new System.Drawing.Point(330, 140); // debajo de Eliminar
+            this.btnLimpiar.Name = "btnLimpiar";
+            this.btnLimpiar.Size = new System.Drawing.Size(75, 23);
+            this.btnLimpiar.TabIndex = 9;
+            this.btnLimpiar.Text = "Limpiar";
+            this.btnLimpiar.UseVisualStyleBackColor = true;
+            this.btnLimpiar.Click += new System.EventHandler(this.btnLimpiar_Click);
+
             // UcGestionUsuarios
             // 
             this.BackColor = System.Drawing.Color.White;
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lblNombre);
             this.Controls.Add(this.txtNombre);
             this.Controls.Add(this.lblApellido);
@@ -185,11 +220,16 @@
             this.Controls.Add(this.btnEditar);
             this.Controls.Add(this.btnEliminar);
             this.Controls.Add(this.dgvUsuarios);
+            this.Controls.Add(this.txtBuscar);
+            this.Controls.Add(this.btnLimpiar);
             this.Name = "UcGestionUsuarios";
-            this.Size = new System.Drawing.Size(700, 400);
+            this.Size = new System.Drawing.Size(700, 486);
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
+
+        private System.Windows.Forms.Label label1;
     }
 }

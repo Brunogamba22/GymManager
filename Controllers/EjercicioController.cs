@@ -52,9 +52,10 @@ namespace GymManager.Controllers
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@n", e.Nombre);
-                    cmd.Parameters.AddWithValue("@m", e.Musculo);
-                    cmd.Parameters.AddWithValue("@d", e.Descripcion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@n", e.Nombre ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@m", string.IsNullOrEmpty(e.Musculo) ? (object)DBNull.Value : e.Musculo);
+                    cmd.Parameters.AddWithValue("@d", string.IsNullOrEmpty(e.Descripcion) ? (object)DBNull.Value : e.Descripcion);
+
 
                     cmd.ExecuteNonQuery();
                 }

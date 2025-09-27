@@ -2,30 +2,27 @@
 
 namespace GymManager.Views
 {
-    /// <summary>
-    /// Código autogenerado por el Diseñador.
-    /// Define la interfaz visual: etiquetas, campos de texto,
-    /// botones y la grilla para mostrar ejercicios.
-    /// </summary>
     partial class UcGestionEjercicios
     {
         private System.ComponentModel.IContainer components = null;
 
         // Controles de la interfaz.
-        private System.Windows.Forms.Label lblTitulo;        // Título del panel.
-        private System.Windows.Forms.TextBox txtNombre;      // Campo nombre del ejercicio.
-        private System.Windows.Forms.TextBox txtMusculo;     // Campo músculo trabajado.
-        private System.Windows.Forms.TextBox txtDescripcion; // Campo descripción.
-        private System.Windows.Forms.Button btnAgregar;      // Botón agregar ejercicio.
-        private System.Windows.Forms.Button btnEditar;       // Botón editar ejercicio.
-        private System.Windows.Forms.Button btnEliminar;     // Botón eliminar ejercicio.
-        private System.Windows.Forms.DataGridView dgvEjercicios; // Tabla de ejercicios.
-        private System.Windows.Forms.TextBox txtBuscar;// buscador
+        private System.Windows.Forms.Label lblTitulo;
+        private System.Windows.Forms.TextBox txtNombre;
+        private System.Windows.Forms.TextBox txtDescripcion;
+        private System.Windows.Forms.Button btnAgregar;
+        private System.Windows.Forms.Button btnEditar;
+        private System.Windows.Forms.Button btnEliminar;
+        private System.Windows.Forms.DataGridView dgvEjercicios;
+        private System.Windows.Forms.TextBox txtBuscar;
+        private Label label1;
+        private System.Windows.Forms.Button btnLimpiar;
+
+        private ComboBox cmbMusculo; //  ahora sí, único control para músculos
+   
+        
 
 
-        /// <summary>
-        /// Libera recursos utilizados por los componentes.
-        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -35,19 +32,19 @@ namespace GymManager.Views
             base.Dispose(disposing);
         }
 
-        /// <summary>
-        /// Inicializa los controles visuales del UserControl.
-        /// </summary>
         private void InitializeComponent()
         {
             this.lblTitulo = new System.Windows.Forms.Label();
             this.txtNombre = new System.Windows.Forms.TextBox();
-            this.txtMusculo = new System.Windows.Forms.TextBox();
             this.txtDescripcion = new System.Windows.Forms.TextBox();
             this.btnAgregar = new System.Windows.Forms.Button();
             this.btnEditar = new System.Windows.Forms.Button();
             this.btnEliminar = new System.Windows.Forms.Button();
             this.dgvEjercicios = new System.Windows.Forms.DataGridView();
+            this.cmbMusculo = new System.Windows.Forms.ComboBox();
+            this.txtBuscar = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).BeginInit();
             this.SuspendLayout();
             // 
@@ -67,13 +64,6 @@ namespace GymManager.Views
             this.txtNombre.Name = "txtNombre";
             this.txtNombre.Size = new System.Drawing.Size(200, 20);
             this.txtNombre.TabIndex = 1;
-            // 
-            // txtMusculo
-            // 
-            this.txtMusculo.Location = new System.Drawing.Point(25, 90);
-            this.txtMusculo.Name = "txtMusculo";
-            this.txtMusculo.Size = new System.Drawing.Size(200, 20);
-            this.txtMusculo.TabIndex = 2;
             // 
             // txtDescripcion
             // 
@@ -105,7 +95,7 @@ namespace GymManager.Views
             // 
             // btnEliminar
             // 
-            this.btnEliminar.Location = new System.Drawing.Point(250, 120);
+            this.btnEliminar.Location = new System.Drawing.Point(250, 155);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(100, 25);
             this.btnEliminar.TabIndex = 6;
@@ -115,29 +105,84 @@ namespace GymManager.Views
             // 
             // dgvEjercicios
             // 
-            this.dgvEjercicios.Anchor = ((AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right));
+            this.dgvEjercicios.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dgvEjercicios.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvEjercicios.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dgvEjercicios.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvEjercicios.Location = new System.Drawing.Point(25, 200);
+            this.dgvEjercicios.Location = new System.Drawing.Point(25, 240);
             this.dgvEjercicios.MultiSelect = false;
             this.dgvEjercicios.Name = "dgvEjercicios";
             this.dgvEjercicios.ReadOnly = true;
             this.dgvEjercicios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvEjercicios.Size = new System.Drawing.Size(500, 333);
+            this.dgvEjercicios.Size = new System.Drawing.Size(450, 250);
             this.dgvEjercicios.TabIndex = 7;
             this.dgvEjercicios.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvEjercicios_SelectionChanged);
             // 
+            // cmbMusculo
+            // 
+            this.cmbMusculo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbMusculo.Items.AddRange(new object[] {
+            "Seleccione un músculo",
+            "Pecho",
+            "Espalda",
+            "Hombros",
+            "Brazos",
+            "Cuádriceps",
+            "Isquiotibiales",
+            "Glúteos",
+            "Pantorrillas",
+            "Abdomen"});
+            this.cmbMusculo.Location = new System.Drawing.Point(25, 90);
+            this.cmbMusculo.Name = "cmbMusculo";
+            this.cmbMusculo.Size = new System.Drawing.Size(200, 21);
+            this.cmbMusculo.TabIndex = 2;
+            // 
+            // txtBuscar
+            // 
+            this.txtBuscar.Location = new System.Drawing.Point(68, 209);
+            this.txtBuscar.Name = "txtBuscar";
+            this.txtBuscar.Size = new System.Drawing.Size(164, 20);
+            this.txtBuscar.TabIndex = 8;
+            this.txtBuscar.TextChanged += new System.EventHandler(this.txtBuscar_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(22, 212);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(40, 13);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "Buscar";
+            // 
+            // btnLimpiar
+            // 
+            this.btnLimpiar = new System.Windows.Forms.Button();
+            this.btnLimpiar.Location = new System.Drawing.Point(250, 120);
+            this.btnLimpiar.Name = "btnLimpiar";
+            this.btnLimpiar.Size = new System.Drawing.Size(100, 25);
+            this.btnLimpiar.TabIndex = 11;
+            this.btnLimpiar.Text = "Limpiar";
+            this.btnLimpiar.UseVisualStyleBackColor = false;
+            this.btnLimpiar.BackColor = System.Drawing.Color.RoyalBlue;
+            this.btnLimpiar.ForeColor = System.Drawing.Color.White;
+            this.btnLimpiar.Click += new System.EventHandler(this.btnLimpiar_Click);
+
+            // 
             // UcGestionEjercicios
             // 
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lblTitulo);
             this.Controls.Add(this.txtNombre);
-            this.Controls.Add(this.txtMusculo);
+            this.Controls.Add(this.cmbMusculo);
             this.Controls.Add(this.txtDescripcion);
             this.Controls.Add(this.btnAgregar);
             this.Controls.Add(this.btnEditar);
             this.Controls.Add(this.btnEliminar);
             this.Controls.Add(this.dgvEjercicios);
+            this.Controls.Add(this.txtBuscar);
+            this.Controls.Add(this.btnLimpiar);
             this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Name = "UcGestionEjercicios";
             this.Size = new System.Drawing.Size(600, 536);
@@ -145,17 +190,9 @@ namespace GymManager.Views
             this.ResumeLayout(false);
             this.PerformLayout();
 
-            //buscar
-            // txtBuscar
-            this.txtBuscar = new System.Windows.Forms.TextBox();
-            this.txtBuscar.Location = new System.Drawing.Point(25, 170);
-            this.txtBuscar.Name = "txtBuscar";
-            this.txtBuscar.Size = new System.Drawing.Size(200, 20);
-            this.txtBuscar.TabIndex = 8;
-  
-            this.txtBuscar.TextChanged += new System.EventHandler(this.txtBuscar_TextChanged);
-
-
         }
+
+        
+
     }
 }

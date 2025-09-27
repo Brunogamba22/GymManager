@@ -73,7 +73,7 @@ namespace GymManager.Forms
             if (rol == Rol.Administrador)
             {
                 AgregarBotonNav("Usuarios", () => CargarVista(new Views.UcGestionUsuarios()), DockStyle.Top);
-                AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcAdminDashboard()), DockStyle.Top);
+                AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcGestionEjercicios()), DockStyle.Top);
                 AgregarBotonNav("Reportes", () => CargarVista(new Views.UcReportes()), DockStyle.Top);
             }
 

@@ -1,7 +1,9 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using GymManager.Controllers;
 using GymManager.Models;
-using GymManager.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace GymManager.Views
 {
@@ -16,12 +18,21 @@ namespace GymManager.Views
         {
             InitializeComponent();
             CargarUsuarios();
+            ConfigurarPlaceholder();
         }
+
+        private List<Usuario> usuariosCache;
 
         private void CargarUsuarios()
         {
+            usuariosCache = controller.ObtenerTodos(); // guardamos en memoria
             dgvUsuarios.DataSource = null;
-            dgvUsuarios.DataSource = controller.ObtenerTodos();
+            dgvUsuarios.DataSource = usuariosCache; //  usamos la lista cacheada
+
+
+            // Ocultar columna Password si existe
+            if (dgvUsuarios.Columns["Password"] != null)
+                dgvUsuarios.Columns["Password"].Visible = false;
         }
 
         private void LimpiarCampos()
@@ -52,11 +63,23 @@ namespace GymManager.Views
                 Rol = (Rol)cmbRol.SelectedIndex
             };
 
-            controller.Agregar(nuevoUsuario);
-            MessageBox.Show("Usuario agregado correctamente.");
+            try
+            {
+                controller.Agregar(nuevoUsuario);
+                MessageBox.Show("Usuario agregado correctamente.");
+                LimpiarCampos();
+                CargarUsuarios();
+            }
+            catch (InvalidOperationException ex) // cuando ya existe
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex) // cualquier otro error inesperado
+            {
+                MessageBox.Show("Ocurrió un error al agregar el usuario: " + ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            LimpiarCampos();
-            CargarUsuarios();
         }
 
         private void btnEditar_Click(object sender, EventArgs e)
@@ -77,11 +100,18 @@ namespace GymManager.Views
                 Rol = (Rol)cmbRol.SelectedIndex
             };
 
-            controller.Editar(usuarioEditado);
-            MessageBox.Show("Usuario editado correctamente.");
-
-            LimpiarCampos();
-            CargarUsuarios();
+            try
+            {
+                controller.Editar(usuarioEditado);
+                MessageBox.Show("Usuario editado correctamente.");
+                LimpiarCampos();
+                CargarUsuarios();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error al editar: " + ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         private void btnEliminar_Click(object sender, EventArgs e)
         {
@@ -97,11 +127,25 @@ namespace GymManager.Views
                 return;
             }
 
-            controller.Eliminar(idSeleccionado);
-            MessageBox.Show("Usuario eliminado.");
-            LimpiarCampos();
-            CargarUsuarios();
+            try
+            {
+                controller.Eliminar(idSeleccionado);
+                MessageBox.Show("Usuario eliminado.");
+                LimpiarCampos();
+                CargarUsuarios();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ocurrió un error al eliminar: " + ex.Message,
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
         }
+        private void btnLimpiar_Click(object sender, EventArgs e)
+        {
+            LimpiarCampos();
+        }
+
 
 
         private void dgvUsuarios_SelectionChanged(object sender, EventArgs e)
@@ -118,8 +162,61 @@ namespace GymManager.Views
             txtPassword.Text = usuario.Password;
             cmbRol.SelectedIndex = (int)usuario.Rol;
 
-            // 🔒 No permitir eliminar administradores
+            //  No permitir eliminar administradores
             btnEliminar.Enabled = usuario.Rol != Rol.Administrador;
         }
+
+        //buscador
+        private void txtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            string q = txtBuscar.Text.Trim().ToLower();
+
+            if (string.IsNullOrEmpty(q) || q == "nombre usuario") //  ignorar placeholder
+            {
+                dgvUsuarios.DataSource = usuariosCache;
+            }
+            else
+            {
+                var filtrados = usuariosCache.FindAll(u =>
+                 (u.Nombre != null && u.Nombre.ToLower().Contains(q)) ||
+                 (u.Apellido != null && u.Apellido.ToLower().Contains(q)) ||
+                 (u.Email != null && u.Email.ToLower().Contains(q))
+                 );
+
+                dgvUsuarios.DataSource = filtrados;
+            }
+
+            if (dgvUsuarios.Columns["Password"] != null)
+                dgvUsuarios.Columns["Password"].Visible = false;
+        }
+
+
+
+
+        private void ConfigurarPlaceholder()
+        {
+            txtBuscar.ForeColor = Color.Gray;
+            txtBuscar.Text = "Nombre usuario";
+
+            txtBuscar.Enter += (s, e) =>
+            {
+                if (txtBuscar.Text == "Nombre usuario")
+                {
+                    txtBuscar.Text = "";
+                    txtBuscar.ForeColor = Color.Black;
+                }
+            };
+
+            txtBuscar.Leave += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(txtBuscar.Text))
+                {
+                    txtBuscar.Text = "Nombre usuario";
+                    txtBuscar.ForeColor = Color.Gray;
+                }
+            };
+        }
+
+
     }
 }

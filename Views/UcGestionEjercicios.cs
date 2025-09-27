@@ -6,115 +6,122 @@ using System.Windows.Forms;
 
 namespace GymManager.Views
 {
-    /// <summary>
-    /// Vista de gestión de ejercicios.
-    /// Permite realizar operaciones CRUD (crear, leer, actualizar, eliminar) 
-    /// sobre los ejercicios mediante el controlador correspondiente.
-    /// </summary>
     public partial class UcGestionEjercicios : UserControl
     {
-        // Controlador que maneja la lógica de negocio para los ejercicios.
         private EjercicioController controller = new EjercicioController();
 
-        /// <summary>
-        /// Constructor del UserControl.
-        /// Inicializa componentes, refresca la grilla y aplica placeholders.
-        /// </summary>
         public UcGestionEjercicios()
         {
             InitializeComponent();
-            RefrescarGrid(); // Carga inicial de la lista de ejercicios.
-
-            // Aplica texto por defecto en los campos de entrada.
+            ConfigurarComboMusculos();   // ✅ combo con placeholder
+            EstilizarBotones();          // ✅ colores de botones
+            RefrescarGrid();
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
-            AplicarPlaceholder(txtMusculo, "Músculo trabajado");
             AplicarPlaceholder(txtDescripcion, "Descripción");
         }
 
-        /// <summary>
-        /// Refresca los datos del DataGridView con la lista actual de ejercicios.
-        /// </summary>
         private void RefrescarGrid()
         {
-            dgvEjercicios.DataSource = null; // Limpia la grilla.
-            dgvEjercicios.DataSource = controller.ObtenerTodos(); // Carga nueva lista desde el controlador.
+            dgvEjercicios.DataSource = null;
+            dgvEjercicios.DataSource = controller.ObtenerTodos();
         }
 
-        /// <summary>
-        /// Botón para agregar un nuevo ejercicio.
-        /// Crea un objeto Ejercicio y lo envía al controlador.
-        /// </summary>
         private void btnAgregar_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) || cmbMusculo.SelectedIndex == 0)
+            {
+                MessageBox.Show("Completa el nombre y selecciona un músculo válido.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var nuevo = new Ejercicio
             {
                 Nombre = txtNombre.Text,
-                Musculo = txtMusculo.Text,
+                Musculo = cmbMusculo.SelectedItem.ToString(),
                 Descripcion = txtDescripcion.Text
             };
 
-            controller.Agregar(nuevo); // Envía el nuevo ejercicio al controlador.
-            RefrescarGrid();           // Actualiza la grilla.
-            LimpiarCampos();           // Limpia los campos de entrada.
+            controller.Agregar(nuevo);
+            RefrescarGrid();
+            LimpiarCampos();
+            MessageBox.Show("¡Ejercicio agregado correctamente!", "Éxito",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        /// <summary>
-        /// Botón para editar el ejercicio seleccionado.
-        /// </summary>
         private void btnEditar_Click(object sender, EventArgs e)
         {
-            if (dgvEjercicios.CurrentRow == null) return; // Si no hay fila seleccionada, salir.
+            if (dgvEjercicios.CurrentRow == null)
+            {
+                MessageBox.Show("Selecciona un ejercicio primero.", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (cmbMusculo.SelectedIndex == 0)
+            {
+                MessageBox.Show("Debe seleccionar un músculo válido.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            // Obtiene el ejercicio actualmente seleccionado en la grilla.
             var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
-
-            // Actualiza sus propiedades con los datos ingresados en los TextBox.
             ejercicio.Nombre = txtNombre.Text;
-            ejercicio.Musculo = txtMusculo.Text;
+            ejercicio.Musculo = cmbMusculo.SelectedItem?.ToString();
             ejercicio.Descripcion = txtDescripcion.Text;
 
-            controller.Editar(ejercicio); // Llama al controlador para actualizar.
-            RefrescarGrid();              // Refresca grilla.
-            LimpiarCampos();              // Limpia entrada.
+            controller.Editar(ejercicio);
+            RefrescarGrid();
+            LimpiarCampos();
+            MessageBox.Show("¡Ejercicio editado correctamente!", "Éxito",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        /// <summary>
-        /// Botón para eliminar el ejercicio seleccionado.
-        /// </summary>
         private void btnEliminar_Click(object sender, EventArgs e)
         {
-            if (dgvEjercicios.CurrentRow == null) return; // Si no hay selección, salir.
+            if (dgvEjercicios.CurrentRow == null)
+            {
+                MessageBox.Show("Selecciona un ejercicio primero.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem; // Obtiene el ejercicio.
+            var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
 
-            controller.Eliminar(ejercicio.Id); // Lo elimina por su Id.
-            RefrescarGrid();                   // Refresca la grilla.
-            LimpiarCampos();                   // Limpia campos.
+            controller.Eliminar(ejercicio.Id);
+            RefrescarGrid();
+            LimpiarCampos();
+            MessageBox.Show("¡Ejercicio eliminado correctamente!", "Éxito",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        /// <summary>
-        /// Evento que se dispara al seleccionar una fila en la grilla.
-        /// Carga los datos del ejercicio en los TextBox.
-        /// </summary>
+        private void btnLimpiar_Click(object sender, EventArgs e)
+        {
+            LimpiarCampos();
+        }
+
         private void dgvEjercicios_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null) return;
 
             var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
-
             txtNombre.Text = ejercicio.Nombre;
-            txtMusculo.Text = ejercicio.Musculo;
             txtDescripcion.Text = ejercicio.Descripcion;
+
+            int idx = cmbMusculo.FindStringExact(ejercicio.Musculo ?? "");
+            cmbMusculo.SelectedIndex = (idx >= 0) ? idx : 0;
+
+            txtNombre.ForeColor = Color.Black;
+            txtDescripcion.ForeColor = Color.Black;
+            cmbMusculo.ForeColor = (cmbMusculo.SelectedIndex == 0) ? Color.Gray : Color.Black;
         }
 
-        /// <summary>
-        /// Limpia los campos de entrada (TextBox).
-        /// </summary>
         private void LimpiarCampos()
         {
             txtNombre.Text = "";
-            txtMusculo.Text = "";
             txtDescripcion.Text = "";
+            cmbMusculo.SelectedIndex = 0; // vuelve al placeholder
+            cmbMusculo.ForeColor = Color.Gray;
+            dgvEjercicios.ClearSelection();
+            txtNombre.Focus();
         }
 
         private void txtBuscar_TextChanged(object sender, EventArgs e)
@@ -128,17 +135,11 @@ namespace GymManager.Views
             dgvEjercicios.DataSource = filtrados;
         }
 
-
-        /// <summary>
-        /// Aplica un texto placeholder a un TextBox
-        /// (se muestra en gris cuando está vacío).
-        /// </summary>
         private void AplicarPlaceholder(TextBox txt, string placeholder)
         {
             txt.ForeColor = Color.Gray;
             txt.Text = placeholder;
 
-            // Evento al enfocar el campo.
             txt.Enter += (s, e) =>
             {
                 if (txt.Text == placeholder)
@@ -148,7 +149,6 @@ namespace GymManager.Views
                 }
             };
 
-            // Evento al salir del campo.
             txt.Leave += (s, e) =>
             {
                 if (string.IsNullOrWhiteSpace(txt.Text))
@@ -157,6 +157,51 @@ namespace GymManager.Views
                     txt.ForeColor = Color.Gray;
                 }
             };
+        }
+
+        // ✅ Inicializa el combo con placeholder
+        private void ConfigurarComboMusculos()
+        {
+            cmbMusculo.Items.Clear();
+            cmbMusculo.Items.AddRange(new object[]
+            {
+                "Seleccione un músculo",
+                "Pecho", "Espalda", "Hombros", "Brazos",
+                "Cuádriceps", "Isquiotibiales", "Glúteos",
+                "Pantorrillas", "Abdomen"
+            });
+
+            cmbMusculo.SelectedIndex = 0;
+            cmbMusculo.ForeColor = Color.Gray;
+
+            cmbMusculo.SelectedIndexChanged += (s, e) =>
+            {
+                cmbMusculo.ForeColor = (cmbMusculo.SelectedIndex == 0) ? Color.Gray : Color.Black;
+            };
+        }
+
+        // ✅ Colores de los botones
+        private void EstilizarBotones()
+        {
+            btnAgregar.FlatStyle = FlatStyle.Flat;
+            btnAgregar.UseVisualStyleBackColor = false;
+            btnAgregar.BackColor = Color.FromArgb(46, 204, 113); // verde
+            btnAgregar.ForeColor = Color.White;
+
+            btnEditar.FlatStyle = FlatStyle.Flat;
+            btnEditar.UseVisualStyleBackColor = false;
+            btnEditar.BackColor = Color.Gold; // amarillo
+            btnEditar.ForeColor = Color.Black;
+
+            btnEliminar.FlatStyle = FlatStyle.Flat;
+            btnEliminar.UseVisualStyleBackColor = false;
+            btnEliminar.BackColor = Color.FromArgb(231, 76, 60); // rojo
+            btnEliminar.ForeColor = Color.White;
+
+            btnLimpiar.FlatStyle = FlatStyle.Flat;
+            btnLimpiar.UseVisualStyleBackColor = false;
+            btnLimpiar.BackColor = Color.LightGray; // gris clarito
+            btnLimpiar.ForeColor = Color.Black;
         }
     }
 }

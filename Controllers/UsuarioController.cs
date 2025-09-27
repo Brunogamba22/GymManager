@@ -51,9 +51,25 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
+                // 1. Validar que no exista DNI ni Email duplicado
+                string checkQuery = "SELECT COUNT(*) FROM dbo.Usuarios WHERE dni = @Dni OR email = @Email";
+                using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                {
+                    checkCmd.Parameters.AddWithValue("@Dni", u.Id);
+                    checkCmd.Parameters.AddWithValue("@Email", u.Email);
+
+                    int count = (int)checkCmd.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        // Lanzamos excepción para que la UI pueda mostrar mensaje
+                        throw new InvalidOperationException("El usuario ya existe con ese DNI o Email.");
+                    }
+                }
+
+                // 2. Insertar si pasa la validación
                 string query = @"
-                    INSERT INTO dbo.Usuarios (dni, nombre, apellido, email, password, id_rol)
-                    VALUES (@Dni, @Nombre, @Apellido, @Email, @Password, @IdRol)";
+            INSERT INTO dbo.Usuarios (dni, nombre, apellido, email, password, id_rol)
+            VALUES (@Dni, @Nombre, @Apellido, @Email, @Password, @IdRol)";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -66,10 +82,12 @@ namespace GymManager.Controllers
                     cmd.Parameters.AddWithValue("@Password", PasswordHelper.HashPassword(u.Password));
 
                     cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
+
                     cmd.ExecuteNonQuery();
                 }
             }
         }
+
 
         public void Editar(Usuario u)
         {
