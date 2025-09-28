@@ -9,9 +9,21 @@ namespace GymManager.Models.Events
         public List<GymManager.Utils.RutinaSimulador.EjercicioRutina> Ejercicios { get; set; } = new List<GymManager.Utils.RutinaSimulador.EjercicioRutina>();
     }
 
+    // 🔥 NUEVA CLASE PARA ARGUMENTOS DE GUARDADO
+    public class RutinaGuardadaEventArgs : EventArgs
+    {
+        public string TipoRutina { get; set; } = "";
+        public string NombreRutina { get; set; } = "";
+        public List<GymManager.Utils.RutinaSimulador.EjercicioRutina> Ejercicios { get; set; } = new List<GymManager.Utils.RutinaSimulador.EjercicioRutina>();
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
+    }
+
     public static class EventosRutina
     {
         public static event EventHandler<RutinaGeneradaEventArgs> RutinaGeneradaParaEdicion;
+
+        // 🔥 NUEVO EVENTO PARA GUARDADO
+        public static event EventHandler<RutinaGuardadaEventArgs> RutinaGuardada;
 
         public static void DispararRutinaGenerada(string tipoRutina, List<GymManager.Utils.RutinaSimulador.EjercicioRutina> ejercicios)
         {
@@ -19,6 +31,18 @@ namespace GymManager.Models.Events
             {
                 TipoRutina = tipoRutina,
                 Ejercicios = ejercicios
+            });
+        }
+
+        // 🔥 NUEVO MÉTODO PARA DISPARAR EVENTO DE GUARDADO
+        public static void DispararRutinaGuardada(string tipoRutina, List<GymManager.Utils.RutinaSimulador.EjercicioRutina> ejercicios, string nombreRutina)
+        {
+            RutinaGuardada?.Invoke(null, new RutinaGuardadaEventArgs
+            {
+                TipoRutina = tipoRutina,
+                Ejercicios = ejercicios,
+                NombreRutina = nombreRutina,
+                FechaCreacion = DateTime.Now
             });
         }
     }

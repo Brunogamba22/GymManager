@@ -1,5 +1,4 @@
-﻿
-using GymManager.Models.Events;
+﻿using GymManager.Models.Events;
 using GymManager.Utils;
 using System;
 using System.Collections.Generic;
@@ -36,6 +35,11 @@ namespace GymManager.Views
         private Button btnLimpiarMujeres;
         private Button btnEditarDeportistas;
         private Button btnLimpiarDeportistas;
+
+        // 🔥 NUEVAS VARIABLES PARA BOTONES GUARDAR
+        private Button btnGuardarHombres;
+        private Button btnGuardarMujeres;
+        private Button btnGuardarDeportistas;
 
         public UcGenerarRutinas()
         {
@@ -185,6 +189,7 @@ namespace GymManager.Views
                 // Habilitar botones de acción
                 btnEditarHombres.Enabled = true;
                 btnLimpiarHombres.Enabled = true;
+                btnGuardarHombres.Enabled = true;
 
                 MessageBox.Show($"✅ Rutina para HOMBRES generada exitosamente\n📊 Ejercicios: {rutinaHombres.Count}",
                               "Generación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -205,6 +210,7 @@ namespace GymManager.Views
 
                 btnEditarMujeres.Enabled = true;
                 btnLimpiarMujeres.Enabled = true;
+                btnGuardarMujeres.Enabled = true;
 
                 MessageBox.Show($"✅ Rutina para MUJERES generada exitosamente\n📊 Ejercicios: {rutinaMujeres.Count}",
                               "Generación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -225,6 +231,7 @@ namespace GymManager.Views
 
                 btnEditarDeportistas.Enabled = true;
                 btnLimpiarDeportistas.Enabled = true;
+                btnGuardarDeportistas.Enabled = true;
 
                 MessageBox.Show($"✅ Rutina para DEPORTISTAS generada exitosamente\n📊 Ejercicios: {rutinaDeportistas.Count}",
                               "Generación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -288,6 +295,49 @@ namespace GymManager.Views
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        // 🔥 NUEVOS MÉTODOS PARA GUARDAR RUTINAS
+        private void btnGuardarHombres_Click(object sender, EventArgs e)
+        {
+            GuardarRutina("HOMBRES", rutinaHombres);
+        }
+
+        private void btnGuardarMujeres_Click(object sender, EventArgs e)
+        {
+            GuardarRutina("MUJERES", rutinaMujeres);
+        }
+
+        private void btnGuardarDeportistas_Click(object sender, EventArgs e)
+        {
+            GuardarRutina("DEPORTISTAS", rutinaDeportistas);
+        }
+
+        private void GuardarRutina(string tipoRutina, List<RutinaSimulador.EjercicioRutina> ejercicios)
+        {
+            if (ejercicios == null || ejercicios.Count == 0)
+            {
+                MessageBox.Show($"No hay rutina generada para {tipoRutina.ToLower()} para guardar.",
+                              "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            try
+            {
+                // Simular guardado en "base de datos" temporal
+                string nombreRutina = $"{tipoRutina}_{DateTime.Now:yyyyMMdd_HHmmss}";
+
+                // 🔥 DISPARAR EVENTO PARA QUE PLANILLAS PUEDA CAPTURARLO
+                EventosRutina.DispararRutinaGuardada(tipoRutina, ejercicios, nombreRutina);
+
+                MessageBox.Show($"✅ Rutina de {tipoRutina} guardada exitosamente\n📝 Nombre: {nombreRutina}",
+                              "Guardado Exitoso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al guardar rutina: {ex.Message}", "Error",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         // BOTONES LIMPIAR
         private void btnLimpiarHombres_Click(object sender, EventArgs e)
         {
@@ -300,6 +350,7 @@ namespace GymManager.Views
                 rutinaHombres.Clear();
                 btnEditarHombres.Enabled = false;
                 btnLimpiarHombres.Enabled = false;
+                btnGuardarHombres.Enabled = false;
             }
         }
 
@@ -314,6 +365,7 @@ namespace GymManager.Views
                 rutinaMujeres.Clear();
                 btnEditarMujeres.Enabled = false;
                 btnLimpiarMujeres.Enabled = false;
+                btnGuardarMujeres.Enabled = false;
             }
         }
 
@@ -328,6 +380,7 @@ namespace GymManager.Views
                 rutinaDeportistas.Clear();
                 btnEditarDeportistas.Enabled = false;
                 btnLimpiarDeportistas.Enabled = false;
+                btnGuardarDeportistas.Enabled = false;
             }
         }
 
@@ -339,6 +392,7 @@ namespace GymManager.Views
                 MostrarRutinaEnGrid(dgvHombres, rutinaHombres);
                 if (btnEditarHombres != null) btnEditarHombres.Enabled = true;
                 if (btnLimpiarHombres != null) btnLimpiarHombres.Enabled = true;
+                if (btnGuardarHombres != null) btnGuardarHombres.Enabled = true;
             }
 
             if (rutinaMujeres.Count > 0)
@@ -346,6 +400,7 @@ namespace GymManager.Views
                 MostrarRutinaEnGrid(dgvMujeres, rutinaMujeres);
                 if (btnEditarMujeres != null) btnEditarMujeres.Enabled = true;
                 if (btnLimpiarMujeres != null) btnLimpiarMujeres.Enabled = true;
+                if (btnGuardarMujeres != null) btnGuardarMujeres.Enabled = true;
             }
 
             if (rutinaDeportistas.Count > 0)
@@ -353,6 +408,7 @@ namespace GymManager.Views
                 MostrarRutinaEnGrid(dgvDeportistas, rutinaDeportistas);
                 if (btnEditarDeportistas != null) btnEditarDeportistas.Enabled = true;
                 if (btnLimpiarDeportistas != null) btnLimpiarDeportistas.Enabled = true;
+                if (btnGuardarDeportistas != null) btnGuardarDeportistas.Enabled = true;
             }
         }
     }

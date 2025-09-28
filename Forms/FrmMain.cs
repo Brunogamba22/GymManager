@@ -17,7 +17,7 @@ namespace GymManager.Forms
         public FrmMain()
         {
             InitializeComponent();
-
+            
             // Inicializar los UserControls una sola vez
             InicializarUserControls();
         }

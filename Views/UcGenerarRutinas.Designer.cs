@@ -81,12 +81,17 @@ namespace GymManager.Views
                 StyleButton(btnGenerarDeportistas, successColor);
 
                 // 🔥 APLICAR ESTILOS A LOS BOTONES DE ACCIÓN
-                if (btnEditarHombres != null) StyleButton(btnEditarHombres, Color.FromArgb(255, 193, 7)); // Amarillo
-                if (btnLimpiarHombres != null) StyleButton(btnLimpiarHombres, dangerColor); // Rojo
+                if (btnEditarHombres != null) StyleButton(btnEditarHombres, Color.FromArgb(255, 193, 7));
+                if (btnLimpiarHombres != null) StyleButton(btnLimpiarHombres, dangerColor);
                 if (btnEditarMujeres != null) StyleButton(btnEditarMujeres, Color.FromArgb(255, 193, 7));
                 if (btnLimpiarMujeres != null) StyleButton(btnLimpiarMujeres, dangerColor);
                 if (btnEditarDeportistas != null) StyleButton(btnEditarDeportistas, Color.FromArgb(255, 193, 7));
                 if (btnLimpiarDeportistas != null) StyleButton(btnLimpiarDeportistas, dangerColor);
+
+                // 🔥 APLICAR ESTILOS A LOS NUEVOS BOTONES GUARDAR
+                if (btnGuardarHombres != null) StyleButton(btnGuardarHombres, successColor);
+                if (btnGuardarMujeres != null) StyleButton(btnGuardarMujeres, successColor);
+                if (btnGuardarDeportistas != null) StyleButton(btnGuardarDeportistas, successColor);
             };
         }
 
@@ -212,7 +217,7 @@ namespace GymManager.Views
             dgv.Columns.Add("Repeticiones", "REPETICIONES");
             dgv.Columns.Add("Descanso", "DESCANSO (s)");
 
-            // 🔥 PANEL DE BOTONES (Generar, Editar, Limpiar)
+            // 🔥 PANEL DE BOTONES (Generar, Editar, Guardar, Limpiar)
             var panelBotones = new Panel();
             panelBotones.Dock = DockStyle.Bottom;
             panelBotones.Height = 50;
@@ -224,52 +229,68 @@ namespace GymManager.Views
             btnGenerar.Dock = DockStyle.Left;
             btnGenerar.Width = 150;
 
-            // 🔥 BOTÓN EDITAR
+            // Botón Editar
             var btnEditar = new Button();
             btnEditar.Text = "EDITAR";
             btnEditar.Height = 40;
             btnEditar.Dock = DockStyle.Left;
             btnEditar.Width = 100;
             btnEditar.Margin = new Padding(5, 0, 0, 0);
-            btnEditar.Enabled = false; // Inicialmente deshabilitado
+            btnEditar.Enabled = false;
 
-            // 🔥 BOTÓN LIMPIAR
+            // 🔥 NUEVO BOTÓN GUARDAR
+            var btnGuardar = new Button();
+            btnGuardar.Text = "💾 GUARDAR";
+            btnGuardar.Height = 40;
+            btnGuardar.Dock = DockStyle.Left;
+            btnGuardar.Width = 100;
+            btnGuardar.Margin = new Padding(5, 0, 0, 0);
+            btnGuardar.Enabled = false;
+
+            // Botón Limpiar
             var btnLimpiar = new Button();
             btnLimpiar.Text = "LIMPIAR";
             btnLimpiar.Height = 40;
             btnLimpiar.Dock = DockStyle.Left;
             btnLimpiar.Width = 100;
             btnLimpiar.Margin = new Padding(5, 0, 0, 0);
-            btnLimpiar.Enabled = false; // Inicialmente deshabilitado
+            btnLimpiar.Enabled = false;
 
             // 🔥 ASIGNAR LOS BOTONES A LAS VARIABLES GLOBALES SEGÚN EL PANEL
             if (panel == panelHombres)
             {
                 btnGenerar.Click += btnGenerarHombres_Click;
                 btnEditar.Click += btnEditarHombres_Click;
+                btnGuardar.Click += btnGuardarHombres_Click;
                 btnLimpiar.Click += btnLimpiarHombres_Click;
                 btnEditarHombres = btnEditar;
+                btnGuardarHombres = btnGuardar;
                 btnLimpiarHombres = btnLimpiar;
             }
             else if (panel == panelMujeres)
             {
                 btnGenerar.Click += btnGenerarMujeres_Click;
                 btnEditar.Click += btnEditarMujeres_Click;
+                btnGuardar.Click += btnGuardarMujeres_Click;
                 btnLimpiar.Click += btnLimpiarMujeres_Click;
                 btnEditarMujeres = btnEditar;
+                btnGuardarMujeres = btnGuardar;
                 btnLimpiarMujeres = btnLimpiar;
             }
             else if (panel == panelDeportistas)
             {
                 btnGenerar.Click += btnGenerarDeportistas_Click;
                 btnEditar.Click += btnEditarDeportistas_Click;
+                btnGuardar.Click += btnGuardarDeportistas_Click;
                 btnLimpiar.Click += btnLimpiarDeportistas_Click;
                 btnEditarDeportistas = btnEditar;
+                btnGuardarDeportistas = btnGuardar;
                 btnLimpiarDeportistas = btnLimpiar;
             }
 
             // Agregar botones al panel de botones
             panelBotones.Controls.Add(btnLimpiar);
+            panelBotones.Controls.Add(btnGuardar);
             panelBotones.Controls.Add(btnEditar);
             panelBotones.Controls.Add(btnGenerar);
 
