@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GymManager.Models.Events;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -17,7 +18,9 @@ namespace GymManager.Views
             InitializeComponent();
             ApplyModernStyles();
             ConfigurarGrid();
-            LoadSampleData();
+            //LoadSampleData();
+            // Suscribirse al evento de rutina generada
+            EventosRutina.RutinaGeneradaParaEdicion += OnRutinaGeneradaParaEdicion;
         }
 
         private void ApplyModernStyles()
@@ -161,5 +164,23 @@ namespace GymManager.Views
             if (result == DialogResult.Yes)
                 dgvRutinas.Rows.Clear();
         }
+
+        private void OnRutinaGeneradaParaEdicion(object sender, RutinaGeneradaEventArgs e)
+        {
+            // Limpiar grid actual
+            dgvRutinas.Rows.Clear();
+
+            // Cargar ejercicios de la rutina generada
+            foreach (var ejercicio in e.Ejercicios)
+            {
+                dgvRutinas.Rows.Add(ejercicio.Nombre, ejercicio.Series, ejercicio.Repeticiones, ejercicio.Descanso);
+            }
+
+            // Mostrar mensaje
+            lblTitulo.Text = $"✏️ EDITAR RUTINA - {e.TipoRutina}";
+            MessageBox.Show($"Rutina de {e.TipoRutina} cargada para edición", "Edición",
+                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
     }
 }

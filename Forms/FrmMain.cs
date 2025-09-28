@@ -1,38 +1,49 @@
-﻿// Importa las bibliotecas necesarias del sistema y del proyecto
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-
-// Importa las clases del proyecto
-using GymManager.Models;  // Acceso a modelos como Usuario, Rol, etc.
-using GymManager.Utils;   // Acceso a la clase Sesion
+using GymManager.Models;
+using GymManager.Utils;
+using GymManager.Views;
 
 namespace GymManager.Forms
 {
-    // Clase principal del formulario que se muestra después del login
     public partial class FrmMain : Form
     {
-        // Constructor del formulario
+        // Variables para mantener las instancias de los UserControls
+        private UcGenerarRutinas ucGenerarRutinas;
+        private UcEditarRutina ucEditarRutina;
+        private UcPlanillasRutinas ucPlanillasRutinas;
+
         public FrmMain()
         {
-            InitializeComponent(); // Inicializa todos los controles del formulario (desde el diseñador)
+            InitializeComponent();
+
+            // Inicializar los UserControls una sola vez
+            InicializarUserControls();
         }
 
-        // Evento que se ejecuta al cargar el formulario
+        private void InicializarUserControls()
+        {
+            // Crear las instancias una sola vez (no cada vez que se hace clic)
+            ucGenerarRutinas = new UcGenerarRutinas();
+            ucEditarRutina = new UcEditarRutina();
+            ucPlanillasRutinas = new UcPlanillasRutinas();
+        }
+
         private void FrmMain_Load(object sender, EventArgs e)
         {
-            // Si no hay usuario logueado, se cierra la aplicación
             if (Sesion.Actual == null)
             {
                 MessageBox.Show("No hay sesión iniciada");
                 this.Close();
                 return;
             }
+            var globalColor = Color.FromArgb(45, 52, 70);
 
-            // --- Estética del panel lateral ---
-            panelNavbar.BackColor = Color.FromArgb(45, 52, 70); // gris azulado oscuro
+            panelNavbar.BackColor = globalColor;
+            panelHeader.BackColor = globalColor;
+            panelFooter.BackColor = globalColor;
 
-            // Logo/título arriba
             Label lblTitulo = new Label
             {
                 Text = "🏋️ GymManager",
@@ -44,30 +55,24 @@ namespace GymManager.Forms
             };
             panelNavbar.Controls.Add(lblTitulo);
 
-            // Mensaje de bienvenida en el encabezado superior
-            lblBienvenida.Text = $"Bienvenido {Sesion.Actual.Nombre} ({Sesion.Actual.Rol})";
-
-            // Carga el menú lateral dependiendo del rol
+            
             CargarNavbar(Sesion.Actual.Rol);
-
-            // Carga el dashboard principal inicial según rol
             MostrarDashboard(Sesion.Actual.Rol);
         }
 
-        // Crea el menú lateral dinámicamente según el rol
         private void CargarNavbar(Rol rol)
         {
-            panelNavbar.Controls.Clear();  // Limpia el menú anterior
+            panelNavbar.Controls.Clear();
 
-            // Botón "Inicio" (arriba de todo)
+            // Botón "Inicio"
             AgregarBotonNav("Inicio", () => MostrarDashboard(rol), DockStyle.Top);
 
             // ---- Opciones según rol ----
             if (rol == Rol.Profesor)
             {
-                AgregarBotonNav("Generar Rutinas", () => CargarVista(new Views.UcGenerarRutinas()), DockStyle.Top);
-                AgregarBotonNav("Editar Rutina", () => CargarVista(new Views.UcEditarRutina()), DockStyle.Top);
-                AgregarBotonNav("Planillas", () => CargarVista(new Views.UcPlanillasRutinas()), DockStyle.Top);
+                AgregarBotonNav("Generar Rutinas", () => MostrarGenerarRutinas(), DockStyle.Top);
+                AgregarBotonNav("Editar Rutina", () => MostrarEditarRutina(), DockStyle.Top);
+                AgregarBotonNav("Planillas", () => MostrarPlanillas(), DockStyle.Top);
             }
 
             if (rol == Rol.Administrador)
@@ -84,7 +89,7 @@ namespace GymManager.Forms
                 AgregarBotonNav("Exportar", () => MessageBox.Show("Aquí se exportaría la rutina"), DockStyle.Top);
             }
 
-            // ---- Botón "Cerrar sesión" (abajo SIEMPRE) ----
+            // Botón "Cerrar sesión"
             AgregarBotonNav("Cerrar sesión", () =>
             {
                 Sesion.Cerrar();
@@ -92,13 +97,46 @@ namespace GymManager.Forms
             }, DockStyle.Bottom);
         }
 
-        // Modificado para permitir elegir posición (Top o Bottom)
+        // MÉTODOS ESPECÍFICOS PARA CADA VISTA (mantienen el estado)
+        private void MostrarGenerarRutinas()
+        {
+            panelContenido.Controls.Clear();
+            ucGenerarRutinas.Dock = DockStyle.Fill;
+
+            // RESTAURAR LAS RUTINAS AL MOSTRAR LA VISTA
+            ucGenerarRutinas.RestaurarRutinas();
+
+            panelContenido.Controls.Add(ucGenerarRutinas);
+        }
+
+        private void MostrarEditarRutina()
+        {
+            panelContenido.Controls.Clear();
+            ucEditarRutina.Dock = DockStyle.Fill;
+            panelContenido.Controls.Add(ucEditarRutina);
+        }
+
+        private void MostrarPlanillas()
+        {
+            panelContenido.Controls.Clear();
+            ucPlanillasRutinas.Dock = DockStyle.Fill;
+            panelContenido.Controls.Add(ucPlanillasRutinas);
+        }
+
+        // Método genérico para otras vistas (no mantiene estado)
+        private void CargarVista(UserControl vista)
+        {
+            panelContenido.Controls.Clear();
+            vista.Dock = DockStyle.Fill;
+            panelContenido.Controls.Add(vista);
+        }
+
         private void AgregarBotonNav(string texto, Action onClick, DockStyle dockPos)
         {
             var btn = new Button
             {
                 Text = texto,
-                Dock = dockPos,   // ahora podés elegir Top o Bottom
+                Dock = dockPos,
                 Height = 50,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -111,7 +149,6 @@ namespace GymManager.Forms
 
             panelNavbar.Controls.Add(btn);
         }
-
 
         private void MostrarDashboard(Rol rol)
         {
@@ -129,22 +166,13 @@ namespace GymManager.Forms
 
             PictureBox logo = new PictureBox
             {
-                Image = Properties.Resources.Logo_gymM13, // agregá una imagen a Resources
+                Image = Properties.Resources.Logo_gymM13,
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Dock = DockStyle.Fill
             };
 
             panelContenido.Controls.Add(logo);
             panelContenido.Controls.Add(lbl);
-        }
-
-
-        // Carga una vista (UserControl) en el panel principal
-        private void CargarVista(UserControl vista)
-        {
-            panelContenido.Controls.Clear();
-            vista.Dock = DockStyle.Fill;
-            panelContenido.Controls.Add(vista);
         }
     }
 }

@@ -79,6 +79,14 @@ namespace GymManager.Views
                 StyleButton(btnGenerarHombres, primaryColor);
                 StyleButton(btnGenerarMujeres, secondaryColor);
                 StyleButton(btnGenerarDeportistas, successColor);
+
+                // 🔥 APLICAR ESTILOS A LOS BOTONES DE ACCIÓN
+                if (btnEditarHombres != null) StyleButton(btnEditarHombres, Color.FromArgb(255, 193, 7)); // Amarillo
+                if (btnLimpiarHombres != null) StyleButton(btnLimpiarHombres, dangerColor); // Rojo
+                if (btnEditarMujeres != null) StyleButton(btnEditarMujeres, Color.FromArgb(255, 193, 7));
+                if (btnLimpiarMujeres != null) StyleButton(btnLimpiarMujeres, dangerColor);
+                if (btnEditarDeportistas != null) StyleButton(btnEditarDeportistas, Color.FromArgb(255, 193, 7));
+                if (btnLimpiarDeportistas != null) StyleButton(btnLimpiarDeportistas, dangerColor);
             };
         }
 
@@ -158,7 +166,7 @@ namespace GymManager.Views
             this.panelHombres = new Panel();
             this.panelHombres.Dock = DockStyle.Fill;
             this.panelHombres.BackColor = Color.White;
-            this.panelHombres.Padding = new Padding(25);
+            this.panelHombres.Padding = new Padding(15);
             SetupRutinaPanel(panelHombres, "RUTINA PARA HOMBRES", dgvHombres = new DataGridView(),
                            btnGenerarHombres = new Button(), lblTituloHombres = new Label());
 
@@ -166,7 +174,7 @@ namespace GymManager.Views
             this.panelMujeres = new Panel();
             this.panelMujeres.Dock = DockStyle.Fill;
             this.panelMujeres.BackColor = Color.White;
-            this.panelMujeres.Padding = new Padding(25);
+            this.panelMujeres.Padding = new Padding(15);
             SetupRutinaPanel(panelMujeres, "RUTINA PARA MUJERES", dgvMujeres = new DataGridView(),
                            btnGenerarMujeres = new Button(), lblTituloMujeres = new Label());
 
@@ -174,7 +182,7 @@ namespace GymManager.Views
             this.panelDeportistas = new Panel();
             this.panelDeportistas.Dock = DockStyle.Fill;
             this.panelDeportistas.BackColor = Color.White;
-            this.panelDeportistas.Padding = new Padding(25);
+            this.panelDeportistas.Padding = new Padding(15);
             SetupRutinaPanel(panelDeportistas, "RUTINA PARA DEPORTISTAS", dgvDeportistas = new DataGridView(),
                            btnGenerarDeportistas = new Button(), lblTituloDeportistas = new Label());
 
@@ -184,35 +192,90 @@ namespace GymManager.Views
             this.contentPanel.Controls.Add(panelDeportistas);
         }
 
-        private void SetupRutinaPanel(Panel panel, string titulo, DataGridView dgv, Button btn, Label lblTitulo)
+        private void SetupRutinaPanel(Panel panel, string titulo, DataGridView dgv, Button btnGenerar, Label lblTitulo)
         {
             // Título
             lblTitulo.Text = titulo;
             lblTitulo.Dock = DockStyle.Top;
-            lblTitulo.Height = 50;
-            lblTitulo.Font = new Font("Segoe UI", 14, FontStyle.Bold);
+            lblTitulo.Height = 40;
+            lblTitulo.Font = new Font("Segoe UI", 12, FontStyle.Bold);
             lblTitulo.ForeColor = textColor;
             lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
 
             // DataGridView
             dgv.Dock = DockStyle.Fill;
-            dgv.Margin = new Padding(0, 10, 0, 15);
+            dgv.Margin = new Padding(0, 5, 0, 10);
 
             // Configurar columnas
-            dgv.Columns.Add("Ejercicio", "Ejercicio");
-            dgv.Columns.Add("Series", "Series");
-            dgv.Columns.Add("Repeticiones", "Repeticiones");
-            dgv.Columns.Add("Descanso", "Descanso (s)");
+            dgv.Columns.Add("Ejercicio", "EJERCICIO");
+            dgv.Columns.Add("Series", "SERIES");
+            dgv.Columns.Add("Repeticiones", "REPETICIONES");
+            dgv.Columns.Add("Descanso", "DESCANSO (s)");
 
-            // Botón
-            btn.Text = "GENERAR RUTINA";
-            btn.Dock = DockStyle.Bottom;
-            btn.Height = 50;
-            btn.Margin = new Padding(0, 10, 0, 0);
+            // 🔥 PANEL DE BOTONES (Generar, Editar, Limpiar)
+            var panelBotones = new Panel();
+            panelBotones.Dock = DockStyle.Bottom;
+            panelBotones.Height = 50;
+            panelBotones.Padding = new Padding(0, 5, 0, 0);
 
-            // Agregar controles al panel
+            // Botón Generar
+            btnGenerar.Text = "GENERAR RUTINA";
+            btnGenerar.Height = 40;
+            btnGenerar.Dock = DockStyle.Left;
+            btnGenerar.Width = 150;
+
+            // 🔥 BOTÓN EDITAR
+            var btnEditar = new Button();
+            btnEditar.Text = "EDITAR";
+            btnEditar.Height = 40;
+            btnEditar.Dock = DockStyle.Left;
+            btnEditar.Width = 100;
+            btnEditar.Margin = new Padding(5, 0, 0, 0);
+            btnEditar.Enabled = false; // Inicialmente deshabilitado
+
+            // 🔥 BOTÓN LIMPIAR
+            var btnLimpiar = new Button();
+            btnLimpiar.Text = "LIMPIAR";
+            btnLimpiar.Height = 40;
+            btnLimpiar.Dock = DockStyle.Left;
+            btnLimpiar.Width = 100;
+            btnLimpiar.Margin = new Padding(5, 0, 0, 0);
+            btnLimpiar.Enabled = false; // Inicialmente deshabilitado
+
+            // 🔥 ASIGNAR LOS BOTONES A LAS VARIABLES GLOBALES SEGÚN EL PANEL
+            if (panel == panelHombres)
+            {
+                btnGenerar.Click += btnGenerarHombres_Click;
+                btnEditar.Click += btnEditarHombres_Click;
+                btnLimpiar.Click += btnLimpiarHombres_Click;
+                btnEditarHombres = btnEditar;
+                btnLimpiarHombres = btnLimpiar;
+            }
+            else if (panel == panelMujeres)
+            {
+                btnGenerar.Click += btnGenerarMujeres_Click;
+                btnEditar.Click += btnEditarMujeres_Click;
+                btnLimpiar.Click += btnLimpiarMujeres_Click;
+                btnEditarMujeres = btnEditar;
+                btnLimpiarMujeres = btnLimpiar;
+            }
+            else if (panel == panelDeportistas)
+            {
+                btnGenerar.Click += btnGenerarDeportistas_Click;
+                btnEditar.Click += btnEditarDeportistas_Click;
+                btnLimpiar.Click += btnLimpiarDeportistas_Click;
+                btnEditarDeportistas = btnEditar;
+                btnLimpiarDeportistas = btnLimpiar;
+            }
+
+            // Agregar botones al panel de botones
+            panelBotones.Controls.Add(btnLimpiar);
+            panelBotones.Controls.Add(btnEditar);
+            panelBotones.Controls.Add(btnGenerar);
+
+            // Agregar controles al panel principal
             panel.Controls.Add(dgv);
-            panel.Controls.Add(btn);
+            panel.Controls.Add(panelBotones);
             panel.Controls.Add(lblTitulo);
         }
     }

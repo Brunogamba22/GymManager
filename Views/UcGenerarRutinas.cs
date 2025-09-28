@@ -1,4 +1,8 @@
-﻿using System;
+﻿
+using GymManager.Models.Events;
+using GymManager.Utils;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,16 +11,31 @@ namespace GymManager.Views
     public partial class UcGenerarRutinas : UserControl
     {
         // Colores personalizados
-        private Color primaryColor = Color.FromArgb(46, 134, 171);    // #2E86AB
-        private Color secondaryColor = Color.FromArgb(162, 59, 114);  // #A23B72
-        private Color successColor = Color.FromArgb(28, 167, 69);     // #28A745
-        private Color backgroundColor = Color.FromArgb(248, 249, 250); // #F8F9FA
-        private Color textColor = Color.FromArgb(33, 37, 41);         // #212529
-        private Color borderColor = Color.FromArgb(222, 226, 230);    // #DEE2E6
-        private Color tabHoverColor = Color.FromArgb(240, 240, 240);  // Gris muy claro
+        private Color primaryColor = Color.FromArgb(46, 134, 171);
+        private Color secondaryColor = Color.FromArgb(162, 59, 114);
+        private Color successColor = Color.FromArgb(28, 167, 69);
+        private Color backgroundColor = Color.FromArgb(248, 249, 250);
+        private Color textColor = Color.FromArgb(33, 37, 41);
+        private Color borderColor = Color.FromArgb(222, 226, 230);
+        private Color tabHoverColor = Color.FromArgb(240, 240, 240);
+        private Color warningColor = Color.FromArgb(255, 193, 7);
+        private Color dangerColor = Color.FromArgb(220, 53, 69);
 
         private Panel[] tabPanels;
         private Label[] tabLabels;
+
+        // Variables para almacenar las rutinas generadas
+        private List<RutinaSimulador.EjercicioRutina> rutinaHombres = new List<RutinaSimulador.EjercicioRutina>();
+        private List<RutinaSimulador.EjercicioRutina> rutinaMujeres = new List<RutinaSimulador.EjercicioRutina>();
+        private List<RutinaSimulador.EjercicioRutina> rutinaDeportistas = new List<RutinaSimulador.EjercicioRutina>();
+
+        // 🔥 VARIABLES PARA LOS BOTONES DE ACCIÓN
+        private Button btnEditarHombres;
+        private Button btnLimpiarHombres;
+        private Button btnEditarMujeres;
+        private Button btnLimpiarMujeres;
+        private Button btnEditarDeportistas;
+        private Button btnLimpiarDeportistas;
 
         public UcGenerarRutinas()
         {
@@ -34,23 +53,18 @@ namespace GymManager.Views
 
         private void SetupTabSystem()
         {
-            // Inicializar arrays
             tabPanels = new Panel[] { panelHombres, panelMujeres, panelDeportistas };
             tabLabels = new Label[] { lblTabHombres, lblTabMujeres, lblTabDeportistas };
-
-            // Mostrar solo el primer panel al inicio
             ShowTab(0);
         }
 
         private void ShowTab(int tabIndex)
         {
-            // Ocultar todos los paneles
             foreach (var panel in tabPanels)
             {
                 panel.Visible = false;
             }
 
-            // Resetear estilo de todas las tabs
             foreach (var label in tabLabels)
             {
                 label.BackColor = Color.White;
@@ -58,7 +72,6 @@ namespace GymManager.Views
                 label.Font = new Font("Segoe UI", 10, FontStyle.Regular);
             }
 
-            // Mostrar panel seleccionado y aplicar estilo activo a la tab
             tabPanels[tabIndex].Visible = true;
             tabLabels[tabIndex].BackColor = GetTabColor(tabIndex);
             tabLabels[tabIndex].ForeColor = Color.White;
@@ -69,9 +82,9 @@ namespace GymManager.Views
         {
             return tabIndex switch
             {
-                0 => primaryColor,    // Hombres - Azul
-                1 => secondaryColor,  // Mujeres - Magenta
-                2 => successColor,    // Deportistas - Verde
+                0 => primaryColor,
+                1 => secondaryColor,
+                2 => successColor,
                 _ => primaryColor
             };
         }
@@ -96,6 +109,9 @@ namespace GymManager.Views
             dgv.RowHeadersVisible = false;
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
+            dgv.RowTemplate.Height = 35;
+            dgv.ColumnHeadersHeight = 38;
+
             dgv.AllowUserToResizeColumns = false;
             dgv.AllowUserToResizeRows = false;
             dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
@@ -108,7 +124,6 @@ namespace GymManager.Views
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = textColor;
             dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.ColumnHeadersHeight = 40;
             dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
 
             // Estilo de celdas
@@ -116,7 +131,7 @@ namespace GymManager.Views
             dgv.DefaultCellStyle.ForeColor = textColor;
             dgv.DefaultCellStyle.Font = new Font("Segoe UI", 9);
             dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.DefaultCellStyle.Padding = new Padding(5);
+            dgv.DefaultCellStyle.Padding = new Padding(3, 4, 3, 4);
 
             // Estilo de filas alternadas
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
@@ -130,11 +145,10 @@ namespace GymManager.Views
             btn.ForeColor = Color.White;
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
-            btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            btn.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btn.Cursor = Cursors.Hand;
-            btn.Padding = new Padding(20, 10, 20, 10);
+            btn.Padding = new Padding(12, 6, 12, 6);
 
-            // Efectos hover
             btn.FlatAppearance.MouseOverBackColor = ControlPaint.Dark(bgColor, 0.1f);
             btn.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(bgColor, 0.2f);
         }
@@ -149,7 +163,6 @@ namespace GymManager.Views
         {
             var label = (Label)sender;
             if (!label.BackColor.Equals(Color.White)) return;
-
             label.BackColor = tabHoverColor;
             label.Cursor = Cursors.Hand;
         }
@@ -158,42 +171,189 @@ namespace GymManager.Views
         {
             var label = (Label)sender;
             if (!label.BackColor.Equals(tabHoverColor)) return;
-
             label.BackColor = Color.White;
         }
 
-        // Métodos de generación
+        // MÉTODOS DE GENERACIÓN MEJORADOS
         private void btnGenerarHombres_Click(object sender, EventArgs e)
         {
-            dgvHombres.Rows.Clear();
-            dgvHombres.Rows.Add("Press banca", 3, 10, "60 s");
-            dgvHombres.Rows.Add("Sentadillas", 4, 8, "90 s");
-            dgvHombres.Rows.Add("Dominadas", 3, 8, "75 s");
-            dgvHombres.Rows.Add("Press militar", 3, 10, "60 s");
-            MessageBox.Show("✅ Rutina para HOMBRES generada exitosamente", "Generación Exitosa",
-                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                rutinaHombres = RutinaSimulador.GenerarRutina("Hombres");
+                MostrarRutinaEnGrid(dgvHombres, rutinaHombres);
+
+                // Habilitar botones de acción
+                btnEditarHombres.Enabled = true;
+                btnLimpiarHombres.Enabled = true;
+
+                MessageBox.Show($"✅ Rutina para HOMBRES generada exitosamente\n📊 Ejercicios: {rutinaHombres.Count}",
+                              "Generación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al generar rutina: {ex.Message}", "Error",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnGenerarMujeres_Click(object sender, EventArgs e)
         {
-            dgvMujeres.Rows.Clear();
-            dgvMujeres.Rows.Add("Peso muerto", 3, 12, "60 s");
-            dgvMujeres.Rows.Add("Zancadas", 4, 10, "90 s");
-            dgvMujeres.Rows.Add("Hip thrust", 4, 12, "60 s");
-            dgvMujeres.Rows.Add("Elevación de pelvis", 3, 15, "45 s");
-            MessageBox.Show("✅ Rutina para MUJERES generada exitosamente", "Generación Exitosa",
-                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                rutinaMujeres = RutinaSimulador.GenerarRutina("Mujeres");
+                MostrarRutinaEnGrid(dgvMujeres, rutinaMujeres);
+
+                btnEditarMujeres.Enabled = true;
+                btnLimpiarMujeres.Enabled = true;
+
+                MessageBox.Show($"✅ Rutina para MUJERES generada exitosamente\n📊 Ejercicios: {rutinaMujeres.Count}",
+                              "Generación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al generar rutina: {ex.Message}", "Error",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnGenerarDeportistas_Click(object sender, EventArgs e)
         {
-            dgvDeportistas.Rows.Clear();
-            dgvDeportistas.Rows.Add("Burpees", 3, 15, "45 s");
-            dgvDeportistas.Rows.Add("Plancha", 3, 1, "30 s");
-            dgvDeportistas.Rows.Add("Saltos de caja", 4, 10, "60 s");
-            dgvDeportistas.Rows.Add("Mountain climbers", 3, 20, "45 s");
-            MessageBox.Show("✅ Rutina para DEPORTISTAS generada exitosamente", "Generación Exitosa",
+            try
+            {
+                rutinaDeportistas = RutinaSimulador.GenerarRutina("Deportistas");
+                MostrarRutinaEnGrid(dgvDeportistas, rutinaDeportistas);
+
+                btnEditarDeportistas.Enabled = true;
+                btnLimpiarDeportistas.Enabled = true;
+
+                MessageBox.Show($"✅ Rutina para DEPORTISTAS generada exitosamente\n📊 Ejercicios: {rutinaDeportistas.Count}",
+                              "Generación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al generar rutina: {ex.Message}", "Error",
+                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void MostrarRutinaEnGrid(DataGridView dgv, List<RutinaSimulador.EjercicioRutina> rutina)
+        {
+            dgv.Rows.Clear();
+            foreach (var ejercicio in rutina)
+            {
+                dgv.Rows.Add(ejercicio.Nombre, ejercicio.Series, ejercicio.Repeticiones, $"{ejercicio.Descanso} s");
+            }
+        }
+
+        // BOTONES EDITAR
+        private void btnEditarHombres_Click(object sender, EventArgs e)
+        {
+            if (rutinaHombres.Count == 0)
+            {
+                MessageBox.Show("No hay rutina generada para editar", "Información",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            EventosRutina.DispararRutinaGenerada("HOMBRES", rutinaHombres);
+            MessageBox.Show("Rutina de HOMBRES lista para editar", "Edición",
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnEditarMujeres_Click(object sender, EventArgs e)
+        {
+            if (rutinaMujeres.Count == 0)
+            {
+                MessageBox.Show("No hay rutina generada para editar", "Información",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            EventosRutina.DispararRutinaGenerada("MUJERES", rutinaMujeres);
+            MessageBox.Show("Rutina de MUJERES lista para editar", "Edición",
+                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnEditarDeportistas_Click(object sender, EventArgs e)
+        {
+            if (rutinaDeportistas.Count == 0)
+            {
+                MessageBox.Show("No hay rutina generada para editar", "Información",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            EventosRutina.DispararRutinaGenerada("DEPORTISTAS", rutinaDeportistas);
+            MessageBox.Show("Rutina de DEPORTISTAS lista para editar", "Edición",
+                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        // BOTONES LIMPIAR
+        private void btnLimpiarHombres_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("¿Estás seguro de que quieres limpiar la rutina de HOMBRES?",
+                                       "Confirmar Limpieza", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                dgvHombres.Rows.Clear();
+                rutinaHombres.Clear();
+                btnEditarHombres.Enabled = false;
+                btnLimpiarHombres.Enabled = false;
+            }
+        }
+
+        private void btnLimpiarMujeres_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("¿Estás seguro de que quieres limpiar la rutina de MUJERES?",
+                                       "Confirmar Limpieza", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                dgvMujeres.Rows.Clear();
+                rutinaMujeres.Clear();
+                btnEditarMujeres.Enabled = false;
+                btnLimpiarMujeres.Enabled = false;
+            }
+        }
+
+        private void btnLimpiarDeportistas_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("¿Estás seguro de que quieres limpiar la rutina de DEPORTISTAS?",
+                                       "Confirmar Limpieza", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                dgvDeportistas.Rows.Clear();
+                rutinaDeportistas.Clear();
+                btnEditarDeportistas.Enabled = false;
+                btnLimpiarDeportistas.Enabled = false;
+            }
+        }
+
+        // MÉTODO PARA RESTAURAR RUTINAS AL VOLVER A LA PESTAÑA
+        public void RestaurarRutinas()
+        {
+            if (rutinaHombres.Count > 0)
+            {
+                MostrarRutinaEnGrid(dgvHombres, rutinaHombres);
+                if (btnEditarHombres != null) btnEditarHombres.Enabled = true;
+                if (btnLimpiarHombres != null) btnLimpiarHombres.Enabled = true;
+            }
+
+            if (rutinaMujeres.Count > 0)
+            {
+                MostrarRutinaEnGrid(dgvMujeres, rutinaMujeres);
+                if (btnEditarMujeres != null) btnEditarMujeres.Enabled = true;
+                if (btnLimpiarMujeres != null) btnLimpiarMujeres.Enabled = true;
+            }
+
+            if (rutinaDeportistas.Count > 0)
+            {
+                MostrarRutinaEnGrid(dgvDeportistas, rutinaDeportistas);
+                if (btnEditarDeportistas != null) btnEditarDeportistas.Enabled = true;
+                if (btnLimpiarDeportistas != null) btnLimpiarDeportistas.Enabled = true;
+            }
         }
     }
 }
