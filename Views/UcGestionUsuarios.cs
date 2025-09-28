@@ -167,6 +167,24 @@ namespace GymManager.Views
             LimpiarCampos();
         }
 
+        private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Solo permite letras, teclas de control (ej: borrar) y espacios
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
+            {
+                e.Handled = true; // Bloquea el ingreso
+            }
+        }
+
+        private void txtApellido_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
+            {
+                e.Handled = true;
+            }
+        }
+
+
 
 
         private void dgvUsuarios_SelectionChanged(object sender, EventArgs e)

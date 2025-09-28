@@ -55,6 +55,10 @@ namespace GymManager.Views
             this.label1 = new System.Windows.Forms.Label();
             this.btnLimpiar = new System.Windows.Forms.Button();
             this.lblTitulo = new System.Windows.Forms.Label();
+            //
+            this.txtNombre.KeyPress += new KeyPressEventHandler(this.txtNombre_KeyPress);
+            this.txtApellido.KeyPress += new KeyPressEventHandler(this.txtApellido_KeyPress);
+
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).BeginInit();
             this.SuspendLayout();
             // 

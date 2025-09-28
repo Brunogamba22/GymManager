@@ -13,8 +13,8 @@ namespace GymManager.Views
         public UcGestionEjercicios()
         {
             InitializeComponent();
-            ConfigurarComboMusculos();   // ✅ combo con placeholder
-            EstilizarBotones();          // ✅ colores de botones
+            ConfigurarComboMusculos();   //  combo con placeholder
+            EstilizarBotones();          // colores de botones
             RefrescarGrid();
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
             AplicarPlaceholder(txtDescripcion, "Descripción");
@@ -47,6 +47,15 @@ namespace GymManager.Views
             LimpiarCampos();
             MessageBox.Show("¡Ejercicio agregado correctamente!", "Éxito",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Solo permite letras, teclas de control (ej: borrar) y espacios
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
+            {
+                e.Handled = true; // Bloquea el ingreso
+            }
         }
 
         private void btnEditar_Click(object sender, EventArgs e)

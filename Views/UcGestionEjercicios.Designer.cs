@@ -44,7 +44,8 @@ namespace GymManager.Views
             this.cmbMusculo = new System.Windows.Forms.ComboBox();
             this.txtBuscar = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            
+            this.txtNombre.KeyPress += new KeyPressEventHandler(this.txtNombre_KeyPress);
+
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).BeginInit();
             this.SuspendLayout();
             // 
