@@ -85,8 +85,8 @@ namespace GymManager.Forms
             if (rol == Rol.Recepcionista)
             {
                 AgregarBotonNav("Rutina", () => CargarVista(new Views.UcRecepcionistaDashboard()), DockStyle.Top);
-                AgregarBotonNav("Imprimir rutina", () => MessageBox.Show("Aquí se imprimiría la rutina"), DockStyle.Top);
-                AgregarBotonNav("Exportar", () => MessageBox.Show("Aquí se exportaría la rutina"), DockStyle.Top);
+                //AgregarBotonNav("Imprimir rutina", () => MessageBox.Show("Aquí se imprimiría la rutina"), DockStyle.Top);
+                //AgregarBotonNav("Exportar", () => MessageBox.Show("Aquí se exportaría la rutina"), DockStyle.Top);
             }
 
             // Botón "Cerrar sesión"

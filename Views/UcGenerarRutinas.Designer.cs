@@ -80,7 +80,7 @@ namespace GymManager.Views
                 StyleButton(btnGenerarMujeres, secondaryColor);
                 StyleButton(btnGenerarDeportistas, successColor);
 
-                // 🔥 APLICAR ESTILOS A LOS BOTONES DE ACCIÓN
+                //  APLICAR ESTILOS A LOS BOTONES DE ACCIÓN
                 if (btnEditarHombres != null) StyleButton(btnEditarHombres, Color.FromArgb(255, 193, 7));
                 if (btnLimpiarHombres != null) StyleButton(btnLimpiarHombres, dangerColor);
                 if (btnEditarMujeres != null) StyleButton(btnEditarMujeres, Color.FromArgb(255, 193, 7));
@@ -88,7 +88,7 @@ namespace GymManager.Views
                 if (btnEditarDeportistas != null) StyleButton(btnEditarDeportistas, Color.FromArgb(255, 193, 7));
                 if (btnLimpiarDeportistas != null) StyleButton(btnLimpiarDeportistas, dangerColor);
 
-                // 🔥 APLICAR ESTILOS A LOS NUEVOS BOTONES GUARDAR
+                //  APLICAR ESTILOS A LOS NUEVOS BOTONES GUARDAR
                 if (btnGuardarHombres != null) StyleButton(btnGuardarHombres, successColor);
                 if (btnGuardarMujeres != null) StyleButton(btnGuardarMujeres, successColor);
                 if (btnGuardarDeportistas != null) StyleButton(btnGuardarDeportistas, successColor);
@@ -238,9 +238,9 @@ namespace GymManager.Views
             btnEditar.Margin = new Padding(5, 0, 0, 0);
             btnEditar.Enabled = false;
 
-            // 🔥 NUEVO BOTÓN GUARDAR
+            //  NUEVO BOTÓN GUARDAR
             var btnGuardar = new Button();
-            btnGuardar.Text = "💾 GUARDAR";
+            btnGuardar.Text = "GUARDAR";
             btnGuardar.Height = 40;
             btnGuardar.Dock = DockStyle.Left;
             btnGuardar.Width = 100;
@@ -256,7 +256,7 @@ namespace GymManager.Views
             btnLimpiar.Margin = new Padding(5, 0, 0, 0);
             btnLimpiar.Enabled = false;
 
-            // 🔥 ASIGNAR LOS BOTONES A LAS VARIABLES GLOBALES SEGÚN EL PANEL
+            // ASIGNAR LOS BOTONES A LAS VARIABLES GLOBALES SEGÚN EL PANEL
             if (panel == panelHombres)
             {
                 btnGenerar.Click += btnGenerarHombres_Click;
