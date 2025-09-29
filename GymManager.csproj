@@ -93,6 +93,12 @@
     <Compile Include="Utils\PasswordHelper.cs" />
     <Compile Include="Utils\Sesion.cs" />
     <Compile Include="Utils\RutinaSimulador.cs" />
+    <Compile Include="Views\UcDetalleRutina.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcDetalleRutina.Designer.cs">
+      <DependentUpon>UcDetalleRutina.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\UcEditarRutina.cs">
       <SubType>UserControl</SubType>
     </Compile>

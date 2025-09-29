@@ -92,17 +92,17 @@ namespace GymManager.Views
             this.panelAcciones.Padding = new Padding(0, 0, 0, 5);
 
             // Botón Agregar
-            this.btnAgregarEjercicio.Text = "➕ AGREGAR";
+            this.btnAgregarEjercicio.Text = "AGREGAR";
             this.btnAgregarEjercicio.Size = new Size(100, 35);
             this.btnAgregarEjercicio.Location = new Point(0, 0);
 
             // Botón Eliminar
-            this.btnEliminarEjercicio.Text = "🗑️ ELIMINAR";
+            this.btnEliminarEjercicio.Text = "ELIMINAR";
             this.btnEliminarEjercicio.Size = new Size(100, 35);
             this.btnEliminarEjercicio.Location = new Point(105, 0);
 
             // Botón Limpiar
-            this.btnLimpiarTodo.Text = "🗑️ LIMPIAR";
+            this.btnLimpiarTodo.Text = "LIMPIAR";
             this.btnLimpiarTodo.Size = new Size(100, 35);
             this.btnLimpiarTodo.Location = new Point(210, 0);
 
@@ -155,6 +155,7 @@ namespace GymManager.Views
             this.btnAgregarEjercicio.Click += new EventHandler(btnAgregarEjercicio_Click);
             this.btnEliminarEjercicio.Click += new EventHandler(btnEliminarEjercicio_Click);
             this.btnLimpiarTodo.Click += new EventHandler(btnLimpiarTodo_Click);
+            this.Load += new EventHandler(UcEditarRutina_Load); 
 
             // Centrar botón Guardar después del layout
             this.Load += (sender, e) => {

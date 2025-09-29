@@ -28,7 +28,7 @@ namespace GymManager.Views
         private List<RutinaSimulador.EjercicioRutina> rutinaMujeres = new List<RutinaSimulador.EjercicioRutina>();
         private List<RutinaSimulador.EjercicioRutina> rutinaDeportistas = new List<RutinaSimulador.EjercicioRutina>();
 
-        // 🔥 VARIABLES PARA LOS BOTONES DE ACCIÓN
+        //  VARIABLES PARA LOS BOTONES DE ACCIÓN
         private Button btnEditarHombres;
         private Button btnLimpiarHombres;
         private Button btnEditarMujeres;
@@ -36,7 +36,7 @@ namespace GymManager.Views
         private Button btnEditarDeportistas;
         private Button btnLimpiarDeportistas;
 
-        // 🔥 NUEVAS VARIABLES PARA BOTONES GUARDAR
+        // NUEVAS VARIABLES PARA BOTONES GUARDAR
         private Button btnGuardarHombres;
         private Button btnGuardarMujeres;
         private Button btnGuardarDeportistas;
@@ -262,7 +262,9 @@ namespace GymManager.Views
                 return;
             }
 
-            EventosRutina.DispararRutinaGenerada("HOMBRES", rutinaHombres);
+            // 🔥 CORREGIDO: Pasar el nombre de la rutina
+            string nombreRutina = $"HOMBRES.{DateTime.Now:yyyyMMdd_HHmmss}";
+            EventosRutina.DispararRutinaGenerada("HOMBRES", nombreRutina, rutinaHombres);
             MessageBox.Show("Rutina de HOMBRES lista para editar", "Edición",
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -276,7 +278,9 @@ namespace GymManager.Views
                 return;
             }
 
-            EventosRutina.DispararRutinaGenerada("MUJERES", rutinaMujeres);
+            // 🔥 CORREGIDO: Pasar el nombre de la rutina
+            string nombreRutina = $"MUJERES.{DateTime.Now:yyyyMMdd_HHmmss}";
+            EventosRutina.DispararRutinaGenerada("MUJERES", nombreRutina, rutinaMujeres);
             MessageBox.Show("Rutina de MUJERES lista para editar", "Edición",
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -290,7 +294,9 @@ namespace GymManager.Views
                 return;
             }
 
-            EventosRutina.DispararRutinaGenerada("DEPORTISTAS", rutinaDeportistas);
+            // 🔥 CORREGIDO: Pasar el nombre de la rutina
+            string nombreRutina = $"DEPORTISTAS.{DateTime.Now:yyyyMMdd_HHmmss}";
+            EventosRutina.DispararRutinaGenerada("DEPORTISTAS", nombreRutina, rutinaDeportistas);
             MessageBox.Show("Rutina de DEPORTISTAS lista para editar", "Edición",
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -323,10 +329,15 @@ namespace GymManager.Views
             try
             {
                 // Simular guardado en "base de datos" temporal
-                string nombreRutina = $"{tipoRutina}_{DateTime.Now:yyyyMMdd_HHmmss}";
+                string nombreRutina = $"{tipoRutina}.{DateTime.Now:yyyyMMdd_HHmmss}";
 
-                // 🔥 DISPARAR EVENTO PARA QUE PLANILLAS PUEDA CAPTURARLO
-                EventosRutina.DispararRutinaGuardada(tipoRutina, ejercicios, nombreRutina);
+                // 🔥 CORREGIDO: Usar el método correcto con los parámetros en orden
+                EventosRutina.DispararRutinaGuardada(
+                    nombreRutina,
+                    tipoRutina,
+                    DateTime.Now,
+                    ejercicios
+                );
 
                 MessageBox.Show($"✅ Rutina de {tipoRutina} guardada exitosamente\n📝 Nombre: {nombreRutina}",
                               "Guardado Exitoso", MessageBoxButtons.OK, MessageBoxIcon.Information);
