@@ -10,26 +10,27 @@ namespace GymManager.Utils
         // Base de datos simulada de ejercicios (en un caso real, esto vendría de la BD)
         private static List<Ejercicio> _ejerciciosDisponibles = new List<Ejercicio>
         {
-            new Ejercicio { Id = 1, Nombre = "Press banca", Musculo = "Pectoral", Descripcion = "Ejercicio para pectorales" },
-            new Ejercicio { Id = 2, Nombre = "Sentadillas", Musculo = "Piernas", Descripcion = "Ejercicio para piernas" },
-            new Ejercicio { Id = 3, Nombre = "Dominadas", Musculo = "Espalda", Descripcion = "Ejercicio para espalda" },
-            new Ejercicio { Id = 4, Nombre = "Press militar", Musculo = "Hombros", Descripcion = "Ejercicio para hombros" },
-            new Ejercicio { Id = 5, Nombre = "Curl de bíceps", Musculo = "Brazos", Descripcion = "Ejercicio para bíceps" },
-            new Ejercicio { Id = 6, Nombre = "Peso muerto", Musculo = "Espalda", Descripcion = "Ejercicio para espalda baja" },
-            new Ejercicio { Id = 7, Nombre = "Fondos en paralelas", Musculo = "Tríceps", Descripcion = "Ejercicio para tríceps" },
-            new Ejercicio { Id = 8, Nombre = "Zancadas", Musculo = "Piernas", Descripcion = "Ejercicio para piernas" },
-            new Ejercicio { Id = 9, Nombre = "Hip thrust", Musculo = "Glúteos", Descripcion = "Ejercicio para glúteos" },
-            new Ejercicio { Id = 10, Nombre = "Burpees", Musculo = "Full Body", Descripcion = "Ejercicio cardiovascular" },
-            new Ejercicio { Id = 11, Nombre = "Plancha", Musculo = "Core", Descripcion = "Ejercicio para abdomen" },
-            new Ejercicio { Id = 12, Nombre = "Mountain climbers", Musculo = "Core", Descripcion = "Ejercicio cardiovascular" }
+            new Ejercicio { Id = 1, Nombre = "Press banca", Musculo = "Pectoral", Series = 3, Repeticiones = "10", Descanso = "60s" },
+            new Ejercicio { Id = 2, Nombre = "Sentadillas", Musculo = "Piernas", Series = 4, Repeticiones = "12", Descanso = "90s" },
+            new Ejercicio { Id = 3, Nombre = "Dominadas", Musculo = "Espalda", Series = 3, Repeticiones = "8", Descanso = "75s" },
+            new Ejercicio { Id = 4, Nombre = "Press militar", Musculo = "Hombros", Series = 3, Repeticiones = "10", Descanso = "60s" },
+            new Ejercicio { Id = 5, Nombre = "Curl de bíceps", Musculo = "Brazos", Series = 3, Repeticiones = "12", Descanso = "45s" },
+            new Ejercicio { Id = 6, Nombre = "Peso muerto", Musculo = "Espalda", Series = 4, Repeticiones =" 8", Descanso = "120s" },
+            new Ejercicio { Id = 7, Nombre = "Fondos en paralelas", Musculo = "Tríceps", Series = 3, Repeticiones = "12", Descanso = "60s" },
+            new Ejercicio { Id = 8, Nombre = "Zancadas", Musculo = "Piernas", Series = 3, Repeticiones = "12", Descanso = "75s" },
+            new Ejercicio { Id = 9, Nombre = "Hip thrust", Musculo = "Glúteos", Series = 4, Repeticiones = "10", Descanso = "90s" },
+            new Ejercicio { Id = 10, Nombre = "Burpees", Musculo = "Full Body", Series = 3, Repeticiones = "15", Descanso = "45s" },
+            new Ejercicio { Id = 11, Nombre = "Plancha", Musculo = "Core", Series = 3, Repeticiones = "60", Descanso = "30s" },
+            new Ejercicio { Id = 12, Nombre = "Mountain climbers", Musculo = "Core", Series = 3, Repeticiones = "20", Descanso = "30s" }
         };
+
 
         // Clase para representar un ejercicio en una rutina (con series y repeticiones)
         public class EjercicioRutina
         {
             public string Nombre { get; set; } = "";
             public int Series { get; set; }
-            public int Repeticiones { get; set; }
+            public string Repeticiones { get; set; }
             public int Descanso { get; set; }
             public string Musculo { get; set; } = "";
         }
@@ -61,7 +62,7 @@ namespace GymManager.Utils
             {
                 Nombre = e.Nombre,
                 Series = random.Next(3, 5), // 3-4 series
-                Repeticiones = random.Next(6, 12), // 6-11 repeticiones
+                Repeticiones = random.Next(6, 12).ToString(), // 6-11 repeticiones
                 Descanso = random.Next(60, 91), // 60-90 segundos
                 Musculo = e.Musculo
             }).ToList();
@@ -80,7 +81,7 @@ namespace GymManager.Utils
             {
                 Nombre = e.Nombre,
                 Series = random.Next(3, 4), // 3 series
-                Repeticiones = random.Next(10, 16), // 10-15 repeticiones
+                Repeticiones = random.Next(10, 16).ToString(), // 10-15 repeticiones
                 Descanso = random.Next(45, 76), // 45-75 segundos
                 Musculo = e.Musculo
             }).ToList();
@@ -99,7 +100,7 @@ namespace GymManager.Utils
             {
                 Nombre = e.Nombre,
                 Series = random.Next(3, 5), // 3-4 series
-                Repeticiones = random.Next(12, 21), // 12-20 repeticiones
+                Repeticiones = random.Next(12, 21).ToString(), // 12-20 repeticiones
                 Descanso = random.Next(30, 61), // 30-60 segundos
                 Musculo = e.Musculo
             }).ToList();
@@ -117,7 +118,7 @@ namespace GymManager.Utils
             {
                 Nombre = e.Nombre,
                 Series = random.Next(3, 4),
-                Repeticiones = random.Next(8, 15),
+                Repeticiones = random.Next(8, 15).ToString(),
                 Descanso = random.Next(45, 76),
                 Musculo = e.Musculo
             }).ToList();

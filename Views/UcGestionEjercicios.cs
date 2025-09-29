@@ -13,19 +13,25 @@ namespace GymManager.Views
         public UcGestionEjercicios()
         {
             InitializeComponent();
-            ConfigurarComboMusculos();   //  combo con placeholder
-            EstilizarBotones();          // colores de botones
-            RefrescarGrid();
+            ConfigurarComboMusculos();   // carga el combo de músculos con placeholder
+            EstilizarBotones();          // aplica colores y estilos a los botones
+            RefrescarGrid();             // llena la grilla con los ejercicios actuales
+
+            // placeholders en campos de texto
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
-            AplicarPlaceholder(txtDescripcion, "Descripción");
+            AplicarPlaceholder(txtSeries, "Series");
+            AplicarPlaceholder(txtRepeticiones, "Repeticiones");
+            AplicarPlaceholder(txtDescanso, "Descanso (segundos)");
         }
 
+        // Refresca la grilla con los datos actualizados
         private void RefrescarGrid()
         {
             dgvEjercicios.DataSource = null;
             dgvEjercicios.DataSource = controller.ObtenerTodos();
         }
 
+        // Botón AGREGAR
         private void btnAgregar_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtNombre.Text) || cmbMusculo.SelectedIndex == 0)
@@ -35,11 +41,14 @@ namespace GymManager.Views
                 return;
             }
 
+            // Crea un nuevo objeto Ejercicio desde los campos del formulario
             var nuevo = new Ejercicio
             {
                 Nombre = txtNombre.Text,
                 Musculo = cmbMusculo.SelectedItem.ToString(),
-                Descripcion = txtDescripcion.Text
+                Series = int.Parse(txtSeries.Text),
+                Repeticiones = txtRepeticiones.Text,  // queda como string
+                Descanso = txtDescanso.Text
             };
 
             controller.Agregar(nuevo);
@@ -49,15 +58,32 @@ namespace GymManager.Views
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        // Validación: el nombre solo admite letras y espacios
         private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Solo permite letras, teclas de control (ej: borrar) y espacios
             if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
             {
                 e.Handled = true; // Bloquea el ingreso
             }
         }
 
+        // Validación: series y repeticiones solo admiten números
+        private void txtSeries_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true; // Bloquea el ingreso
+            }
+        }
+        private void txtRepeticiones_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true; // Bloquea el ingreso
+            }
+        }
+
+        // Botón EDITAR
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null)
@@ -76,7 +102,9 @@ namespace GymManager.Views
             var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
             ejercicio.Nombre = txtNombre.Text;
             ejercicio.Musculo = cmbMusculo.SelectedItem?.ToString();
-            ejercicio.Descripcion = txtDescripcion.Text;
+            ejercicio.Series = int.Parse(txtSeries.Text);
+            ejercicio.Repeticiones = txtRepeticiones.Text;  // queda como string
+            ejercicio.Descanso = txtDescanso.Text;
 
             controller.Editar(ejercicio);
             RefrescarGrid();
@@ -85,6 +113,7 @@ namespace GymManager.Views
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        // Botón ELIMINAR (eliminación lógica en el controlador)
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null)
@@ -102,37 +131,47 @@ namespace GymManager.Views
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        // Botón LIMPIAR
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
         }
 
+        // Cuando seleccionás una fila de la grilla, llena los campos de edición
         private void dgvEjercicios_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null) return;
 
             var ejercicio = (Ejercicio)dgvEjercicios.CurrentRow.DataBoundItem;
             txtNombre.Text = ejercicio.Nombre;
-            txtDescripcion.Text = ejercicio.Descripcion;
+            txtSeries.Text = ejercicio.Series.ToString();
+            txtRepeticiones.Text = ejercicio.Repeticiones.ToString();
+            txtDescanso.Text = ejercicio.Descanso;
 
             int idx = cmbMusculo.FindStringExact(ejercicio.Musculo ?? "");
             cmbMusculo.SelectedIndex = (idx >= 0) ? idx : 0;
 
             txtNombre.ForeColor = Color.Black;
-            txtDescripcion.ForeColor = Color.Black;
+            txtSeries.ForeColor = Color.Black;
+            txtRepeticiones.ForeColor = Color.Black;
+            txtDescanso.ForeColor = Color.Black;
             cmbMusculo.ForeColor = (cmbMusculo.SelectedIndex == 0) ? Color.Gray : Color.Black;
         }
 
+        // Limpia los campos
         private void LimpiarCampos()
         {
             txtNombre.Text = "";
-            txtDescripcion.Text = "";
-            cmbMusculo.SelectedIndex = 0; // vuelve al placeholder
+            txtSeries.Text = "";
+            txtRepeticiones.Text = "";
+            txtDescanso.Text = "";
+            cmbMusculo.SelectedIndex = 0;
             cmbMusculo.ForeColor = Color.Gray;
             dgvEjercicios.ClearSelection();
             txtNombre.Focus();
         }
 
+        // Búsqueda dinámica en la grilla
         private void txtBuscar_TextChanged(object sender, EventArgs e)
         {
             var lista = controller.ObtenerTodos();
@@ -144,6 +183,7 @@ namespace GymManager.Views
             dgvEjercicios.DataSource = filtrados;
         }
 
+        // Método reutilizable para aplicar placeholder a TextBox
         private void AplicarPlaceholder(TextBox txt, string placeholder)
         {
             txt.ForeColor = Color.Gray;
@@ -168,7 +208,7 @@ namespace GymManager.Views
             };
         }
 
-        //  Inicializa el combo con placeholder
+        // Carga el combo de músculos
         private void ConfigurarComboMusculos()
         {
             cmbMusculo.Items.Clear();
@@ -189,7 +229,7 @@ namespace GymManager.Views
             };
         }
 
-        // Colores de los botones
+        // Aplica colores y estilos a los botones
         private void EstilizarBotones()
         {
             btnAgregar.FlatStyle = FlatStyle.Flat;

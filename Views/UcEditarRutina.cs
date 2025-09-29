@@ -295,7 +295,7 @@ namespace GymManager.Views
                     {
                         Nombre = row.Cells[0].Value?.ToString() ?? "",
                         Series = int.Parse(row.Cells[1].Value?.ToString() ?? "0"),
-                        Repeticiones = int.Parse(row.Cells[2].Value?.ToString() ?? "0"),
+                        Repeticiones = row.Cells[2].Value?.ToString() ?? "",
                         Descanso = int.Parse(row.Cells[3].Value?.ToString() ?? "0")
                     };
 

@@ -20,10 +20,8 @@ namespace GymManager.Controllers
                 conn.Open();
 
                 // Trae solo los ejercicios activos
-                string query = @"
-                    SELECT id_ejercicio, nombre, musculo, descripcion
-                    FROM Ejercicios
-                    WHERE Activo = 1"; // 👈 filtro de baja lógica
+                // OBTENER
+                string query = "SELECT id_ejercicio, nombre, musculo, series, repeticiones, descanso FROM Ejercicios WHERE Activo = 1";
 
                 using (var cmd = new SqlCommand(query, conn))
                 using (var reader = cmd.ExecuteReader())
@@ -32,10 +30,12 @@ namespace GymManager.Controllers
                     {
                         var ejercicio = new Ejercicio
                         {
-                            Id = reader.GetInt32(0),              // id_ejercicio
-                            Nombre = reader.GetString(1),             // nombre
-                            Musculo = reader.GetString(2),             // musculo
-                            Descripcion = reader.IsDBNull(3) ? "" : reader.GetString(3) // puede venir NULL
+                            Id = reader.GetInt32(0),
+                            Nombre = reader.GetString(1),
+                            Musculo = reader.GetString(2),
+                            Series = reader.GetInt32(3),
+                            Repeticiones = reader.GetString(4),
+                            Descanso = reader.IsDBNull(5) ? "" : reader.GetString(5)
                         };
 
                         lista.Add(ejercicio);
@@ -55,15 +55,18 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
+                // AGREGAR
                 string query = @"
-                    INSERT INTO Ejercicios (nombre, musculo, descripcion, Activo)
-                    VALUES (@n, @m, @d, 1)"; // 👈 explícitamente activo
+                INSERT INTO Ejercicios (nombre, musculo, series, repeticiones, descanso, Activo)
+                VALUES (@n, @m, @s, @r, @d, 1)";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@n", e.Nombre ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@m", string.IsNullOrEmpty(e.Musculo) ? (object)DBNull.Value : e.Musculo);
-                    cmd.Parameters.AddWithValue("@d", string.IsNullOrEmpty(e.Descripcion) ? (object)DBNull.Value : e.Descripcion);
+                    cmd.Parameters.AddWithValue("@s", e.Series);
+                    cmd.Parameters.AddWithValue("@r", e.Repeticiones);
+                    cmd.Parameters.AddWithValue("@d", string.IsNullOrEmpty(e.Descanso) ? (object)DBNull.Value : e.Descanso);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -79,16 +82,19 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
+                // EDITAR
                 string query = @"
-                    UPDATE Ejercicios
-                    SET nombre = @n, musculo = @m, descripcion = @d
-                    WHERE id_ejercicio = @id AND Activo = 1"; // 👈 no edita si está inactivo
+                UPDATE Ejercicios
+                SET nombre = @n, musculo = @m, series = @s, repeticiones = @r, descanso = @d
+                WHERE id_ejercicio = @id AND Activo = 1";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@n", e.Nombre);
                     cmd.Parameters.AddWithValue("@m", e.Musculo);
-                    cmd.Parameters.AddWithValue("@d", e.Descripcion ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@s", e.Series);
+                    cmd.Parameters.AddWithValue("@r", e.Repeticiones);
+                    cmd.Parameters.AddWithValue("@d", string.IsNullOrEmpty(e.Descanso) ? (object)DBNull.Value : e.Descanso);
                     cmd.Parameters.AddWithValue("@id", e.Id);
 
                     cmd.ExecuteNonQuery();

@@ -88,9 +88,9 @@ namespace GymManager.Views
                 FechaCreacion = DateTime.Now.AddDays(-5),
                 Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>
                 {
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Press banca", Series = 3, Repeticiones = 10, Descanso = 60 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Sentadillas", Series = 4, Repeticiones = 8, Descanso = 90 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Dominadas", Series = 3, Repeticiones = 8, Descanso = 75 }
+                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Press banca", Series = 3, Repeticiones = "10", Descanso = 60 },
+                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Sentadillas", Series = 4, Repeticiones ="8", Descanso = 90 },
+                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Dominadas", Series = 3, Repeticiones = "8", Descanso = 75 }
                 }
             });
 
@@ -102,9 +102,9 @@ namespace GymManager.Views
                 FechaCreacion = DateTime.Now.AddDays(-3),
                 Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>
                 {
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Peso muerto", Series = 3, Repeticiones = 12, Descanso = 60 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Zancadas", Series = 4, Repeticiones = 10, Descanso = 90 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Hip thrust", Series = 4, Repeticiones = 12, Descanso = 60 }
+                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Peso muerto", Series = 3, Repeticiones = "12", Descanso = 60 },
+                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Zancadas", Series = 4, Repeticiones = "10", Descanso = 90 },
+                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Hip thrust", Series = 4, Repeticiones = "12", Descanso = 60 }
                 }
             });
 
