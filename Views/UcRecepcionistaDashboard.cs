@@ -126,7 +126,7 @@ namespace GymManager.Views
             // Ejemplo estático (después podrías conectarlo a BD o lógica del controlador)
             dgvRutina.Rows.Add("🏋️‍♂️ Sentadillas", "4", "12", "60 s");
             dgvRutina.Rows.Add("💪 Press banca", "4", "10", "90 s");
-            dgvRutina.Rows.Add("🔥 Plancha abdominal", "3", "30 seg", "30 s");
+            dgvRutina.Rows.Add("🔥 Plancha abdominal", "3", "30", "30 s");
             dgvRutina.Rows.Add("🚴‍♂️ Burpees", "3", "15", "45 s");
             dgvRutina.Rows.Add("🧘‍♂️ Flexiones", "4", "12", "60 s");
 
