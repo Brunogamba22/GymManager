@@ -15,12 +15,14 @@ namespace GymManager.Models
 
     public class Usuario
     {
-        public string Id { get; set; } = ""; // dni como string
+        public int IdUsuario { get; set; }   // PK identity real en BD
+        public string Dni { get; set; } = ""; // único pero no PK
         public string Nombre { get; set; } = "";
         public string Apellido { get; set; } = "";
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
         public Rol Rol { get; set; }
     }
+
 }
 

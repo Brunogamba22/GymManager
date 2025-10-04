@@ -10,12 +10,14 @@ namespace GymManager.Models
     // Será usado tanto por el administrador (alta/baja) como por el profesor (rutinas)
     public class Ejercicio
     {
-        public int Id { get; set; }               // Identificador único
-        public string Nombre { get; set; } = "";  // Nombre del ejercicio
-        public string Musculo { get; set; } = ""; // Músculo trabajado
-        public int Series { get; set; }
-        public string Repeticiones { get; set; } = ""; // Puede ser un rango (e.g., "8-12")
-        public string Descanso { get; set; } = "";
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public int GrupoMuscularId { get; set; }   // FK a Grupo_Muscular
+        public string GrupoMuscularNombre { get; set; } = ""; // opcional, para joins
+        public int CreadoPor { get; set; }         // FK a Usuarios.id_usuario
+        public string Imagen { get; set; } = "";   // ruta de imagen
+
+        // ❌ Series/Repeticiones/Descanso se eliminan -> están en DetalleRutina
     }
 }
 
