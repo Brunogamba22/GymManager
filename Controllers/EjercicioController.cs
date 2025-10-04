@@ -9,7 +9,7 @@ namespace GymManager.Controllers
     public class EjercicioController
     {
         // ------------------------------------------------------------
-        // LEE TODOS LOS EJERCICIOS ACTIVOS
+        // LEE TODOS LOS EJERCICIOS ACTIVOS (JOIN con Grupo_Muscular)
         // ------------------------------------------------------------
         public List<Ejercicio> ObtenerTodos()
         {
@@ -19,9 +19,18 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                // Trae solo los ejercicios activos
-                // OBTENER
-                string query = "SELECT id_ejercicio, nombre, musculo, series, repeticiones, descanso FROM Ejercicios WHERE Activo = 1";
+                string query = @"
+                    SELECT 
+                        e.id_ejercicio,
+                        e.nombre,
+                        g.id_grupo_muscular,
+                        g.nombre AS grupo_muscular,
+                        e.creadoPor,
+                        e.imagen
+                    FROM Ejercicios e
+                    INNER JOIN Grupo_Muscular g ON e.id_grupo_muscular = g.id_grupo_muscular
+                    WHERE e.Activo = 1
+                    ORDER BY e.nombre;";
 
                 using (var cmd = new SqlCommand(query, conn))
                 using (var reader = cmd.ExecuteReader())
@@ -30,12 +39,14 @@ namespace GymManager.Controllers
                     {
                         var ejercicio = new Ejercicio
                         {
-                            Id = reader.GetInt32(0),
-                            Nombre = reader.GetString(1),
-                            Musculo = reader.GetString(2),
-                            Series = reader.GetInt32(3),
-                            Repeticiones = reader.GetString(4),
-                            Descanso = reader.IsDBNull(5) ? "" : reader.GetString(5)
+                            Id = reader.GetInt32(reader.GetOrdinal("id_ejercicio")),
+                            Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                            GrupoMuscularId = reader.GetInt32(reader.GetOrdinal("id_grupo_muscular")),
+                            GrupoMuscularNombre = reader.GetString(reader.GetOrdinal("grupo_muscular")),
+                            CreadoPor = reader.GetInt32(reader.GetOrdinal("creadoPor")),
+                            Imagen = reader.IsDBNull(reader.GetOrdinal("imagen"))
+                                ? string.Empty
+                                : reader.GetString(reader.GetOrdinal("imagen"))
                         };
 
                         lista.Add(ejercicio);
@@ -47,7 +58,7 @@ namespace GymManager.Controllers
         }
 
         // ------------------------------------------------------------
-        // ALTA DE EJERCICIO (siempre lo da de alta con Activo = 1)
+        // ALTA DE EJERCICIO (siempre con Activo = 1)
         // ------------------------------------------------------------
         public void Agregar(Ejercicio e)
         {
@@ -55,18 +66,16 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                // AGREGAR
                 string query = @"
-                INSERT INTO Ejercicios (nombre, musculo, series, repeticiones, descanso, Activo)
-                VALUES (@n, @m, @s, @r, @d, 1)";
+                    INSERT INTO Ejercicios (nombre, id_grupo_muscular, creadoPor, imagen, Activo)
+                    VALUES (@n, @g, @c, @img, 1)";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@n", e.Nombre ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@m", string.IsNullOrEmpty(e.Musculo) ? (object)DBNull.Value : e.Musculo);
-                    cmd.Parameters.AddWithValue("@s", e.Series);
-                    cmd.Parameters.AddWithValue("@r", e.Repeticiones);
-                    cmd.Parameters.AddWithValue("@d", string.IsNullOrEmpty(e.Descanso) ? (object)DBNull.Value : e.Descanso);
+                    cmd.Parameters.AddWithValue("@g", e.GrupoMuscularId);
+                    cmd.Parameters.AddWithValue("@c", e.CreadoPor);
+                    cmd.Parameters.AddWithValue("@img", string.IsNullOrEmpty(e.Imagen) ? (object)DBNull.Value : e.Imagen);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -82,19 +91,21 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                // EDITAR
                 string query = @"
-                UPDATE Ejercicios
-                SET nombre = @n, musculo = @m, series = @s, repeticiones = @r, descanso = @d
-                WHERE id_ejercicio = @id AND Activo = 1";
+                    UPDATE Ejercicios
+                    SET 
+                        nombre = @n, 
+                        id_grupo_muscular = @g, 
+                        creadoPor = @c, 
+                        imagen = @img
+                    WHERE id_ejercicio = @id AND Activo = 1;";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@n", e.Nombre);
-                    cmd.Parameters.AddWithValue("@m", e.Musculo);
-                    cmd.Parameters.AddWithValue("@s", e.Series);
-                    cmd.Parameters.AddWithValue("@r", e.Repeticiones);
-                    cmd.Parameters.AddWithValue("@d", string.IsNullOrEmpty(e.Descanso) ? (object)DBNull.Value : e.Descanso);
+                    cmd.Parameters.AddWithValue("@g", e.GrupoMuscularId);
+                    cmd.Parameters.AddWithValue("@c", e.CreadoPor);
+                    cmd.Parameters.AddWithValue("@img", string.IsNullOrEmpty(e.Imagen) ? (object)DBNull.Value : e.Imagen);
                     cmd.Parameters.AddWithValue("@id", e.Id);
 
                     cmd.ExecuteNonQuery();
@@ -111,7 +122,7 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                string query = "UPDATE Ejercicios SET Activo = 0 WHERE id_ejercicio = @id"; // 👈 baja lógica
+                string query = "UPDATE Ejercicios SET Activo = 0 WHERE id_ejercicio = @id;";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -119,6 +130,56 @@ namespace GymManager.Controllers
                     cmd.ExecuteNonQuery();
                 }
             }
+        }
+
+        // ------------------------------------------------------------
+        // OBTENER UNO POR ID (para editar o ver detalle)
+        // ------------------------------------------------------------
+        public Ejercicio ObtenerPorId(int id)
+        {
+            Ejercicio ejercicio = null;
+
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+
+                string query = @"
+                    SELECT 
+                        e.id_ejercicio,
+                        e.nombre,
+                        g.id_grupo_muscular,
+                        g.nombre AS grupo_muscular,
+                        e.creadoPor,
+                        e.imagen
+                    FROM Ejercicios e
+                    INNER JOIN Grupo_Muscular g ON e.id_grupo_muscular = g.id_grupo_muscular
+                    WHERE e.id_ejercicio = @id AND e.Activo = 1;";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            ejercicio = new Ejercicio
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("id_ejercicio")),
+                                Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                                GrupoMuscularId = reader.GetInt32(reader.GetOrdinal("id_grupo_muscular")),
+                                GrupoMuscularNombre = reader.GetString(reader.GetOrdinal("grupo_muscular")),
+                                CreadoPor = reader.GetInt32(reader.GetOrdinal("creadoPor")),
+                                Imagen = reader.IsDBNull(reader.GetOrdinal("imagen"))
+                                    ? string.Empty
+                                    : reader.GetString(reader.GetOrdinal("imagen"))
+                            };
+                        }
+                    }
+                }
+            }
+
+            return ejercicio;
         }
     }
 }

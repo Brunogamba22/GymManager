@@ -11,8 +11,8 @@ namespace GymManager.Views
     {
         private UsuarioController controller = new UsuarioController();
 
-        // Ahora es string porque Id = dni
-        private string idSeleccionado = null;
+        // Dni del usuario seleccionado (clave lógica)
+        private string dniSeleccionado = null;
 
         public UcGestionUsuarios()
         {
@@ -20,27 +20,27 @@ namespace GymManager.Views
             CargarUsuarios();
             FormatearGrid();
             ConfigurarPlaceholder();
-            EstilizarBotones(); // estilo de colores
+            EstilizarBotones();
         }
 
         private List<Usuario> usuariosCache;
 
         private void CargarUsuarios()
         {
-            usuariosCache = controller.ObtenerTodos(); // guardamos en memoria
+            usuariosCache = controller.ObtenerTodos();
             dgvUsuarios.DataSource = null;
-            dgvUsuarios.DataSource = usuariosCache; //  usamos la lista cacheada
+            dgvUsuarios.DataSource = usuariosCache;
 
-
-            // Ocultar columna Password si existe
             if (dgvUsuarios.Columns["Password"] != null)
                 dgvUsuarios.Columns["Password"].Visible = false;
         }
 
         private void FormatearGrid()
         {
-            if (dgvUsuarios.Columns["Id"] != null)
-                dgvUsuarios.Columns["Id"].HeaderText = "ID Usuario";
+            if (dgvUsuarios.Columns["IdUsuario"] != null)
+                dgvUsuarios.Columns["IdUsuario"].HeaderText = "ID Usuario";
+            if (dgvUsuarios.Columns["Dni"] != null)
+                dgvUsuarios.Columns["Dni"].HeaderText = "DNI";
             if (dgvUsuarios.Columns["Nombre"] != null)
                 dgvUsuarios.Columns["Nombre"].HeaderText = "Nombre";
             if (dgvUsuarios.Columns["Apellido"] != null)
@@ -48,13 +48,10 @@ namespace GymManager.Views
             if (dgvUsuarios.Columns["Email"] != null)
                 dgvUsuarios.Columns["Email"].HeaderText = "Correo Electrónico";
             if (dgvUsuarios.Columns["Rol"] != null)
-                dgvUsuarios.Columns["Rol"].HeaderText = "Rol de Usuario";
+                dgvUsuarios.Columns["Rol"].HeaderText = "Rol";
 
-            // Alternar colores de filas
             dgvUsuarios.AlternatingRowsDefaultCellStyle.BackColor = Color.LightGray;
         }
-
-
 
         private void LimpiarCampos()
         {
@@ -63,12 +60,19 @@ namespace GymManager.Views
             txtEmail.Text = "";
             txtPassword.Text = "";
             cmbRol.SelectedIndex = -1;
-            idSeleccionado = null;
+            dniSeleccionado = null;
         }
 
+        // ------------------------------------------------------------
+        // AGREGAR USUARIO
+        // ------------------------------------------------------------
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            if (txtNombre.Text == "" || txtApellido.Text == "" || txtEmail.Text == "" || txtPassword.Text == "" || cmbRol.SelectedIndex == -1)
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
+                string.IsNullOrWhiteSpace(txtApellido.Text) ||
+                string.IsNullOrWhiteSpace(txtEmail.Text) ||
+                string.IsNullOrWhiteSpace(txtPassword.Text) ||
+                cmbRol.SelectedIndex == -1)
             {
                 MessageBox.Show("Por favor completá todos los campos.");
                 return;
@@ -76,11 +80,11 @@ namespace GymManager.Views
 
             var nuevoUsuario = new Usuario
             {
-                Id = Guid.NewGuid().ToString().Substring(0, 8), // dni simulado si no tenés input
-                Nombre = txtNombre.Text,
-                Apellido = txtApellido.Text,
-                Email = txtEmail.Text,
-                Password = txtPassword.Text,
+                Dni = Guid.NewGuid().ToString().Substring(0, 8), // DNI simulado
+                Nombre = txtNombre.Text.Trim(),
+                Apellido = txtApellido.Text.Trim(),
+                Email = txtEmail.Text.Trim(),
+                Password = txtPassword.Text.Trim(),
                 Rol = (Rol)cmbRol.SelectedIndex
             };
 
@@ -91,21 +95,23 @@ namespace GymManager.Views
                 LimpiarCampos();
                 CargarUsuarios();
             }
-            catch (InvalidOperationException ex) // cuando ya existe
+            catch (InvalidOperationException ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            catch (Exception ex) // cualquier otro error inesperado
+            catch (Exception ex)
             {
                 MessageBox.Show("Ocurrió un error al agregar el usuario: " + ex.Message,
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
 
+        // ------------------------------------------------------------
+        // EDITAR USUARIO
+        // ------------------------------------------------------------
         private void btnEditar_Click(object sender, EventArgs e)
         {
-            if (idSeleccionado == null)
+            if (dniSeleccionado == null)
             {
                 MessageBox.Show("Seleccioná un usuario de la lista.");
                 return;
@@ -113,11 +119,11 @@ namespace GymManager.Views
 
             var usuarioEditado = new Usuario
             {
-                Id = idSeleccionado, // ahora string
-                Nombre = txtNombre.Text,
-                Apellido = txtApellido.Text,
-                Email = txtEmail.Text,
-                Password = txtPassword.Text,
+                Dni = dniSeleccionado, // se usa el DNI como identificador lógico
+                Nombre = txtNombre.Text.Trim(),
+                Apellido = txtApellido.Text.Trim(),
+                Email = txtEmail.Text.Trim(),
+                Password = txtPassword.Text.Trim(),
                 Rol = (Rol)cmbRol.SelectedIndex
             };
 
@@ -134,6 +140,10 @@ namespace GymManager.Views
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        // ------------------------------------------------------------
+        // ELIMINAR USUARIO
+        // ------------------------------------------------------------
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             if (dgvUsuarios.CurrentRow?.DataBoundItem is Usuario uSel && uSel.Rol == Rol.Administrador)
@@ -142,7 +152,7 @@ namespace GymManager.Views
                 return;
             }
 
-            if (idSeleccionado == null)
+            if (dniSeleccionado == null)
             {
                 MessageBox.Show("Seleccioná un usuario primero.");
                 return;
@@ -150,7 +160,7 @@ namespace GymManager.Views
 
             try
             {
-                controller.Eliminar(idSeleccionado);
+                controller.Eliminar(dniSeleccionado);
                 MessageBox.Show("Usuario eliminado.");
                 LimpiarCampos();
                 CargarUsuarios();
@@ -160,33 +170,31 @@ namespace GymManager.Views
                 MessageBox.Show("Ocurrió un error al eliminar: " + ex.Message,
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
+
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
         }
 
+        // ------------------------------------------------------------
+        // VALIDACIONES DE ENTRADA
+        // ------------------------------------------------------------
         private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Solo permite letras, teclas de control (ej: borrar) y espacios
             if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
-            {
-                e.Handled = true; // Bloquea el ingreso
-            }
+                e.Handled = true;
         }
 
         private void txtApellido_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
-            {
                 e.Handled = true;
-            }
         }
 
-
-
-
+        // ------------------------------------------------------------
+        // SELECCIÓN EN LA GRILLA
+        // ------------------------------------------------------------
         private void dgvUsuarios_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvUsuarios.CurrentRow == null || dgvUsuarios.CurrentRow.DataBoundItem == null)
@@ -194,33 +202,35 @@ namespace GymManager.Views
 
             var usuario = (Usuario)dgvUsuarios.CurrentRow.DataBoundItem;
 
-            idSeleccionado = usuario.Id; // ahora string
+            dniSeleccionado = usuario.Dni; // ahora usamos Dni
             txtNombre.Text = usuario.Nombre;
             txtApellido.Text = usuario.Apellido;
             txtEmail.Text = usuario.Email;
             txtPassword.Text = usuario.Password;
             cmbRol.SelectedIndex = (int)usuario.Rol;
 
-            //  No permitir eliminar administradores
             btnEliminar.Enabled = usuario.Rol != Rol.Administrador;
         }
 
-        //buscador
+        // ------------------------------------------------------------
+        // BÚSQUEDA EN TIEMPO REAL
+        // ------------------------------------------------------------
         private void txtBuscar_TextChanged(object sender, EventArgs e)
         {
             string q = txtBuscar.Text.Trim().ToLower();
 
-            if (string.IsNullOrEmpty(q) || q == "nombre usuario") //  ignorar placeholder
+            if (string.IsNullOrEmpty(q) || q == "nombre usuario")
             {
                 dgvUsuarios.DataSource = usuariosCache;
             }
             else
             {
                 var filtrados = usuariosCache.FindAll(u =>
-                 (u.Nombre != null && u.Nombre.ToLower().Contains(q)) ||
-                 (u.Apellido != null && u.Apellido.ToLower().Contains(q)) ||
-                 (u.Email != null && u.Email.ToLower().Contains(q))
-                 );
+                    (u.Nombre != null && u.Nombre.ToLower().Contains(q)) ||
+                    (u.Apellido != null && u.Apellido.ToLower().Contains(q)) ||
+                    (u.Email != null && u.Email.ToLower().Contains(q)) ||
+                    (u.Dni != null && u.Dni.ToLower().Contains(q))
+                );
 
                 dgvUsuarios.DataSource = filtrados;
             }
@@ -228,9 +238,6 @@ namespace GymManager.Views
             if (dgvUsuarios.Columns["Password"] != null)
                 dgvUsuarios.Columns["Password"].Visible = false;
         }
-
-
-
 
         private void ConfigurarPlaceholder()
         {
@@ -258,30 +265,24 @@ namespace GymManager.Views
 
         private void EstilizarBotones()
         {
-            btnAgregar.FlatStyle = FlatStyle.Flat;
-            btnAgregar.UseVisualStyleBackColor = false;
-            btnAgregar.BackColor = Color.FromArgb(46, 204, 113); // verde
+            Button[] botones = { btnAgregar, btnEditar, btnEliminar, btnLimpiar };
+            foreach (var b in botones)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.UseVisualStyleBackColor = false;
+            }
+
+            btnAgregar.BackColor = Color.FromArgb(46, 204, 113);
             btnAgregar.ForeColor = Color.White;
 
-            btnEditar.FlatStyle = FlatStyle.Flat;
-            btnEditar.UseVisualStyleBackColor = false;
-            btnEditar.BackColor = Color.Gold; // amarillo
+            btnEditar.BackColor = Color.Gold;
             btnEditar.ForeColor = Color.Black;
 
-            btnEliminar.FlatStyle = FlatStyle.Flat;
-            btnEliminar.UseVisualStyleBackColor = false;
-            btnEliminar.BackColor = Color.FromArgb(231, 76, 60); // rojo
+            btnEliminar.BackColor = Color.FromArgb(231, 76, 60);
             btnEliminar.ForeColor = Color.White;
 
-            btnLimpiar.FlatStyle = FlatStyle.Flat;
-            btnLimpiar.UseVisualStyleBackColor = false;
-            btnLimpiar.BackColor = Color.RoyalBlue; // azul
+            btnLimpiar.BackColor = Color.RoyalBlue;
             btnLimpiar.ForeColor = Color.White;
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

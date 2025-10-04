@@ -166,28 +166,24 @@ namespace GymManager.Controllers
         // MÉTODO: Eliminar(int idUsuario)
         // Desactiva un usuario (baja lógica, no elimina físicamente)
         // ------------------------------------------------------------
-        public void Eliminar(int idUsuario)
+        public void Eliminar(string dni)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
-                // Inicia una transacción (por seguridad: todo o nada)
                 using (var tx = conn.BeginTransaction())
                 {
-                    // Consulta el rol del usuario a eliminar
                     var getRol = new SqlCommand(
-                        "SELECT id_rol FROM dbo.Usuarios WHERE id_usuario=@id AND Activo=1", conn, tx);
-                    getRol.Parameters.AddWithValue("@id", idUsuario);
+                        "SELECT id_rol FROM dbo.Usuarios WHERE dni=@dni AND Activo=1", conn, tx);
+                    getRol.Parameters.AddWithValue("@dni", dni);
                     var rolObj = getRol.ExecuteScalar();
 
-                    // Si no existe o ya está inactivo, lanza error
                     if (rolObj == null)
                         throw new InvalidOperationException("El usuario no existe o ya está inactivo.");
 
                     int idRol = Convert.ToInt32(rolObj);
 
-                    // Si es Administrador (id_rol = 1), se evita dejar al sistema sin admins activos
                     if (idRol == 1)
                     {
                         var countAdmins = new SqlCommand(
@@ -197,17 +193,16 @@ namespace GymManager.Controllers
                             throw new InvalidOperationException("No se puede desactivar el último Administrador.");
                     }
 
-                    // Realiza la baja lógica (cambia Activo a 0)
                     var upd = new SqlCommand(
-                        "UPDATE dbo.Usuarios SET Activo = 0 WHERE id_usuario=@id", conn, tx);
-                    upd.Parameters.AddWithValue("@id", idUsuario);
+                        "UPDATE dbo.Usuarios SET Activo = 0 WHERE dni=@dni", conn, tx);
+                    upd.Parameters.AddWithValue("@dni", dni);
                     upd.ExecuteNonQuery();
 
-                    // Confirma la transacción
                     tx.Commit();
                 }
             }
         }
+
 
         // ------------------------------------------------------------
         // MÉTODO: Login()
