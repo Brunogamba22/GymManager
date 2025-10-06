@@ -77,7 +77,7 @@ namespace GymManager.Views
             dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
         }
 
-        // 🔥 CONFIGURAR MENÚ CONTEXTUAL PARA EJERCICIOS
+        //  CONFIGURAR MENÚ CONTEXTUAL PARA EJERCICIOS
         private void ConfigurarMenuContextual()
         {
             menuEjercicios = new ContextMenuStrip();

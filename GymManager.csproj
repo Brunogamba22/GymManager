@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\DetalleRutinaController.cs" />
     <Compile Include="Controllers\EjercicioController.cs" />
     <Compile Include="Controllers\PlantillaController.cs" />
     <Compile Include="Controllers\ReporteController.cs" />
@@ -84,8 +85,10 @@
     <Compile Include="Forms\FrmRecepcionista.Designer.cs">
       <DependentUpon>FrmRecepcionista.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\DetalleRutina.cs" />
     <Compile Include="Models\Ejercicio.cs" />
     <Compile Include="Models\Eventos\RutinaGeneradaEventArgs.cs" />
+    <Compile Include="Models\Rutina.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -93,6 +96,7 @@
     <Compile Include="Utils\PasswordHelper.cs" />
     <Compile Include="Utils\Sesion.cs" />
     <Compile Include="Utils\RutinaSimulador.cs" />
+    <Compile Include="Utils\SimuladorRutinas.cs" />
     <Compile Include="Views\UcDetalleRutina.cs">
       <SubType>UserControl</SubType>
     </Compile>

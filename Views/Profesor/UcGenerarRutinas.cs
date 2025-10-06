@@ -1,4 +1,6 @@
-﻿using GymManager.Models.Events;
+﻿using GymManager.Controllers;
+using GymManager.Models;
+using GymManager.Models.Events;
 using GymManager.Utils;
 using System;
 using System.Collections.Generic;
@@ -317,37 +319,64 @@ namespace GymManager.Views
             GuardarRutina("DEPORTISTAS", rutinaDeportistas);
         }
 
-        private void GuardarRutina(string tipoRutina, List<RutinaSimulador.EjercicioRutina> ejercicios)
+        private void GuardarRutina(string tipoRutina)
         {
-            if (ejercicios == null || ejercicios.Count == 0)
-            {
-                MessageBox.Show($"No hay rutina generada para {tipoRutina.ToLower()} para guardar.",
-                              "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
             try
             {
-                // Simular guardado en "base de datos" temporal
-                string nombreRutina = $"{tipoRutina}.{DateTime.Now:yyyyMMdd_HHmmss}";
+                var ejercicioController = new EjercicioController();
+                var detalleController = new DetalleRutinaController();
+                var rutinaController = new RutinaController();
 
-                // 🔥 CORREGIDO: Usar el método correcto con los parámetros en orden
-                EventosRutina.DispararRutinaGuardada(
-                    nombreRutina,
+                // 1️⃣ Obtener ejercicios reales desde la BD
+                var ejercicios = ejercicioController.ObtenerTodos();
+                if (ejercicios.Count == 0)
+                {
+                    MessageBox.Show("No hay ejercicios disponibles en la base de datos.",
+                                    "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // 2️⃣ Crear nueva rutina
+                int idRutina = rutinaController.CrearNuevaRutina(
                     tipoRutina,
-                    DateTime.Now,
-                    ejercicios
+                    Sesion.Actual.IdUsuario,  // Profesor actual
+                    $"Rutina {tipoRutina} - {DateTime.Now:dd/MM/yyyy}"
                 );
 
-                MessageBox.Show($"✅ Rutina de {tipoRutina} guardada exitosamente\n📝 Nombre: {nombreRutina}",
-                              "Guardado Exitoso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // 3️⃣ Insertar los detalles de cada ejercicio
+                foreach (var ej in ejercicios)
+                {
+                    var detalle = new DetalleRutina
+                    {
+                        IdRutina = idRutina,
+                        IdEjercicio = ej.Id,       // ✅ Id real del ejercicio desde BD
+                        Series = 4,                // Default o configurable
+                        Repeticiones = 12,
+                        Descanso = 60,
+                        Carga = null
+                    };
+
+                    detalleController.Agregar(detalle);
+                }
+
+                // 4️⃣ Disparar evento para refrescar planillas o vistas
+                EventosRutina.DispararRutinaGuardada(
+                    $"Rutina {tipoRutina} - {DateTime.Now:yyyyMMdd_HHmmss}",
+                    tipoRutina,
+                    DateTime.Now,
+                    null // No pasamos lista simulada, ya viene desde BD
+                );
+
+                MessageBox.Show($"✅ Rutina de {tipoRutina} guardada correctamente con {ejercicios.Count} ejercicios.",
+                                "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al guardar rutina: {ex.Message}", "Error",
-                              MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al guardar la rutina: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         // BOTONES LIMPIAR
         private void btnLimpiarHombres_Click(object sender, EventArgs e)
