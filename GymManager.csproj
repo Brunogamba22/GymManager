@@ -97,6 +97,58 @@
     <Compile Include="Utils\Sesion.cs" />
     <Compile Include="Utils\RutinaSimulador.cs" />
     <Compile Include="Utils\SimuladorRutinas.cs" />
+    <Compile Include="Views\Administrador\UcAdminDashboard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Administrador\UcAdminDashboard.Designer.cs">
+      <DependentUpon>UcAdminDashboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Administrador\UcGestionEjercicios.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Administrador\UcGestionEjercicios.Designer.cs">
+      <DependentUpon>UcGestionEjercicios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Administrador\UcGestionUsuarios.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Administrador\UcGestionUsuarios.Designer.cs">
+      <DependentUpon>UcGestionUsuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Administrador\UcReportes.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Administrador\UcReportes.Designer.cs">
+      <DependentUpon>UcReportes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Profesor\UcDetalleRutina.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Profesor\UcDetalleRutina.Designer.cs">
+      <DependentUpon>UcDetalleRutina.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Profesor\UcEditarRutina.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Profesor\UcEditarRutina.Designer.cs">
+      <DependentUpon>UcEditarRutina.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Profesor\UcGenerarRutinas.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Profesor\UcGenerarRutinas.Designer.cs">
+      <DependentUpon>UcGenerarRutinas.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Profesor\UcPlanillasRutinas.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\Profesor\UcPlanillasRutinas.Designer.cs">
+      <DependentUpon>UcPlanillasRutinas.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Recepcionista\UcRecepcionistaDashboard.cs" />
+    <Compile Include="Views\Recepcionista\UcRecepcionistaDashboard.Designer.cs">
+      <DependentUpon>UcRecepcionistaDashboard.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\UcDetalleRutina.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -170,6 +222,24 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Views\Administrador\UcGestionEjercicios.resx">
+      <DependentUpon>UcGestionEjercicios.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Administrador\UcGestionUsuarios.resx">
+      <DependentUpon>UcGestionUsuarios.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Administrador\UcReportes.resx">
+      <DependentUpon>UcReportes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Profesor\UcEditarRutina.resx">
+      <DependentUpon>UcEditarRutina.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Profesor\UcGenerarRutinas.resx">
+      <DependentUpon>UcGenerarRutinas.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\Profesor\UcPlanillasRutinas.resx">
+      <DependentUpon>UcPlanillasRutinas.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\UcEditarRutina.resx">
       <DependentUpon>UcEditarRutina.cs</DependentUpon>
     </EmbeddedResource>
