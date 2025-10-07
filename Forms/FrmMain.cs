@@ -174,5 +174,7 @@ namespace GymManager.Forms
             panelContenido.Controls.Add(logo);
             panelContenido.Controls.Add(lbl);
         }
+
+
     }
 }

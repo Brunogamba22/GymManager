@@ -77,9 +77,19 @@ namespace GymManager.Views
             dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
         }
 
+        // ------------------------------------------------------------
+        // 🔹 CARGA DE PLANILLAS DEMO (para pruebas sin base de datos)
+        // ------------------------------------------------------------
+        // Este método genera rutinas de ejemplo con ejercicios cargados
+        // en memoria. Sirve para visualizar cómo se verán las planillas
+        // en la interfaz antes de conectar con la BD real.
+        //
+        // ✅ Se reemplazó la propiedad "Descanso" por "DescansoSegundos"
+        // para coincidir con la nueva versión del modelo EjercicioRutina.
+        // ------------------------------------------------------------
         private void CargarPlanillasDemo()
         {
-            // 🔥 AGREGAR RUTINAS DE DEMO A LA LISTA
+            // 🔹 Rutina de ejemplo para HOMBRES
             rutinasGuardadas.Add(new RutinaGuardada
             {
                 Nombre = "Rutina Hombres - Fuerza",
@@ -87,13 +97,15 @@ namespace GymManager.Views
                 Profesor = "Juan Pérez",
                 FechaCreacion = DateTime.Now.AddDays(-5),
                 Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>
-                {
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Press banca", Series = 3, Repeticiones = "10", Descanso = 60 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Sentadillas", Series = 4, Repeticiones ="8", Descanso = 90 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Dominadas", Series = 3, Repeticiones = "8", Descanso = 75 }
-                }
+        {
+            // ⬇️ Se corrigió Descanso → DescansoSegundos
+            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Press banca", Series = 3, Repeticiones = "10", DescansoSegundos = 60 },
+            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Sentadillas", Series = 4, Repeticiones = "8", DescansoSegundos = 90 },
+            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Dominadas", Series = 3, Repeticiones = "8", DescansoSegundos = 75 }
+        }
             });
 
+            // 🔹 Rutina de ejemplo para MUJERES
             rutinasGuardadas.Add(new RutinaGuardada
             {
                 Nombre = "Rutina Mujeres - Glúteos",
@@ -101,15 +113,18 @@ namespace GymManager.Views
                 Profesor = "María Gómez",
                 FechaCreacion = DateTime.Now.AddDays(-3),
                 Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>
-                {
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Peso muerto", Series = 3, Repeticiones = "12", Descanso = 60 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Zancadas", Series = 4, Repeticiones = "10", Descanso = 90 },
-                    new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Hip thrust", Series = 4, Repeticiones = "12", Descanso = 60 }
-                }
+        {
+            // ⬇️ También corregido Descanso → DescansoSegundos
+            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Peso muerto", Series = 3, Repeticiones = "12", DescansoSegundos = 60 },
+            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Zancadas", Series = 4, Repeticiones = "10", DescansoSegundos = 90 },
+            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Hip thrust", Series = 4, Repeticiones = "12", DescansoSegundos = 60 }
+        }
             });
 
+            // 🔹 Actualizamos el DataGridView con las nuevas planillas
             ActualizarGrid();
         }
+
 
         // 🔥 ACTUALIZAR GRID CON LAS RUTINAS GUARDADAS
         private void ActualizarGrid()

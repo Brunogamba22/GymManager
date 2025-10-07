@@ -66,25 +66,45 @@ namespace GymManager.Views
         }
 
         // Método para cargar los datos de la rutina
+        // ------------------------------------------------------------
+        // 📋 CARGAR LOS DATOS DE UNA RUTINA EN LA VISTA DETALLE
+        // ------------------------------------------------------------
+        // Este método recibe toda la información de una rutina generada:
+        // - nombreRutina: el título visible
+        // - tipoRutina: HOMBRES, MUJERES, DEPORTISTAS, etc.
+        // - profesor: nombre del docente que la generó
+        // - fecha: fecha y hora de creación
+        // - ejercicios: lista de ejercicios simulados (RutinaSimulador.EjercicioRutina)
+        //
+        // Carga esta información en los labels y el DataGridView para mostrarla.
+        // ------------------------------------------------------------
         public void CargarRutina(string nombreRutina, string tipoRutina, string profesor,
-                               DateTime fecha, List<RutinaSimulador.EjercicioRutina> ejercicios)
+                                 DateTime fecha, List<RutinaSimulador.EjercicioRutina> ejercicios)
         {
+            // 🔹 Título principal
             lblTitulo.Text = nombreRutina;
+
+            // 🔹 Subtítulo con tipo, profesor y fecha
             lblDetalles.Text = $"🏷️ {tipoRutina} | 👤 {profesor} | 📅 {fecha:dd/MM/yyyy HH:mm}";
+
+            // 🔹 Contador total de ejercicios
             lblContador.Text = $"📊 Total de ejercicios: {ejercicios.Count}";
 
-            // Limpiar y cargar ejercicios
+            // 🔹 Limpiar cualquier contenido previo de la grilla
             dgvEjercicios.Rows.Clear();
+
+            // 🔹 Agregar cada ejercicio como fila en el DataGridView
             foreach (var ejercicio in ejercicios)
             {
                 dgvEjercicios.Rows.Add(
-                    ejercicio.Nombre,
-                    ejercicio.Series,
-                    ejercicio.Repeticiones,
-                    $"{ejercicio.Descanso} s"
+                    ejercicio.Nombre,                    // Nombre del ejercicio
+                    ejercicio.Series,                    // Cantidad de series
+                    ejercicio.Repeticiones,              // Cantidad de repeticiones
+                    $"{ejercicio.DescansoSegundos} s"    // Tiempo de descanso (segundos)
                 );
             }
         }
+
 
         private void StyleButton(Button btn, Color bgColor)
         {

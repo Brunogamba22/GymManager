@@ -279,44 +279,48 @@ namespace GymManager.Views
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        //  NUEVO MÉTODO: Guardar rutina editada y disparar evento
+        // ------------------------------------------------------------
+        // 💾 GUARDA LA RUTINA EDITADA Y DISPARA EL EVENTO CORRESPONDIENTE
+        // ------------------------------------------------------------
         private void GuardarRutinaEditada()
         {
             try
             {
-                // Obtener ejercicios del DataGridView
+                // 🔹 Lista temporal donde se guardarán los ejercicios modificados
                 var ejercicios = new List<RutinaSimulador.EjercicioRutina>();
 
-                for (int i = 0; i < dgvRutinas.Rows.Count - 1; i++) // Excluir la fila nueva
+                // 🔹 Recorremos todas las filas del DataGridView (menos la fila vacía al final)
+                for (int i = 0; i < dgvRutinas.Rows.Count - 1; i++)
                 {
                     var row = dgvRutinas.Rows[i];
 
+                    // 🔹 Creamos un nuevo objeto EjercicioRutina con las columnas de la grilla
                     var ejercicio = new RutinaSimulador.EjercicioRutina
                     {
-                        Nombre = row.Cells[0].Value?.ToString() ?? "",
-                        Series = int.Parse(row.Cells[1].Value?.ToString() ?? "0"),
-                        Repeticiones = row.Cells[2].Value?.ToString() ?? "",
-                        Descanso = int.Parse(row.Cells[3].Value?.ToString() ?? "0")
+                        Nombre = row.Cells[0].Value?.ToString() ?? "",             // Nombre del ejercicio
+                        Series = int.Parse(row.Cells[1].Value?.ToString() ?? "0"), // Series
+                        Repeticiones = row.Cells[2].Value?.ToString() ?? "",       // Repeticiones
+                        DescansoSegundos = int.Parse(row.Cells[3].Value?.ToString() ?? "0") // ⬅️ CORREGIDO: antes era Descanso
                     };
 
-                    ejercicios.Add(ejercicio);
+                    ejercicios.Add(ejercicio); // Agregamos a la lista
                 }
 
-                // Crear nombre único para la rutina editada
+                // 🔹 Creamos un nombre único para identificar esta rutina editada
                 string nombreRutinaEditada = $"{_tipoRutinaActual}.{DateTime.Now:yyyyMMdd_HHmmss}_EDITADA";
 
-                //  DISPARAR EVENTO PARA QUE SE GUARDE EN PLANILLAS
+                // 🔹 Disparamos el evento global que notifica al sistema que se guardó una rutina
                 EventosRutina.DispararRutinaGuardada(
-                    nombreRutinaEditada,
-                    _tipoRutinaActual,
-                    DateTime.Now,
-                    ejercicios
+                    nombreRutinaEditada,  // Nombre único
+                    _tipoRutinaActual,    // Tipo de rutina (HOMBRES, MUJERES, etc.)
+                    DateTime.Now,         // Fecha actual
+                    ejercicios            // Lista de ejercicios editados
                 );
 
-                // Actualizar interfaz
+                // 🔹 Actualizamos la interfaz visual (labels)
                 lblTitulo.Text = $"✏️ RUTINA EDITADA - {_tipoRutinaActual}";
                 lblDescripcion.Text = $"Rutina editada guardada exitosamente: {nombreRutinaEditada}";
-                lblDescripcion.ForeColor = successColor;
+                lblDescripcion.ForeColor = successColor; // Cambia a verde
 
             }
             catch (Exception ex)
@@ -325,6 +329,7 @@ namespace GymManager.Views
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         // MODIFICADO: Ahora abre el menú contextual
         private void btnAgregarEjercicio_Click(object sender, EventArgs e)
@@ -358,37 +363,52 @@ namespace GymManager.Views
                 dgvRutinas.Rows.Clear();
         }
 
+        // ------------------------------------------------------------
+        // 🧩 CARGA UNA RUTINA GENERADA (desde GenerarRutinas) PARA EDITARLA
+        // ------------------------------------------------------------
         private void OnRutinaGeneradaParaEdicion(object sender, RutinaGeneradaEventArgs e)
         {
-            //  GUARDAR INFORMACIÓN DE LA RUTINA ACTUAL
+            // 🔹 Guardamos el tipo y el nombre de la rutina original
             _tipoRutinaActual = e.TipoRutina;
             _nombreRutinaOriginal = e.NombreRutina;
 
-            // Limpiar grid actual
+            // 🔹 Limpiamos la grilla actual antes de cargar los nuevos ejercicios
             dgvRutinas.Rows.Clear();
 
-            // Cargar ejercicios de la rutina generada
+            // 🔹 Recorremos los ejercicios que vinieron en el evento
             foreach (var ejercicio in e.Ejercicios)
             {
-                dgvRutinas.Rows.Add(ejercicio.Nombre, ejercicio.Series, ejercicio.Repeticiones, ejercicio.Descanso);
+                // ⬅️ CORREGIDO: usamos DescansoSegundos, no Descanso
+                dgvRutinas.Rows.Add(
+                    ejercicio.Nombre,               // Columna: Nombre
+                    ejercicio.Series,               // Columna: Series
+                    ejercicio.Repeticiones,         // Columna: Repeticiones
+                    ejercicio.DescansoSegundos      // Columna: Descanso (segundos)
+                );
             }
 
-            // Actualizar interfaz
+            // 🔹 Actualizamos la cabecera de la vista
             lblTitulo.Text = $"✏️ EDITAR RUTINA - {e.TipoRutina}";
             lblDescripcion.Text = $"Editando: {e.NombreRutina} - {e.Ejercicios.Count} ejercicios";
             lblDescripcion.ForeColor = primaryColor;
 
+            // 🔹 Aviso informativo
             MessageBox.Show($"Rutina de {e.TipoRutina} cargada para edición", "Edición",
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        //  NUEVO: Aplicar estilos a los botones después de la inicialización
+        // ------------------------------------------------------------
+        // 🔹 EVENTO LOAD - Se ejecuta cuando el control se carga
+        // ------------------------------------------------------------
         private void UcEditarRutina_Load(object sender, EventArgs e)
         {
+            // Aplicar estilos a los botones cuando se muestra el control
             StyleButton(btnGuardar, successColor);
             StyleButton(btnAgregarEjercicio, primaryColor);
             StyleButton(btnEliminarEjercicio, dangerColor);
             StyleButton(btnLimpiarTodo, warningColor);
         }
+
+
     }
 }

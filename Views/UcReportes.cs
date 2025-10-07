@@ -6,94 +6,129 @@ using System.Windows.Forms.DataVisualization.Charting;
 using GymManager.Controllers;
 using GymManager.Models;
 
-
 namespace GymManager.Views
 {
     public partial class UcReportes : UserControl
     {
-        private UsuarioController usuarioController = new UsuarioController();
-        private EjercicioController ejercicioController = new EjercicioController();
+        // Controladores para acceder a los datos de usuarios y ejercicios
+        private UsuarioController controladorUsuarios = new UsuarioController();
+        private EjercicioController controladorEjercicios = new EjercicioController();
 
+        // ------------------------------------------------------------
+        // 🔹 CONSTRUCTOR DEL USER CONTROL
+        // ------------------------------------------------------------
         public UcReportes()
         {
-            InitializeComponent();
+            InitializeComponent(); // Inicializa los componentes visuales del formulario
         }
 
+        // ------------------------------------------------------------
+        // 🚀 EVENTO LOAD: se ejecuta cuando se carga el control por primera vez
+        // ------------------------------------------------------------
         private void UcReportes_Load(object sender, EventArgs e)
         {
-            // Total de ejercicios
-            int totalEjercicios = ejercicioController.ObtenerTodos().Count;
-            lblTotalEjercicios.Text = totalEjercicios.ToString();
+            // ============================================================
+            // 📊 SECCIÓN 1 — ESTADÍSTICAS GENERALES
+            // ============================================================
 
-            // Usuarios por rol
-            var usuarios = usuarioController.ObtenerTodos();
-            int admins = usuarios.Count(u => u.Rol == Rol.Administrador);
-            int profes = usuarios.Count(u => u.Rol == Rol.Profesor);
-            int receps = usuarios.Count(u => u.Rol == Rol.Recepcionista);
+            // Obtiene el total de ejercicios existentes en la BD
+            int totalEjercicios = controladorEjercicios.ObtenerTodos().Count;
+            lblTotalEjercicios.Text = totalEjercicios.ToString(); // Muestra el número en el label
 
-            lblTotalUsuarios.Text = usuarios.Count.ToString();
+            // Obtiene todos los usuarios activos desde el controlador
+            var listaUsuarios = controladorUsuarios.ObtenerTodos();
 
-            // 🔹 Etiquetas extra para mostrar detalle
+            // Contamos usuarios por tipo de rol
+            int cantidadAdmins = listaUsuarios.Count(u => u.Rol == Rol.Administrador);
+            int cantidadProfes = listaUsuarios.Count(u => u.Rol == Rol.Profesor);
+            int cantidadReceps = listaUsuarios.Count(u => u.Rol == Rol.Recepcionista);
+
+            // Muestra el total general de usuarios
+            lblTotalUsuarios.Text = listaUsuarios.Count.ToString();
+
+            // Etiquetas informativas (opcional para KPIs visuales)
             lblUsuariosTxt.Text = "Total de usuarios:";
             lblEjerciciosTxt.Text = "Total de ejercicios:";
 
-            // Puedes agregar labels extra al diseño si querés que se vean como KPIs
-            // Ejemplo:
-            // lblAdmins.Text = $"Administradores: {admins}";
-            // lblProfes.Text = $"Profesores: {profes}";
-            // lblRecepcionistas.Text = $"Recepcionistas: {receps}";
+            // ============================================================
+            // 🥧 SECCIÓN 2 — GRÁFICO DE TORTA: USUARIOS POR ROL
+            // ============================================================
 
-            // ---  Gráfico de torta (Usuarios por rol) ---
-            // --- Gráfico de torta ---
-            chartUsuarios.Series.Clear();
+            chartUsuarios.Series.Clear(); // Limpia cualquier serie previa del gráfico
+
+            // Crea una nueva serie para representar los roles
             var serieUsuarios = new Series("Usuarios")
             {
-                ChartType = SeriesChartType.Pie,
-                IsValueShownAsLabel = true,
-                Label = "#VALX\n#VAL (#PERCENT{P0})", // 🔹 Ej: Profesores 7 (44%)
-                Font = new Font("Segoe UI", 8, FontStyle.Bold),
-                LabelForeColor = Color.Black
+                ChartType = SeriesChartType.Pie,                   // Tipo de gráfico: torta
+                IsValueShownAsLabel = true,                        // Muestra los valores en cada porción
+                Label = "#VALX\n#VAL (#PERCENT{P0})",              // Ejemplo: Profesores 5 (33%)
+                Font = new Font("Segoe UI", 8, FontStyle.Bold),     // Fuente de las etiquetas
+                LabelForeColor = Color.Black                       // Color del texto de etiquetas
             };
 
-            serieUsuarios.Points.AddXY("Administradores", admins);
-            serieUsuarios.Points.AddXY("Profesores", profes);
-            serieUsuarios.Points.AddXY("Recepcionistas", receps);
+            // Agrega los valores (X = nombre del rol, Y = cantidad)
+            serieUsuarios.Points.AddXY("Administradores", cantidadAdmins);
+            serieUsuarios.Points.AddXY("Profesores", cantidadProfes);
+            serieUsuarios.Points.AddXY("Recepcionistas", cantidadReceps);
 
+            // Agrega la serie al gráfico
             chartUsuarios.Series.Add(serieUsuarios);
+
+            // Ubica la leyenda a la derecha del gráfico
             chartUsuarios.Legends[0].Docking = Docking.Right;
 
-            // Etiquetas afuera y más legibles
-            serieUsuarios["PieLabelStyle"] = "Outside";
-            serieUsuarios.SmartLabelStyle.Enabled = true;
+            // Configuración visual de las etiquetas de la torta
+            serieUsuarios["PieLabelStyle"] = "Outside"; // Muestra las etiquetas fuera de las porciones
+            serieUsuarios.SmartLabelStyle.Enabled = true; // Evita superposición de texto
 
-            // --- Gráfico de barras ---
-            chartEjercicios.Series.Clear();
+            // ============================================================
+            // 📊 SECCIÓN 3 — GRÁFICO DE BARRAS: EJERCICIOS POR MÚSCULO
+            // ============================================================
+
+            chartEjercicios.Series.Clear(); // Limpia series previas
+
+            // Nueva serie para las barras
             var serieEjercicios = new Series("Ejercicios")
             {
-                ChartType = SeriesChartType.Column,
-                IsValueShownAsLabel = true,
-                LabelForeColor = Color.Black
+                ChartType = SeriesChartType.Column,    // Tipo de gráfico: columnas
+                IsValueShownAsLabel = true,            // Muestra los valores encima de las barras
+                LabelForeColor = Color.Black           // Texto negro
             };
 
-            // Agrupar ejercicios por músculo
-            var ejercicios = ejercicioController.ObtenerTodos()
-                                .GroupBy(e => e.Musculo)
-                                .Select(g => new { Musculo = g.Key, Cantidad = g.Count() });
+            // ⚠️ En el modelo actual, Ejercicio ya no tiene propiedad 'Musculo'.
+            // Por eso generamos un valor simulado o usamos el nombre del grupo muscular si existe.
 
-            foreach (var item in ejercicios)
+            var listaEjercicios = controladorEjercicios.ObtenerTodos();
+
+            // Creamos un agrupamiento temporal:
+            // si el modelo Ejercicio tiene IdGrupoMuscular, podemos usarlo para agrupar;
+            // en caso contrario, simulamos un campo genérico.
+            var ejerciciosAgrupados = listaEjercicios
+                .GroupBy(e =>
+                    e.GetType().GetProperty("GrupoMuscular") != null  // Si el modelo tiene esa propiedad
+                        ? e.GetType().GetProperty("GrupoMuscular").GetValue(e, null)?.ToString() ?? "Sin grupo"
+                        : "General"                                   // Si no, agrupamos bajo "General"
+                )
+                .Select(g => new
+                {
+                    Grupo = g.Key,          // Nombre del grupo o categoría
+                    Cantidad = g.Count()    // Total de ejercicios en ese grupo
+                });
+
+            // Agregamos los datos al gráfico de barras
+            foreach (var grupo in ejerciciosAgrupados)
             {
-                serieEjercicios.Points.AddXY(item.Musculo, item.Cantidad);
+                serieEjercicios.Points.AddXY(grupo.Grupo, grupo.Cantidad);
             }
 
+            // Agrega la serie de ejercicios al gráfico principal
             chartEjercicios.Series.Add(serieEjercicios);
 
-            // Mejorar legibilidad de eje X
-            chartEjercicios.ChartAreas[0].AxisX.LabelStyle.Angle = -45;
-            chartEjercicios.ChartAreas[0].AxisX.Interval = 1;
-            chartEjercicios.ChartAreas[0].AxisY.Title = "Cantidad";
-            chartEjercicios.ChartAreas[0].AxisX.Title = "Músculos";
-
+            // Configuración visual del gráfico
+            chartEjercicios.ChartAreas[0].AxisX.LabelStyle.Angle = -45; // Rota etiquetas X para mejor lectura
+            chartEjercicios.ChartAreas[0].AxisX.Interval = 1;           // Muestra todas las etiquetas
+            chartEjercicios.ChartAreas[0].AxisY.Title = "Cantidad";     // Título del eje Y
+            chartEjercicios.ChartAreas[0].AxisX.Title = "Grupos musculares"; // Título del eje X
         }
-
     }
 }

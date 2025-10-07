@@ -14,56 +14,34 @@ namespace GymManager
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // Crear admin inicial si no existe
             var usuarioController = new UsuarioController();
 
-            if (!usuarioController.ExisteUsuario("99999999"))
+            // Helper local para crear un usuario por DNI si no existe
+            void CrearSiNoExiste(string dni, string nombre, string apellido, string email, string password, Rol rol)
             {
-                var admin = new Usuario
+                if (!usuarioController.ExisteUsuario(dni))
                 {
-                    Id = "99999999",
-                    Nombre = "Admin",
-                    Apellido = "Principal",
-                    Email = "admin@gmail.com",
-                    Password = "1234",
-                    Rol = Rol.Administrador
-                };
-                usuarioController.Agregar(admin);
+                    var u = new Usuario
+                    {
+                        Dni = dni,                // 👈 CLAVE LÓGICA (string)
+                        Nombre = nombre,
+                        Apellido = apellido,
+                        Email = email,
+                        Password = password,     // El controller lo hashea al guardar
+                        Rol = rol
+                    };
+                    usuarioController.Agregar(u);
+                }
             }
 
-            if (!usuarioController.ExisteUsuario("99999998"))
-            {
-                var profesor = new Usuario
-                {
-                    Id = "99999998",
-                    Nombre = "Profesor",
-                    Apellido = "Principal",
-                    Email = "profe@gmail.com",
-                    Password = "1234",
-                    Rol = Rol.Profesor
-                };
-                usuarioController.Agregar(profesor);
-            }
+            // Seed básico (solo la primera vez)
+            CrearSiNoExiste("99999999", "Admin", "Principal", "admin@gmail.com", "1234", Rol.Administrador);
+            CrearSiNoExiste("99999998", "Profesor", "Principal", "profe@gmail.com", "1234", Rol.Profesor);
+            CrearSiNoExiste("99999997", "Recepcionista", "Principal", "recep@gmail.com", "1234", Rol.Recepcionista);
 
-            if (!usuarioController.ExisteUsuario("99999997"))
-            {
-                var recepcionista = new Usuario
-                {
-                    Id = "99999997",
-                    Nombre = "Recepcionista",
-                    Apellido = "Principal",
-                    Email = "recep@gmail.com",
-                    Password = "1234",
-                    Rol = Rol.Recepcionista
-                };
-                usuarioController.Agregar(recepcionista);
-            }
-
-
-
-            // Si querés probar el Login real, usá FrmLogin
+            // Iniciar app: Login real
             Application.Run(new Forms.FrmLogin());
-            // Application.Run(new Forms.FrmMain());
+            // Application.Run(new Forms.FrmMain()); // si querés saltar el login en desarrollo
         }
     }
 }
