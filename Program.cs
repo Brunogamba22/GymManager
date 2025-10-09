@@ -1,6 +1,6 @@
-﻿using GymManager.Controllers;
-using GymManager.Models;
-using GymManager.Utils;
+﻿using GymManager.Controllers;  // Controladores (lógica de negocio)
+using GymManager.Models;       // Modelos de datos (Usuario, Rol, etc.)
+using GymManager.Utils;        // Utilidades (conexión, helpers)
 using System;
 using System.Windows.Forms;
 
@@ -11,37 +11,56 @@ namespace GymManager
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            // ------------------------------------------------------------
+            // CONFIGURACIÓN INICIAL DEL APLICATIVO
+            // ------------------------------------------------------------
+            Application.EnableVisualStyles();                       // Usa estilos visuales modernos
+            Application.SetCompatibleTextRenderingDefault(false);    // Mejora la compatibilidad del renderizado de texto
 
+            // Instancia del controlador que maneja los usuarios
             var usuarioController = new UsuarioController();
 
-            // Helper local para crear un usuario por DNI si no existe
-            void CrearSiNoExiste(string dni, string nombre, string apellido, string email, string password, Rol rol)
+            // ------------------------------------------------------------
+            // 🔹 Helper local: Crear usuario por email si no existe
+            // (Ya no usamos DNI como identificador)
+            // ------------------------------------------------------------
+            void CrearSiNoExiste(string email, string nombre, string apellido, string password, Rol rol)
             {
-                if (!usuarioController.ExisteUsuario(dni))
+                // Consulta si ya hay un usuario con ese email
+                Usuario existente = usuarioController.ObtenerPorEmail(email);
+
+                // Si no existe, lo creamos
+                if (existente == null)
                 {
-                    var u = new Usuario
+                    var nuevo = new Usuario
                     {
-                        Dni = dni,                // 👈 CLAVE LÓGICA (string)
                         Nombre = nombre,
                         Apellido = apellido,
                         Email = email,
-                        Password = password,     // El controller lo hashea al guardar
+                        Password = password, // Se hashea automáticamente en el controlador
                         Rol = rol
                     };
-                    usuarioController.Agregar(u);
+
+                    // Lo insertamos en la BD
+                    usuarioController.Agregar(nuevo);
                 }
             }
 
-            // Seed básico (solo la primera vez)
-            CrearSiNoExiste("99999999", "Admin", "Principal", "admin@gmail.com", "1234", Rol.Administrador);
-            CrearSiNoExiste("99999998", "Profesor", "Principal", "profe@gmail.com", "1234", Rol.Profesor);
-            CrearSiNoExiste("99999997", "Recepcionista", "Principal", "recep@gmail.com", "1234", Rol.Recepcionista);
+            // ------------------------------------------------------------
+            // 🧠 SEED DE USUARIOS (solo se ejecuta la primera vez)
+            // ------------------------------------------------------------
+            // Se crean 3 usuarios base para iniciar sesión por primera vez
+            CrearSiNoExiste("admin@gmail.com", "Admin", "Principal", "1234", Rol.Administrador);
+            CrearSiNoExiste("profe@gmail.com", "Profesor", "Principal", "1234", Rol.Profesor);
+            CrearSiNoExiste("recep@gmail.com", "Recepcionista", "Principal", "1234", Rol.Recepcionista);
 
-            // Iniciar app: Login real
+            // ------------------------------------------------------------
+            // 🚀 INICIO DE LA APLICACIÓN
+            // ------------------------------------------------------------
+            // Muestra el formulario de login como pantalla inicial
             Application.Run(new Forms.FrmLogin());
-            // Application.Run(new Forms.FrmMain()); // si querés saltar el login en desarrollo
+            // Si querés probar sin login, podés usar:
+            // Application.Run(new Forms.FrmMain());
         }
     }
 }

@@ -1,224 +1,252 @@
 ﻿// ------------------------------------------------------------
-// Espacios de nombres necesarios
+// NOMBRE DEL ARCHIVO: UsuarioController.cs
+// PROPÓSITO: Gestionar las operaciones CRUD y login del módulo "Usuarios"
+// AUTOR: Bruno Gamba (proyecto GymManager)
 // ------------------------------------------------------------
-using System;                         // Funcionalidades base (excepciones, tipos genéricos, etc.)
-using System.Collections.Generic;     // Permite usar List<T>
+
+// Espacios de nombres requeridos
+using System;                         // Funcionalidades básicas (excepciones, tipos, etc.)
+using System.Collections.Generic;     // Permite el uso de List<T>
 using System.Data.SqlClient;          // Librería ADO.NET para conexión con SQL Server
-using GymManager.Models;              // Referencia a las clases del modelo (Usuario, Rol, etc.)
-using GymManager.Utils;               // Referencia a utilidades (ej: Conexion.Cadena, PasswordHelper)
+using GymManager.Models;              // Contiene las clases del modelo (Usuario, Rol)
+using GymManager.Utils;               // Contiene la clase Conexion y PasswordHelper
 
 namespace GymManager.Controllers
 {
     // ------------------------------------------------------------
-    // Clase controladora para gestionar operaciones sobre "Usuarios"
+    // CLASE: UsuarioController
+    // ------------------------------------------------------------
+    // Esta clase gestiona todas las operaciones sobre los usuarios:
+    // listar, agregar, editar, eliminar (baja lógica) y login.
     // ------------------------------------------------------------
     public class UsuarioController
     {
-        // ------------------------------------------------------------
+        // ============================================================
         // MÉTODO: ObtenerTodos()
-        // Retorna todos los usuarios activos del sistema
         // ------------------------------------------------------------
+        // Retorna una lista con todos los usuarios activos de la base
+        // de datos. Este método se usa para llenar la grilla del panel
+        // de administración.
+        // ============================================================
         public List<Usuario> ObtenerTodos()
         {
-            // Crea una lista vacía donde se almacenarán los usuarios leídos desde la BD
+            // Lista donde se guardarán los usuarios leídos desde la BD
             var lista = new List<Usuario>();
 
-            // Abre una conexión con la base de datos
+            // Abrimos la conexión con SQL Server
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open(); // Inicia la conexión
 
-                // Consulta SQL: trae los usuarios activos y el nombre del rol asociado
+                // Consulta SQL para obtener los datos principales
                 string query = @"
                     SELECT 
-                        u.id_usuario,
-                        u.dni,
-                        u.nombre,
-                        u.apellido,
-                        u.email,
-                        u.password,
-                        r.tipo_rol
+                        u.id_usuario,       -- ID interno del usuario
+                        u.nombre,           -- Nombre del usuario
+                        u.apellido,         -- Apellido
+                        u.email,            -- Correo electrónico
+                        r.tipo_rol          -- Rol (Administrador, Profesor, Recepcionista)
                     FROM dbo.Usuarios u
                     INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
                     WHERE u.Activo = 1
-                    ORDER BY u.apellido, u.nombre;";
+                    ORDER BY u.apellido, u.nombre;"; // Orden alfabético
 
-                // Prepara el comando SQL a ejecutar
+                // Ejecutamos el comando SQL
                 using (SqlCommand cmd = new SqlCommand(query, conn))
-                // Ejecuta el comando y obtiene un "cursor" de lectura (DataReader)
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    // Recorre cada registro devuelto por la consulta
+                    // Recorremos cada registro devuelto
                     while (reader.Read())
                     {
-                        // Mapea cada fila de la BD a un objeto "Usuario"
+                        // Creamos un nuevo objeto Usuario con los datos del registro
                         var u = new Usuario
                         {
                             IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
-                            Dni = reader["dni"].ToString(),
                             Nombre = reader["nombre"].ToString(),
                             Apellido = reader["apellido"].ToString(),
                             Email = reader["email"].ToString(),
-                            Password = reader["password"].ToString(),
-                            // Convierte el nombre del rol (string) en el Enum correspondiente
                             Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
                         };
 
-                        // Agrega el usuario leído a la lista
+                        // Agregamos el usuario a la lista
                         lista.Add(u);
                     }
                 }
             }
 
-            // Retorna la lista completa de usuarios activos
+            // Retornamos la lista de usuarios activos
             return lista;
         }
 
-        // ------------------------------------------------------------
+        // ============================================================
         // MÉTODO: Agregar(Usuario u)
-        // Inserta un nuevo usuario en la base de datos
         // ------------------------------------------------------------
+        // Inserta un nuevo usuario en la base de datos.
+        // Antes de agregarlo, valida que el email no esté repetido.
+        // ============================================================
         public void Agregar(Usuario u)
         {
-            // Abre la conexión con la base de datos
+            // Se abre una conexión a la base de datos
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
-                conn.Open();
+                conn.Open(); // Activa la conexión
 
-                // Primero verifica que no exista otro usuario con el mismo DNI o Email
-                string checkQuery = "SELECT COUNT(*) FROM dbo.Usuarios WHERE dni = @Dni OR email = @Email";
+                // Verificamos si ya existe un usuario con el mismo email
+                string checkQuery = "SELECT COUNT(*) FROM dbo.Usuarios WHERE email = @Email";
                 using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
                 {
-                    // Usa parámetros para evitar SQL Injection
-                    checkCmd.Parameters.AddWithValue("@Dni", u.Dni);
-                    checkCmd.Parameters.AddWithValue("@Email", u.Email);
+                    checkCmd.Parameters.AddWithValue("@Email", u.Email); // Parámetro seguro (evita SQL Injection)
+                    int count = (int)checkCmd.ExecuteScalar(); // Devuelve la cantidad de coincidencias
 
-                    // Ejecuta la consulta y obtiene la cantidad de coincidencias
-                    int count = (int)checkCmd.ExecuteScalar();
-
-                    // Si ya existe, lanza una excepción controlada
+                    // Si ya existe un usuario con ese email, lanzamos excepción controlada
                     if (count > 0)
-                        throw new InvalidOperationException("Ya existe un usuario con ese DNI o Email.");
+                        throw new InvalidOperationException("Ya existe un usuario con ese correo electrónico.");
                 }
 
-                // Si no existe, procede a insertar el nuevo registro
-                string query = @"
-                    INSERT INTO dbo.Usuarios (dni, nombre, apellido, email, password, id_rol, Activo)
-                    VALUES (@Dni, @Nombre, @Apellido, @Email, @Password, @IdRol, 1)";
+                // Si el email no está duplicado, procedemos a insertar el nuevo usuario
+                string insertQuery = @"
+                    INSERT INTO dbo.Usuarios (nombre, apellido, email, password, id_rol, Activo)
+                    VALUES (@Nombre, @Apellido, @Email, @Password, @IdRol, 1);";
 
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
-                    // Asigna los valores del modelo a los parámetros SQL
-                    cmd.Parameters.AddWithValue("@Dni", u.Dni);
+                    // Cargamos los parámetros con los valores del objeto Usuario
                     cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
                     cmd.Parameters.AddWithValue("@Apellido", u.Apellido);
                     cmd.Parameters.AddWithValue("@Email", u.Email);
 
-                    // Hashea la contraseña antes de guardarla (nunca se almacena en texto plano)
+                    // Antes de guardar, se aplica un hash a la contraseña por seguridad
                     cmd.Parameters.AddWithValue("@Password", PasswordHelper.HashPassword(u.Password));
 
-                    // Convierte el valor del Enum Rol al ID numérico correspondiente
+                    // El Enum Rol comienza en 0, mientras que en la BD los ID comienzan en 1
                     cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
 
-                    // Ejecuta el comando INSERT
+                    // Ejecutamos el comando INSERT
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        // ------------------------------------------------------------
+        // ============================================================
         // MÉTODO: Editar(Usuario u)
-        // Modifica los datos de un usuario activo
         // ------------------------------------------------------------
+        // Actualiza los datos de un usuario existente.
+        // Si el campo contraseña está vacío, no se modifica.
+        // ============================================================
         public void Editar(Usuario u)
         {
+            // Validamos que tenga un ID válido
+            if (u.IdUsuario <= 0)
+                throw new ArgumentException("ID de usuario inválido.");
+
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
-                conn.Open();
+                conn.Open(); // Abre la conexión
 
-                // Consulta SQL para actualizar los campos del usuario
-                string query = @"
-                    UPDATE dbo.Usuarios
-                    SET nombre = @Nombre,
-                        apellido = @Apellido,
-                        email = @Email,
-                        password = @Password,
-                        id_rol = @IdRol
-                    WHERE id_usuario = @IdUsuario AND Activo = 1;";
+                // Construimos dos versiones del UPDATE: una con password y otra sin password
+                string query = string.IsNullOrWhiteSpace(u.Password)
+                    ? @"UPDATE dbo.Usuarios
+                        SET nombre = @Nombre,
+                            apellido = @Apellido,
+                            email = @Email,
+                            id_rol = @IdRol
+                        WHERE id_usuario = @IdUsuario AND Activo = 1;"
+                    : @"UPDATE dbo.Usuarios
+                        SET nombre = @Nombre,
+                            apellido = @Apellido,
+                            email = @Email,
+                            password = @Password,
+                            id_rol = @IdRol
+                        WHERE id_usuario = @IdUsuario AND Activo = 1;";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    // Asigna los valores del modelo a los parámetros
+                    // Asignamos los parámetros comunes
                     cmd.Parameters.AddWithValue("@IdUsuario", u.IdUsuario);
                     cmd.Parameters.AddWithValue("@Nombre", u.Nombre);
                     cmd.Parameters.AddWithValue("@Apellido", u.Apellido);
                     cmd.Parameters.AddWithValue("@Email", u.Email);
-                    cmd.Parameters.AddWithValue("@Password", PasswordHelper.HashPassword(u.Password));
                     cmd.Parameters.AddWithValue("@IdRol", (int)u.Rol + 1);
 
-                    // Ejecuta el comando UPDATE
+                    // Solo agregamos el parámetro Password si el usuario cambió la clave
+                    if (!string.IsNullOrWhiteSpace(u.Password))
+                        cmd.Parameters.AddWithValue("@Password", PasswordHelper.HashPassword(u.Password));
+
+                    // Ejecutamos la actualización
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        // ------------------------------------------------------------
+        // ============================================================
         // MÉTODO: Eliminar(int idUsuario)
-        // Desactiva un usuario (baja lógica, no elimina físicamente)
         // ------------------------------------------------------------
-        public void Eliminar(string dni)
+        // Realiza una baja lógica del usuario (Activo = 0).
+        // Si el usuario es el último administrador, no lo desactiva.
+        // ============================================================
+        public void Eliminar(int idUsuario)
         {
+            // Validamos el ID
+            if (idUsuario <= 0)
+                throw new ArgumentException("ID de usuario inválido.");
+
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
+                // Iniciamos una transacción para asegurar consistencia
                 using (var tx = conn.BeginTransaction())
                 {
+                    // Obtenemos el rol del usuario a eliminar
                     var getRol = new SqlCommand(
-                        "SELECT id_rol FROM dbo.Usuarios WHERE dni=@dni AND Activo=1", conn, tx);
-                    getRol.Parameters.AddWithValue("@dni", dni);
+                        "SELECT id_rol FROM dbo.Usuarios WHERE id_usuario=@id AND Activo=1", conn, tx);
+                    getRol.Parameters.AddWithValue("@id", idUsuario);
                     var rolObj = getRol.ExecuteScalar();
 
+                    // Si no existe el usuario o ya está inactivo
                     if (rolObj == null)
                         throw new InvalidOperationException("El usuario no existe o ya está inactivo.");
 
                     int idRol = Convert.ToInt32(rolObj);
 
-                    if (idRol == 1)
+                    // Evitamos eliminar al último administrador activo
+                    if (idRol == 1) // Rol 1 = Administrador
                     {
                         var countAdmins = new SqlCommand(
                             "SELECT COUNT(*) FROM dbo.Usuarios WHERE id_rol = 1 AND Activo=1", conn, tx);
                         int admins = (int)countAdmins.ExecuteScalar();
                         if (admins <= 1)
-                            throw new InvalidOperationException("No se puede desactivar el último Administrador.");
+                            throw new InvalidOperationException("No se puede eliminar el último administrador activo.");
                     }
 
+                    // Ejecutamos la baja lógica
                     var upd = new SqlCommand(
-                        "UPDATE dbo.Usuarios SET Activo = 0 WHERE dni=@dni", conn, tx);
-                    upd.Parameters.AddWithValue("@dni", dni);
+                        "UPDATE dbo.Usuarios SET Activo = 0 WHERE id_usuario=@id", conn, tx);
+                    upd.Parameters.AddWithValue("@id", idUsuario);
                     upd.ExecuteNonQuery();
 
+                    // Confirmamos la transacción
                     tx.Commit();
                 }
             }
         }
 
-
-        // ------------------------------------------------------------
+        // ============================================================
         // MÉTODO: Login()
-        // Verifica las credenciales del usuario y retorna su objeto si es válido
         // ------------------------------------------------------------
+        // Verifica las credenciales del usuario y devuelve su objeto
+        // si la autenticación es correcta.
+        // ============================================================
         public Usuario Login(string email, string password)
         {
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
-                // Consulta SQL: busca por email y valida que esté activo
+                // Consulta SQL para obtener el usuario por su correo
                 string query = @"
                     SELECT 
                         u.id_usuario,
-                        u.dni,
                         u.nombre,
                         u.apellido,
                         u.email,
@@ -234,19 +262,19 @@ namespace GymManager.Controllers
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        // Si encuentra el usuario, verifica la contraseña
+                        // Si el usuario existe en la BD
                         if (reader.Read())
                         {
+                            // Obtenemos el hash almacenado
                             string storedHash = reader["password"].ToString();
 
-                            // Compara el password ingresado con el hash almacenado
+                            // Verificamos que la contraseña ingresada coincida con el hash
                             if (PasswordHelper.VerifyPassword(password, storedHash))
                             {
-                                // Si es correcto, retorna el objeto Usuario completo
+                                // Retornamos el objeto Usuario completo
                                 return new Usuario
                                 {
                                     IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
-                                    Dni = reader["dni"].ToString(),
                                     Nombre = reader["nombre"].ToString(),
                                     Apellido = reader["apellido"].ToString(),
                                     Email = reader["email"].ToString(),
@@ -259,50 +287,27 @@ namespace GymManager.Controllers
                 }
             }
 
-            // Si no pasó las validaciones, retorna null (login fallido)
+            // Si las credenciales no coinciden, retornamos null
             return null;
         }
 
-        // ------------------------------------------------------------
-        // MÉTODO: ExisteUsuario()
-        // Verifica si un usuario con determinado DNI ya existe (y está activo)
-        // ------------------------------------------------------------
-        public bool ExisteUsuario(string dni)
-        {
-            using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
-            {
-                conn.Open();
-
-                string query = "SELECT COUNT(*) FROM dbo.Usuarios WHERE dni = @Dni AND Activo = 1";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Dni", dni);
-
-                    // Devuelve true si encontró coincidencias
-                    int count = (int)cmd.ExecuteScalar();
-                    return count > 0;
-                }
-            }
-        }
-
-        // ------------------------------------------------------------
+        // ============================================================
         // MÉTODO: ObtenerPorId()
-        // Devuelve los datos de un usuario específico (por ID)
         // ------------------------------------------------------------
+        // Devuelve los datos completos de un usuario específico.
+        // ============================================================
         public Usuario ObtenerPorId(int idUsuario)
         {
-            Usuario u = null;
+            Usuario u = null; // Valor por defecto
 
             using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
-                // Consulta SQL: busca usuario por ID
+                // Consulta SQL que trae los datos del usuario por su ID
                 string query = @"
                     SELECT 
                         u.id_usuario,
-                        u.dni,
                         u.nombre,
                         u.apellido,
                         u.email,
@@ -320,11 +325,10 @@ namespace GymManager.Controllers
                     {
                         if (reader.Read())
                         {
-                            // Mapea los datos del registro al objeto Usuario
+                            // Mapeamos el registro al objeto Usuario
                             u = new Usuario
                             {
                                 IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
-                                Dni = reader["dni"].ToString(),
                                 Nombre = reader["nombre"].ToString(),
                                 Apellido = reader["apellido"].ToString(),
                                 Email = reader["email"].ToString(),
@@ -336,8 +340,66 @@ namespace GymManager.Controllers
                 }
             }
 
-            // Devuelve el usuario (o null si no existe)
             return u;
         }
+        // ------------------------------------------------------------
+        // MÉTODO: ObtenerPorEmail()
+        // 📌 Devuelve el usuario activo que tenga el email indicado.
+        // Si no lo encuentra, retorna "null".
+        // ------------------------------------------------------------
+        public Usuario ObtenerPorEmail(string email)
+        {
+            Usuario u = null; // Inicializamos el objeto en null por si no se encuentra
+
+            // Abrimos conexión a la base de datos
+            using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open(); // Iniciamos la conexión
+
+                // Consulta SQL que busca el usuario por su email (único)
+                string query = @"
+            SELECT 
+                u.id_usuario,          -- ID único del usuario
+                u.nombre,              -- Nombre
+                u.apellido,            -- Apellido
+                u.email,               -- Correo electrónico
+                u.password,            -- Contraseña (encriptada)
+                r.tipo_rol             -- Nombre del rol (Administrador, Profesor, etc.)
+            FROM dbo.Usuarios u
+            INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
+            WHERE u.email = @Email AND u.Activo = 1;";
+
+                // Creamos el comando SQL
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    // Agregamos el parámetro con el email recibido
+                    cmd.Parameters.AddWithValue("@Email", email);
+
+                    // Ejecutamos el comando y obtenemos un lector de datos
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        // Si se encontró un registro...
+                        if (reader.Read())
+                        {
+                            // Mapeamos los valores de la base al objeto Usuario
+                            u = new Usuario
+                            {
+                                IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")), // ID
+                                Nombre = reader["nombre"].ToString(),                         // Nombre
+                                Apellido = reader["apellido"].ToString(),                     // Apellido
+                                Email = reader["email"].ToString(),                           // Email
+                                Password = reader["password"].ToString(),                     // Hash de contraseña
+                                Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true) // Enum del rol
+                            };
+                        }
+                    }
+                }
+            }
+
+            // Devolvemos el usuario encontrado o null si no existe
+            return u;
+        }
+
+
     }
 }
