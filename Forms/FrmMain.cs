@@ -104,7 +104,7 @@ namespace GymManager.Forms
             ucGenerarRutinas.Dock = DockStyle.Fill;
 
             // RESTAURAR LAS RUTINAS AL MOSTRAR LA VISTA
-            ucGenerarRutinas.RestaurarRutinas();
+            //ucGenerarRutinas.RestaurarRutinas();
 
             panelContenido.Controls.Add(ucGenerarRutinas);
         }

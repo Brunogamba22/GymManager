@@ -52,67 +52,32 @@ namespace GymManager.Views
             this.tabsContainer = new Panel();
             this.contentPanel = new Panel();
 
-            // Configurar paneles principales
             SetupMainPanels();
-
-            // Configurar tabs
             SetupTabs();
-
-            // Configurar paneles de contenido
             SetupContentPanels();
 
             this.SuspendLayout();
-
-            // 
-            // UcGenerarRutinas
-            // 
             this.Controls.Add(this.mainPanel);
             this.Name = "UcGenerarRutinas";
             this.Size = new System.Drawing.Size(900, 700);
             this.BackColor = Color.FromArgb(248, 249, 250);
-
             this.ResumeLayout(false);
-
-            // Aplicar estilos después de inicializar
-            this.Load += (sender, e) =>
-            {
-                StyleButton(btnGenerarHombres, primaryColor);
-                StyleButton(btnGenerarMujeres, secondaryColor);
-                StyleButton(btnGenerarDeportistas, successColor);
-
-                //  APLICAR ESTILOS A LOS BOTONES DE ACCIÓN
-                if (btnEditarHombres != null) StyleButton(btnEditarHombres, Color.FromArgb(255, 193, 7));
-                if (btnLimpiarHombres != null) StyleButton(btnLimpiarHombres, dangerColor);
-                if (btnEditarMujeres != null) StyleButton(btnEditarMujeres, Color.FromArgb(255, 193, 7));
-                if (btnLimpiarMujeres != null) StyleButton(btnLimpiarMujeres, dangerColor);
-                if (btnEditarDeportistas != null) StyleButton(btnEditarDeportistas, Color.FromArgb(255, 193, 7));
-                if (btnLimpiarDeportistas != null) StyleButton(btnLimpiarDeportistas, dangerColor);
-
-                //  APLICAR ESTILOS A LOS NUEVOS BOTONES GUARDAR
-                if (btnGuardarHombres != null) StyleButton(btnGuardarHombres, successColor);
-                if (btnGuardarMujeres != null) StyleButton(btnGuardarMujeres, successColor);
-                if (btnGuardarDeportistas != null) StyleButton(btnGuardarDeportistas, successColor);
-            };
         }
 
         private void SetupMainPanels()
         {
-            // Panel principal
             this.mainPanel.Dock = DockStyle.Fill;
             this.mainPanel.BackColor = backgroundColor;
             this.mainPanel.Padding = new Padding(20);
 
-            // Header panel (para las tabs)
             this.headerPanel.Dock = DockStyle.Top;
             this.headerPanel.Height = 60;
             this.headerPanel.BackColor = Color.White;
             this.headerPanel.Padding = new Padding(20, 15, 20, 0);
 
-            // Content panel
             this.contentPanel.Dock = DockStyle.Fill;
             this.contentPanel.BackColor = Color.Transparent;
 
-            // Agregar al main panel
             this.mainPanel.Controls.Add(this.contentPanel);
             this.mainPanel.Controls.Add(this.headerPanel);
         }
@@ -123,78 +88,37 @@ namespace GymManager.Views
             this.tabsContainer.Height = 45;
             this.tabsContainer.BackColor = Color.White;
 
-            // Tab Hombres
-            this.lblTabHombres = new Label();
-            this.lblTabHombres.Text = "🏋️  HOMBRES";
-            this.lblTabHombres.Size = new Size(120, 45);
-            this.lblTabHombres.Location = new Point(0, 0);
-            this.lblTabHombres.TextAlign = ContentAlignment.MiddleCenter;
-            this.lblTabHombres.Cursor = Cursors.Hand;
+            this.lblTabHombres = new Label { Text = "🏋️ HOMBRES", Size = new Size(120, 45), Location = new Point(0, 0), TextAlign = ContentAlignment.MiddleCenter, Cursor = Cursors.Hand };
             this.lblTabHombres.Click += lblTabHombres_Click;
             this.lblTabHombres.MouseEnter += TabLabel_MouseEnter;
             this.lblTabHombres.MouseLeave += TabLabel_MouseLeave;
 
-            // Tab Mujeres
-            this.lblTabMujeres = new Label();
-            this.lblTabMujeres.Text = "💪  MUJERES";
-            this.lblTabMujeres.Size = new Size(120, 45);
-            this.lblTabMujeres.Location = new Point(120, 0);
-            this.lblTabMujeres.TextAlign = ContentAlignment.MiddleCenter;
-            this.lblTabMujeres.Cursor = Cursors.Hand;
+            this.lblTabMujeres = new Label { Text = "💪 MUJERES", Size = new Size(120, 45), Location = new Point(120, 0), TextAlign = ContentAlignment.MiddleCenter, Cursor = Cursors.Hand };
             this.lblTabMujeres.Click += lblTabMujeres_Click;
             this.lblTabMujeres.MouseEnter += TabLabel_MouseEnter;
             this.lblTabMujeres.MouseLeave += TabLabel_MouseLeave;
 
-            // Tab Deportistas
-            this.lblTabDeportistas = new Label();
-            this.lblTabDeportistas.Text = "⚡  DEPORTISTAS";
-            this.lblTabDeportistas.Size = new Size(140, 45);
-            this.lblTabDeportistas.Location = new Point(240, 0);
-            this.lblTabDeportistas.TextAlign = ContentAlignment.MiddleCenter;
-            this.lblTabDeportistas.Cursor = Cursors.Hand;
+            this.lblTabDeportistas = new Label { Text = "⚡ DEPORTISTAS", Size = new Size(140, 45), Location = new Point(240, 0), TextAlign = ContentAlignment.MiddleCenter, Cursor = Cursors.Hand };
             this.lblTabDeportistas.Click += lblTabDeportistas_Click;
             this.lblTabDeportistas.MouseEnter += TabLabel_MouseEnter;
             this.lblTabDeportistas.MouseLeave += TabLabel_MouseLeave;
 
-            // Agregar tabs al container
-            this.tabsContainer.Controls.Add(lblTabHombres);
-            this.tabsContainer.Controls.Add(lblTabMujeres);
-            this.tabsContainer.Controls.Add(lblTabDeportistas);
-
-            // Agregar al header
+            this.tabsContainer.Controls.AddRange(new Control[] { lblTabHombres, lblTabMujeres, lblTabDeportistas });
             this.headerPanel.Controls.Add(this.tabsContainer);
         }
 
         private void SetupContentPanels()
         {
-            // Panel Hombres
-            this.panelHombres = new Panel();
-            this.panelHombres.Dock = DockStyle.Fill;
-            this.panelHombres.BackColor = Color.White;
-            this.panelHombres.Padding = new Padding(15);
-            SetupRutinaPanel(panelHombres, "RUTINA PARA HOMBRES", dgvHombres = new DataGridView(),
-                           btnGenerarHombres = new Button(), lblTituloHombres = new Label());
+            this.panelHombres = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
+            SetupRutinaPanel(panelHombres, "RUTINA PARA HOMBRES", dgvHombres = new DataGridView(), btnGenerarHombres = new Button(), lblTituloHombres = new Label());
 
-            // Panel Mujeres
-            this.panelMujeres = new Panel();
-            this.panelMujeres.Dock = DockStyle.Fill;
-            this.panelMujeres.BackColor = Color.White;
-            this.panelMujeres.Padding = new Padding(15);
-            SetupRutinaPanel(panelMujeres, "RUTINA PARA MUJERES", dgvMujeres = new DataGridView(),
-                           btnGenerarMujeres = new Button(), lblTituloMujeres = new Label());
+            this.panelMujeres = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
+            SetupRutinaPanel(panelMujeres, "RUTINA PARA MUJERES", dgvMujeres = new DataGridView(), btnGenerarMujeres = new Button(), lblTituloMujeres = new Label());
 
-            // Panel Deportistas
-            this.panelDeportistas = new Panel();
-            this.panelDeportistas.Dock = DockStyle.Fill;
-            this.panelDeportistas.BackColor = Color.White;
-            this.panelDeportistas.Padding = new Padding(15);
-            SetupRutinaPanel(panelDeportistas, "RUTINA PARA DEPORTISTAS", dgvDeportistas = new DataGridView(),
-                           btnGenerarDeportistas = new Button(), lblTituloDeportistas = new Label());
+            this.panelDeportistas = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
+            SetupRutinaPanel(panelDeportistas, "RUTINA PARA DEPORTISTAS", dgvDeportistas = new DataGridView(), btnGenerarDeportistas = new Button(), lblTituloDeportistas = new Label());
 
-            // Agregar al content panel
-            this.contentPanel.Controls.Add(panelHombres);
-            this.contentPanel.Controls.Add(panelMujeres);
-            this.contentPanel.Controls.Add(panelDeportistas);
+            this.contentPanel.Controls.AddRange(new Control[] { panelHombres, panelMujeres, panelDeportistas });
         }
 
         private void SetupRutinaPanel(Panel panel, string titulo, DataGridView dgv, Button btnGenerar, Label lblTitulo)
@@ -207,56 +131,92 @@ namespace GymManager.Views
             lblTitulo.ForeColor = textColor;
             lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
 
-            // DataGridView
+            // NUEVO: Mensaje de estado vacío (se muestra detrás de la grilla)
+            var lblEstadoVacio = new Label
+            {
+                Text = "Aún no se ha generado una rutina.\n¡Hacé clic en 'Generar Rutina' para empezar!",
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                ForeColor = Color.LightGray
+            };
+
+            // DataGridView con estilo mejorado
             dgv.Dock = DockStyle.Fill;
-            dgv.Margin = new Padding(0, 5, 0, 10);
+            dgv.BackgroundColor = Color.White;
+            dgv.BorderStyle = BorderStyle.None;
+            dgv.GridColor = borderColor;
+            dgv.RowHeadersVisible = false;
+            dgv.AllowUserToAddRows = false;
+            dgv.AllowUserToDeleteRows = false;
+            dgv.AllowUserToResizeRows = false;
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgv.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(248, 249, 250),
+                ForeColor = textColor,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(10, 0, 10, 0)
+            };
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+            dgv.ColumnHeadersHeight = 40;
+            dgv.DefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.White,
+                ForeColor = textColor,
+                Font = new Font("Segoe UI", 9),
+                SelectionBackColor = primaryColor,
+                SelectionForeColor = Color.White,
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(10, 0, 10, 0)
+            };
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 249, 250);
+            dgv.EnableHeadersVisualStyles = false;
 
             // Configurar columnas
             dgv.Columns.Add("Ejercicio", "EJERCICIO");
             dgv.Columns.Add("Series", "SERIES");
             dgv.Columns.Add("Repeticiones", "REPETICIONES");
             dgv.Columns.Add("Descanso", "DESCANSO (s)");
+            dgv.Columns[0].FillWeight = 40; // Dar más peso a la columna de ejercicio
 
-            // 🔥 PANEL DE BOTONES (Generar, Editar, Guardar, Limpiar)
-            var panelBotones = new Panel();
-            panelBotones.Dock = DockStyle.Bottom;
-            panelBotones.Height = 50;
-            panelBotones.Padding = new Padding(0, 5, 0, 0);
+            // 🔥 NUEVO: Panel de botones con TableLayoutPanel para mejor alineación
+            var panelBotones = new TableLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 60,
+                Padding = new Padding(0, 10, 0, 0),
+                ColumnCount = 3,
+                RowCount = 1
+            };
+            panelBotones.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Columna para "Generar"
+            panelBotones.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F)); // Columna expansible en el medio
+            panelBotones.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); // Columna para acciones secundarias
 
-            // Botón Generar
+            // Botón Generar (acción primaria)
             btnGenerar.Text = "GENERAR RUTINA";
-            btnGenerar.Height = 40;
-            btnGenerar.Dock = DockStyle.Left;
-            btnGenerar.Width = 150;
+            btnGenerar.Size = new Size(160, 45);
+
+            // Contenedor para botones de la derecha
+            var panelAccionesDerecha = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true
+            };
 
             // Botón Editar
-            var btnEditar = new Button();
-            btnEditar.Text = "EDITAR";
-            btnEditar.Height = 40;
-            btnEditar.Dock = DockStyle.Left;
-            btnEditar.Width = 100;
-            btnEditar.Margin = new Padding(5, 0, 0, 0);
-            btnEditar.Enabled = false;
+            var btnEditar = new Button { Text = "✏️ EDITAR", Enabled = false, Size = new Size(110, 45) };
 
-            //  NUEVO BOTÓN GUARDAR
-            var btnGuardar = new Button();
-            btnGuardar.Text = "GUARDAR";
-            btnGuardar.Height = 40;
-            btnGuardar.Dock = DockStyle.Left;
-            btnGuardar.Width = 100;
-            btnGuardar.Margin = new Padding(5, 0, 0, 0);
-            btnGuardar.Enabled = false;
+            // Botón Guardar
+            var btnGuardar = new Button { Text = "💾 GUARDAR", Enabled = false, Size = new Size(120, 45) };
 
             // Botón Limpiar
-            var btnLimpiar = new Button();
-            btnLimpiar.Text = "LIMPIAR";
-            btnLimpiar.Height = 40;
-            btnLimpiar.Dock = DockStyle.Left;
-            btnLimpiar.Width = 100;
-            btnLimpiar.Margin = new Padding(5, 0, 0, 0);
-            btnLimpiar.Enabled = false;
+            var btnLimpiar = new Button { Text = "🗑️ LIMPIAR", Enabled = false, Size = new Size(110, 45) };
 
-            // ASIGNAR LOS BOTONES A LAS VARIABLES GLOBALES SEGÚN EL PANEL
+            // Asignar los botones a las variables de instancia y aplicar estilos
             if (panel == panelHombres)
             {
                 btnGenerar.Click += btnGenerarHombres_Click;
@@ -266,6 +226,8 @@ namespace GymManager.Views
                 btnEditarHombres = btnEditar;
                 btnGuardarHombres = btnGuardar;
                 btnLimpiarHombres = btnLimpiar;
+
+                StyleButton(btnGenerar, primaryColor);
             }
             else if (panel == panelMujeres)
             {
@@ -276,6 +238,8 @@ namespace GymManager.Views
                 btnEditarMujeres = btnEditar;
                 btnGuardarMujeres = btnGuardar;
                 btnLimpiarMujeres = btnLimpiar;
+
+                StyleButton(btnGenerar, secondaryColor);
             }
             else if (panel == panelDeportistas)
             {
@@ -286,18 +250,29 @@ namespace GymManager.Views
                 btnEditarDeportistas = btnEditar;
                 btnGuardarDeportistas = btnGuardar;
                 btnLimpiarDeportistas = btnLimpiar;
+
+                StyleButton(btnGenerar, successColor);
             }
 
-            // Agregar botones al panel de botones
-            panelBotones.Controls.Add(btnLimpiar);
-            panelBotones.Controls.Add(btnGuardar);
-            panelBotones.Controls.Add(btnEditar);
-            panelBotones.Controls.Add(btnGenerar);
+            // Estilos para botones de acción (comunes a todos los paneles)
+            StyleButton(btnEditar, warningColor);
+            StyleButton(btnGuardar, successColor);
+            StyleButton(btnLimpiar, dangerColor);
 
-            // Agregar controles al panel principal
+            // Agregar botones al panel de la derecha
+            panelAccionesDerecha.Controls.AddRange(new Control[] { btnEditar, btnGuardar, btnLimpiar });
+
+            // Agregar los controles principales al TableLayoutPanel
+            panelBotones.Controls.Add(btnGenerar, 0, 0);
+            panelBotones.Controls.Add(panelAccionesDerecha, 2, 0);
+
+            // Agregar controles al panel de la rutina
             panel.Controls.Add(dgv);
+            panel.Controls.Add(lblEstadoVacio); // El label de estado vacío va detrás de la grilla
             panel.Controls.Add(panelBotones);
             panel.Controls.Add(lblTitulo);
+
+            dgv.BringToFront(); // Aseguramos que la grilla esté por encima del label
         }
     }
 }

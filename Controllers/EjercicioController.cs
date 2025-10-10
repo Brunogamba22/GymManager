@@ -181,5 +181,55 @@ namespace GymManager.Controllers
 
             return ejercicio;
         }
+
+        // ------------------------------------------------------------
+        // NUEVO MÉTODO: OBTENER EJERCICIOS POR GRUPO MUSCULAR
+        // ------------------------------------------------------------
+        public List<Ejercicio> ObtenerPorGrupoMuscular(string grupoMuscularNombre)
+        {
+            var lista = new List<Ejercicio>();
+
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+
+                string query = @"
+                    SELECT 
+                        e.id_ejercicio,
+                        e.nombre,
+                        g.id_grupo_muscular,
+                        g.nombre AS grupo_muscular,
+                        e.creadoPor,
+                        e.imagen
+                    FROM Ejercicios e
+                    INNER JOIN Grupo_Muscular g ON e.id_grupo_muscular = g.id_grupo_muscular
+                    WHERE g.nombre = @grupoMuscularNombre AND e.Activo = 1
+                    ORDER BY e.nombre;";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@grupoMuscularNombre", grupoMuscularNombre);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var ejercicio = new Ejercicio
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("id_ejercicio")),
+                                Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                                GrupoMuscularId = reader.GetInt32(reader.GetOrdinal("id_grupo_muscular")),
+                                GrupoMuscularNombre = reader.GetString(reader.GetOrdinal("grupo_muscular")),
+                                CreadoPor = reader.GetInt32(reader.GetOrdinal("creadoPor")),
+                                Imagen = reader.IsDBNull(reader.GetOrdinal("imagen"))
+                                    ? string.Empty
+                                    : reader.GetString(reader.GetOrdinal("imagen"))
+                            };
+                            lista.Add(ejercicio);
+                        }
+                    }
+                }
+            }
+            return lista;
+        }
     }
 }
