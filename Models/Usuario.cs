@@ -22,6 +22,8 @@ namespace GymManager.Models
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
         public Rol Rol { get; set; }
+        public bool Activo { get; set; } // Indica si el usuario está activo o no
+
     }
 
 }

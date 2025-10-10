@@ -41,15 +41,16 @@ namespace GymManager.Controllers
                 // Consulta SQL para obtener los datos principales
                 string query = @"
                     SELECT 
-                        u.id_usuario,       -- ID interno del usuario
-                        u.nombre,           -- Nombre del usuario
-                        u.apellido,         -- Apellido
-                        u.email,            -- Correo electrónico
-                        r.tipo_rol          -- Rol (Administrador, Profesor, Recepcionista)
+                        u.id_usuario,
+                        u.nombre,
+                        u.apellido,
+                        u.email,
+                        u.password,
+                        r.tipo_rol,
+                        u.activo
                     FROM dbo.Usuarios u
                     INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
-                    WHERE u.Activo = 1
-                    ORDER BY u.apellido, u.nombre;"; // Orden alfabético
+                    ORDER BY u.apellido, u.nombre;";
 
                 // Ejecutamos el comando SQL
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -65,7 +66,9 @@ namespace GymManager.Controllers
                             Nombre = reader["nombre"].ToString(),
                             Apellido = reader["apellido"].ToString(),
                             Email = reader["email"].ToString(),
-                            Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
+                            Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true),
+                            Activo = Convert.ToBoolean(reader["activo"])
+
                         };
 
                         // Agregamos el usuario a la lista
@@ -230,6 +233,27 @@ namespace GymManager.Controllers
                 }
             }
         }
+
+        // ------------------------------------------------------------
+        // MÉTODO: Reactivar(int idUsuario)
+        // Reactiva un usuario que estaba dado de baja (Activo = 0)
+        // ------------------------------------------------------------
+        public void Reactivar(int idUsuario)
+        {
+            using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+
+                string query = "UPDATE dbo.Usuarios SET Activo = 1 WHERE id_usuario = @id";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", idUsuario);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
 
         // ============================================================
         // MÉTODO: Login()
