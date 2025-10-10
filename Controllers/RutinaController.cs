@@ -1,29 +1,53 @@
-﻿using System.Data.SqlClient;
+﻿using GymManager.Models;
 using GymManager.Utils;
-using GymManager.Models;
+using System;
+using System.Data.SqlClient;
 
 namespace GymManager.Controllers
 {
     public class RutinaController
     {
-        public int CrearNuevaRutina(string tipoRutina, int idProfesor, string nombre)
+        public int CrearEncabezadoRutina(string tipoRutina, int idProfesor, string nombre)
         {
             using (var conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
 
+                // Tu base de datos no tiene fecha_creacion ni tipo, adapté la consulta a tu esquema
                 string query = @"
-                    INSERT INTO Rutina (nombre, tipo, fecha_creacion, id_profesor)
+                    INSERT INTO Rutina (nombre, fecha, creadaPor)
                     OUTPUT INSERTED.id_rutina
-                    VALUES (@nombre, @tipo, GETDATE(), @idProfesor);";
+                    VALUES (@nombre, GETDATE(), @creadaPor);";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@nombre", nombre);
-                    cmd.Parameters.AddWithValue("@tipo", tipoRutina);
-                    cmd.Parameters.AddWithValue("@idProfesor", idProfesor);
+                    cmd.Parameters.AddWithValue("@creadaPor", idProfesor);
 
                     return (int)cmd.ExecuteScalar(); // Devuelve el ID recién creado
+                }
+            }
+        }
+
+        public void AgregarDetalle(DetalleRutina detalle)
+        {
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+                string query = @"
+                    INSERT INTO DetalleRutina (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
+                    VALUES (@idRutina, @idEjercicio, @series, @repeticiones, @carga, @descanso);";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@idRutina", detalle.IdRutina);
+                    cmd.Parameters.AddWithValue("@idEjercicio", detalle.IdEjercicio);
+                    cmd.Parameters.AddWithValue("@series", detalle.Series);
+                    cmd.Parameters.AddWithValue("@repeticiones", detalle.Repeticiones);
+                    cmd.Parameters.AddWithValue("@carga", (object)detalle.Carga ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@descanso", (object)detalle.Descanso ?? DBNull.Value);
+
+                    cmd.ExecuteNonQuery();
                 }
             }
         }
