@@ -1,23 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GymManager.Models
 {
-    // Clase que representa un ejercicio del gimnasio
-    // Será usado tanto por el administrador (alta/baja) como por el profesor (rutinas)
+    /// <summary>
+    /// Representa un ejercicio del gimnasio.
+    /// </summary>
     public class Ejercicio
     {
+        // PK
         public int Id { get; set; }
-        public string Nombre { get; set; } = "";
-        public int GrupoMuscularId { get; set; }   // FK a Grupo_Muscular
-        public string GrupoMuscularNombre { get; set; } = ""; // opcional, para joins
-        public int CreadoPor { get; set; }         // FK a Usuarios.id_usuario
-        public string Imagen { get; set; } = "";   // ruta de imagen
 
-        // ❌ Series/Repeticiones/Descanso se eliminan -> están en DetalleRutina
+        // Datos principales
+        public string Nombre { get; set; } = string.Empty;
+
+        // FK a Grupo_Muscular
+        public int GrupoMuscularId { get; set; }
+
+        /// <summary>
+        /// Nombre del grupo muscular (rellenado vía JOIN; no se persiste).
+        /// </summary>
+        public string GrupoMuscularNombre { get; set; } = string.Empty;
+
+        // Auditoría / metadatos
+        public int CreadoPor { get; set; }
+
+        /// <summary>
+        /// Ruta del archivo de imagen (puede ser null o vacío si no se cargó).
+        /// </summary>
+        public string Imagen { get; set; }  // permite null en .NET Framework
+
+        // Helpers opcionales (no se persisten)
+        public bool TieneImagen => !string.IsNullOrWhiteSpace(Imagen);
+
+        public override string ToString() =>
+            string.IsNullOrWhiteSpace(GrupoMuscularNombre)
+                ? Nombre
+                : $"{Nombre} ({GrupoMuscularNombre})";
     }
 }
-
