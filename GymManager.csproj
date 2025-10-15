@@ -209,6 +209,17 @@
     <Folder Include="bin\Debug\" />
     <Folder Include="bin\Release\" />
     <Folder Include="obj\Debug\TempPE\" />
+    <Folder Include="Resources\Ejercicios\Abdominales\" />
+    <Folder Include="Resources\Ejercicios\Biceps\" />
+    <Folder Include="Resources\Ejercicios\Cardio\" />
+    <Folder Include="Resources\Ejercicios\Espalda\" />
+    <Folder Include="Resources\Ejercicios\Gluteos\" />
+    <Folder Include="Resources\Ejercicios\Hombros\" />
+    <Folder Include="Resources\Ejercicios\Pantorrillas\" />
+    <Folder Include="Resources\Ejercicios\Pecho\" />
+    <Folder Include="Resources\Ejercicios\Piernas\" />
+    <Folder Include="Resources\Ejercicios\Trapecio\" />
+    <Folder Include="Resources\Ejercicios\Triceps\" />
     <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>

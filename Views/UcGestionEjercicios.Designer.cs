@@ -129,6 +129,9 @@ namespace GymManager.Views
             this.dgvEjercicios.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvEjercicios.SelectionChanged += new EventHandler(this.dgvEjercicios_SelectionChanged);
 
+            //
+            this.dgvEjercicios.CellMouseEnter += dgvEjercicios_CellMouseEnter;
+
             // UserControl
             this.BackColor = Color.WhiteSmoke;
             this.Controls.AddRange(new Control[] {
