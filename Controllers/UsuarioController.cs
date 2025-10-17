@@ -5,11 +5,12 @@
 // ------------------------------------------------------------
 
 // Espacios de nombres requeridos
+using GymManager.Models;              // Contiene las clases del modelo (Usuario, Rol)
+using GymManager.Utils;               // Contiene la clase Conexion y PasswordHelper
 using System;                         // Funcionalidades básicas (excepciones, tipos, etc.)
 using System.Collections.Generic;     // Permite el uso de List<T>
 using System.Data.SqlClient;          // Librería ADO.NET para conexión con SQL Server
-using GymManager.Models;              // Contiene las clases del modelo (Usuario, Rol)
-using GymManager.Utils;               // Contiene la clase Conexion y PasswordHelper
+using System.Windows.Forms;
 
 namespace GymManager.Controllers
 {
@@ -269,16 +270,16 @@ namespace GymManager.Controllers
 
                 // Consulta SQL para obtener el usuario por su correo
                 string query = @"
-                    SELECT 
-                        u.id_usuario,
-                        u.nombre,
-                        u.apellido,
-                        u.email,
-                        u.password,
-                        r.tipo_rol
-                    FROM dbo.Usuarios u
-                    INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
-                    WHERE u.email = @Email AND u.Activo = 1;";
+            SELECT 
+                u.id_usuario,
+                u.nombre,
+                u.apellido,
+                u.email,
+                u.password,
+                r.tipo_rol
+            FROM dbo.Usuarios u
+            INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
+            WHERE u.email = @Email AND u.Activo = 1;";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -289,13 +290,24 @@ namespace GymManager.Controllers
                         // Si el usuario existe en la BD
                         if (reader.Read())
                         {
-                            // Obtenemos el hash almacenado
-                            string storedHash = reader["password"].ToString();
+                            MessageBox.Show("Consulta ejecutada correctamente", "Debug");
 
-                            // Verificamos que la contraseña ingresada coincida con el hash
+                            // Hash almacenado en la base de datos
+                            string storedHash = reader["password"].ToString().Trim();
+
+                            // Hash generado con la contraseña ingresada
+                            string enteredHash = PasswordHelper.HashPassword(password);
+
+                            // Muestra ambos hashes para comparación directa
+                            MessageBox.Show(
+                                $"Hash en BD:\n{storedHash}\n\nHash generado con la contraseña ingresada:\n{enteredHash}",
+                                "Comparación de Hashes");
+
+                            // Verificamos si coinciden
                             if (PasswordHelper.VerifyPassword(password, storedHash))
                             {
-                                // Retornamos el objeto Usuario completo
+                                MessageBox.Show("✅ Contraseña verificada correctamente", "Debug");
+
                                 return new Usuario
                                 {
                                     IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
@@ -306,12 +318,20 @@ namespace GymManager.Controllers
                                     Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
                                 };
                             }
+                            else
+                            {
+                                MessageBox.Show("❌ El hash no coincide con la contraseña ingresada", "Debug");
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("⚠️ No se encontró el usuario con ese email o está inactivo", "Debug");
                         }
                     }
                 }
             }
 
-            // Si las credenciales no coinciden, retornamos null
+            // Si no se encontró o no coincide la contraseña
             return null;
         }
 
