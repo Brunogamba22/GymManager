@@ -270,16 +270,16 @@ namespace GymManager.Controllers
 
                 // Consulta SQL para obtener el usuario por su correo
                 string query = @"
-            SELECT 
-                u.id_usuario,
-                u.nombre,
-                u.apellido,
-                u.email,
-                u.password,
-                r.tipo_rol
-            FROM dbo.Usuarios u
-            INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
-            WHERE u.email = @Email AND u.Activo = 1;";
+                SELECT 
+                    u.id_usuario,
+                    u.nombre,
+                    u.apellido,
+                    u.email,
+                    u.password,
+                    r.tipo_rol
+                FROM dbo.Usuarios u
+                INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
+                WHERE u.email = @Email AND u.Activo = 1;";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -290,24 +290,15 @@ namespace GymManager.Controllers
                         // Si el usuario existe en la BD
                         if (reader.Read())
                         {
-                            MessageBox.Show("Consulta ejecutada correctamente", "Debug");
-
                             // Hash almacenado en la base de datos
                             string storedHash = reader["password"].ToString().Trim();
 
                             // Hash generado con la contraseña ingresada
                             string enteredHash = PasswordHelper.HashPassword(password);
 
-                            // Muestra ambos hashes para comparación directa
-                            MessageBox.Show(
-                                $"Hash en BD:\n{storedHash}\n\nHash generado con la contraseña ingresada:\n{enteredHash}",
-                                "Comparación de Hashes");
-
                             // Verificamos si coinciden
                             if (PasswordHelper.VerifyPassword(password, storedHash))
                             {
-                                MessageBox.Show("✅ Contraseña verificada correctamente", "Debug");
-
                                 return new Usuario
                                 {
                                     IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
@@ -318,14 +309,7 @@ namespace GymManager.Controllers
                                     Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
                                 };
                             }
-                            else
-                            {
-                                MessageBox.Show("❌ El hash no coincide con la contraseña ingresada", "Debug");
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show("⚠️ No se encontró el usuario con ese email o está inactivo", "Debug");
+                            
                         }
                     }
                 }
