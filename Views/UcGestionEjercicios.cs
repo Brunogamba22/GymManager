@@ -533,20 +533,36 @@ namespace GymManager.Views
             {
                 if (!string.IsNullOrWhiteSpace(abs) && File.Exists(abs))
                 {
-                    // 🔸 Liberar la imagen anterior
+                    // 🔸 Liberar la imagen anterior de forma segura (sin provocar excepciones)
                     if (pictureBoxEjercicio.Image != null)
                     {
-                        pictureBoxEjercicio.Image.Dispose();
-                        pictureBoxEjercicio.Image = null;
+                        try
+                        {
+                            var temp = pictureBoxEjercicio.Image;
+                            pictureBoxEjercicio.Image = null; // desvinculamos primero
+                            temp.Dispose();                   // luego liberamos recursos
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("⚠️ No se pudo liberar la imagen anterior: " + ex.Message);
+                        }
                     }
 
                     // 🔸 Cargar y mostrar imagen
                     pictureBoxEjercicio.Image = LoadImageSafe(abs);
                     pictureBoxEjercicio.SizeMode = PictureBoxSizeMode.Zoom;
 
+                    // ✅ Validación antes de animar (para evitar ArgumentException)
+                    if (pictureBoxEjercicio.Image == null ||
+                        pictureBoxEjercicio.Image.Width == 0 ||
+                        pictureBoxEjercicio.Image.Height == 0)
+                    {
+                        pictureBoxEjercicio.Image = null;
+                        return;
+                    }
+
                     // 🌀 Si es GIF, animarlo
-                    if (pictureBoxEjercicio.Image != null &&
-                        ImageFormat.Gif.Equals(pictureBoxEjercicio.Image.RawFormat))
+                    if (ImageFormat.Gif.Equals(pictureBoxEjercicio.Image.RawFormat))
                     {
                         System.Drawing.ImageAnimator.Animate(pictureBoxEjercicio.Image, (s, e2) =>
                         {
@@ -559,18 +575,20 @@ namespace GymManager.Views
                     pictureBoxEjercicio.Image = null;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("⚠️ Error al mostrar la imagen: " + ex.Message);
                 pictureBoxEjercicio.Image = null;
             }
 
-            // Actualizar selección del combo
+            // 🔸 Actualizar selección del combo
             int idx = cmbMusculo.FindStringExact(ejercicio.GrupoMuscularNombre ?? "");
             cmbMusculo.SelectedIndex = (idx >= 0) ? idx : 0;
 
             txtNombre.ForeColor = Color.Black;
             txtImagen.ForeColor = Color.Black;
         }
+
 
 
         // ------------------------------------------------------------
