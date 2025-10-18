@@ -36,6 +36,11 @@ namespace GymManager.Views
             InitializeComponent();
             CargarGruposMusculares();
             EstilizarBotones();
+            // 🔹 Inicializamos el combo de tipo de búsqueda (por si el diseñador se modifica)
+            cmbTipoBusqueda.Items.Clear();
+            cmbTipoBusqueda.Items.AddRange(new object[] { "Todos", "ID", "Nombre", "Grupo Muscular" });
+            cmbTipoBusqueda.SelectedIndex = 0;
+
             RefrescarGrid();
 
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
@@ -132,32 +137,44 @@ namespace GymManager.Views
         /// </summary>
         private static Image GetThumbnail70(string absPath)
         {
-            using (var fs = new FileStream(absPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var src = Image.FromStream(fs))
+            try
             {
-                bool esGif = ImageFormat.Gif.Equals(src.RawFormat);
-                if (esGif && src.FrameDimensionsList?.Length > 0)
+                if (string.IsNullOrWhiteSpace(absPath) || !File.Exists(absPath))
+                    return null;
+
+                using (var fs = new FileStream(absPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var src = Image.FromStream(fs))
                 {
-                    var dim = new FrameDimension(src.FrameDimensionsList[0]);
-                    if (src.GetFrameCount(FrameDimension.Time) > 0)
-                        src.SelectActiveFrame(FrameDimension.Time, 0);
+                    bool esGif = ImageFormat.Gif.Equals(src.RawFormat);
+                    if (esGif && src.FrameDimensionsList?.Length > 0)
+                    {
+                        var dim = new FrameDimension(src.FrameDimensionsList[0]);
+                        if (src.GetFrameCount(FrameDimension.Time) > 0)
+                            src.SelectActiveFrame(FrameDimension.Time, 0);
+                    }
+
+                    var thumb = new Bitmap(70, 70);
+                    using (var g = Graphics.FromImage(thumb))
+                    {
+                        g.Clear(Color.Transparent);
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
+                        var ratio = Math.Min(70f / src.Width, 70f / src.Height);
+                        var w = (int)(src.Width * ratio);
+                        var h = (int)(src.Height * ratio);
+                        var x = (70 - w) / 2;
+                        var y = (70 - h) / 2;
+
+                        g.DrawImage(src, new Rectangle(x, y, w, h));
+                    }
+
+                    return thumb;
                 }
-
-                var thumb = new Bitmap(70, 70);
-                using (var g = Graphics.FromImage(thumb))
-                {
-                    g.Clear(Color.Transparent);
-                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-
-                    var ratio = Math.Min(70f / src.Width, 70f / src.Height);
-                    var w = (int)(src.Width * ratio);
-                    var h = (int)(src.Height * ratio);
-                    var x = (70 - w) / 2;
-                    var y = (70 - h) / 2;
-
-                    g.DrawImage(src, new Rectangle(x, y, w, h));
-                }
-                return thumb;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error al generar miniatura: " + ex.Message);
+                return null;
             }
         }
 
@@ -362,6 +379,12 @@ namespace GymManager.Views
 
             dgvEjercicios.ClearSelection();
 
+            // 🔸 Si la grilla está vacía o no hay selección, ocultamos la imagen de vista previa
+            if (fuente == null || fuente.Count == 0)
+            {
+                pictureBoxEjercicio.Image = null;
+            }
+
         }
 
         // ------------------------------------------------------------
@@ -369,10 +392,21 @@ namespace GymManager.Views
         // ------------------------------------------------------------
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtNombre.Text) || cmbMusculo.SelectedIndex == 0)
+            // Validación del nombre
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) || txtNombre.ForeColor == Color.Gray)
             {
-                MessageBox.Show("Completa el nombre y selecciona un grupo muscular válido.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Debes ingresar un nombre para el ejercicio.",
+                    "Campo incompleto", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txtNombre.Focus();
+                return;
+            }
+
+            // Validación del grupo muscular
+            if (cmbMusculo.SelectedIndex <= 0)
+            {
+                MessageBox.Show("Debes seleccionar un grupo muscular antes de agregar el ejercicio.",
+                    "Campo incompleto", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cmbMusculo.Focus();
                 return;
             }
 
@@ -382,7 +416,6 @@ namespace GymManager.Views
                 {
                     Nombre = txtNombre.Text.Trim(),
                     GrupoMuscularId = gruposMusculares[cmbMusculo.SelectedItem.ToString()],
-                    // Guardamos SIEMPRE ruta RELATIVA (si viene vacía, queda null)
                     Imagen = string.IsNullOrWhiteSpace(txtImagen.Text) ? null : txtImagen.Text.Trim(),
                     CreadoPor = Sesion.Actual.IdUsuario
                 };
@@ -400,6 +433,7 @@ namespace GymManager.Views
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         // ------------------------------------------------------------
         // Editar (usa ID de la fila seleccionada y busca en listaActual)
@@ -557,17 +591,99 @@ namespace GymManager.Views
         // ------------------------------------------------------------
         // Búsqueda dinámica (filtra lista real y repinta grilla)
         // ------------------------------------------------------------
+        // ------------------------------------------------------------
+        // 🔍 Búsqueda dinámica con tipo de filtro seleccionable
+        // ------------------------------------------------------------
         private void txtBuscar_TextChanged(object sender, EventArgs e)
         {
-            var filtro = txtBuscar.Text.ToLower();
-            var filtrados = listaActual
-                .Where(x =>
-                    x.Nombre.ToLower().Contains(filtro) ||
-                    x.GrupoMuscularNombre.ToLower().Contains(filtro))
-                .ToList();
+            // Tomamos el texto escrito y el tipo de búsqueda elegido en el combo
+            string filtro = txtBuscar.Text.Trim().ToLower();
+            string tipo = cmbTipoBusqueda.SelectedItem?.ToString() ?? "Todos";
 
+            // Lista auxiliar donde guardaremos los resultados filtrados
+            List<Ejercicio> filtrados;
+
+            // Si el campo de texto está vacío, mostramos todo
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                filtrados = listaActual;
+            }
+            else
+            {
+                // Aplicamos el filtro según el tipo elegido
+                switch (tipo)
+                {
+                    case "ID":
+                        // Busca por coincidencia parcial de número (por ejemplo: "2" muestra ID 2, 12, 20, etc.)
+                        filtrados = listaActual
+                            .Where(x => x.Id.ToString().Contains(filtro))
+                            .ToList();
+                        break;
+
+                    case "Nombre":
+                        // Busca por coincidencia parcial en el nombre del ejercicio
+                        filtrados = listaActual
+                            .Where(x => x.Nombre.ToLower().Contains(filtro))
+                            .ToList();
+                        break;
+
+                    case "Grupo Muscular":
+                        // Busca por coincidencia parcial en el nombre del grupo muscular
+                        filtrados = listaActual
+                            .Where(x => x.GrupoMuscularNombre.ToLower().Contains(filtro))
+                            .ToList();
+                        break;
+
+                    default:
+                        // "Todos": busca en todos los campos (ID, Nombre, Grupo)
+                        filtrados = listaActual
+                            .Where(x =>
+                                x.Id.ToString().Contains(filtro) ||
+                                x.Nombre.ToLower().Contains(filtro) ||
+                                x.GrupoMuscularNombre.ToLower().Contains(filtro))
+                            .ToList();
+                        break;
+                }
+            }
+
+            // Repintamos la grilla con los resultados filtrados
             CargarGridDesde(filtrados);
+
+            //  Si no hay resultados en la búsqueda, limpiamos la imagen
+            if (filtrados.Count == 0)
+            {
+                pictureBoxEjercicio.Image = null;
+            }
+
         }
+
+        // ------------------------------------------------------------
+        // Restringe los caracteres permitidos según el tipo de búsqueda
+        // ------------------------------------------------------------
+        private void txtBuscar_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            string tipo = cmbTipoBusqueda.SelectedItem?.ToString() ?? "Todos";
+
+            if (tipo == "ID")
+            {
+                // Solo números, borrar o retroceso
+                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                    e.Handled = true;
+            }
+            else if (tipo == "Nombre" || tipo == "Grupo Muscular")
+            {
+                // Solo letras, espacios o borrar
+                if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
+                    e.Handled = true;
+            }
+            else
+            {
+                // En "Todos", se permite cualquier carácter
+                e.Handled = false;
+            }
+        }
+
+
 
         // ------------------------------------------------------------
         // Placeholder visual
@@ -605,12 +721,22 @@ namespace GymManager.Views
 
             try
             {
-                // 🔸 Liberar la imagen anterior para evitar bloqueos
+                
+                // 🔸 Liberar la imagen anterior para evitar bloqueos o excepciones
                 if (pictureBoxEjercicio.Image != null)
                 {
-                    pictureBoxEjercicio.Image.Dispose();
-                    pictureBoxEjercicio.Image = null;
+                    try
+                    {
+                        var temp = pictureBoxEjercicio.Image;
+                        pictureBoxEjercicio.Image = null; // primero desvinculamos
+                        temp.Dispose();                   // luego liberamos
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("⚠️ No se pudo liberar la imagen anterior: " + ex.Message);
+                    }
                 }
+
 
                 // 🔸 Cargar la nueva imagen (puede ser GIF)
                 pictureBoxEjercicio.Image = (!string.IsNullOrWhiteSpace(abs) && File.Exists(abs))
@@ -676,5 +802,12 @@ namespace GymManager.Views
             btnSeleccionarImagen.BackColor = Color.FromArgb(155, 89, 182);
 
         }
+
+        private void cmbTipoBusqueda_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            txtBuscar.Text = "";  // Limpia el texto para evitar filtros inconsistentes
+            txtBuscar.Focus();    // Devuelve el foco al buscador
+        }
+
     }
 }

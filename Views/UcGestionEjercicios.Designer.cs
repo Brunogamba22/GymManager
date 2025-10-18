@@ -23,6 +23,10 @@ namespace GymManager.Views
         private DataGridView dgvEjercicios;
         private PictureBox pictureBoxEjercicio;
         private Button btnSeleccionarImagen;
+        //  Nuevo ComboBox y etiqueta para el tipo de búsqueda
+        private ComboBox cmbTipoBusqueda;   // Permite seleccionar ID / Nombre / Grupo / Todos
+        private Label lblTipoBusqueda;      // Texto descriptivo
+
 
 
         protected override void Dispose(bool disposing)
@@ -114,13 +118,48 @@ namespace GymManager.Views
             // Buscar
             this.lblBuscar.AutoSize = true;
             this.lblBuscar.Font = new Font("Segoe UI", 9F);
-            this.lblBuscar.Location = new Point(30, 205);
+            this.lblBuscar.Location = new Point(280, 205);
             this.lblBuscar.Text = "Buscar:";
 
             this.txtBuscar.Font = new Font("Segoe UI", 10F);
-            this.txtBuscar.Location = new Point(90, 202);
+            this.txtBuscar.Location = new Point(340, 202);
             this.txtBuscar.Size = new Size(200, 25);
             this.txtBuscar.TextChanged += new EventHandler(this.txtBuscar_TextChanged);
+
+            //restriccion de caracteres
+            this.txtBuscar.KeyPress += new KeyPressEventHandler(this.txtBuscar_KeyPress);
+
+
+            // ======================================================
+            // 🔽 NUEVOS CONTROLES PARA TIPO DE BÚSQUEDA
+            // ======================================================
+
+            // Label "Tipo de búsqueda"
+            this.lblTipoBusqueda = new Label();
+            this.lblTipoBusqueda.AutoSize = true;
+            this.lblTipoBusqueda.Font = new Font("Segoe UI", 9F);
+            this.lblTipoBusqueda.Location = new Point(40, 205);
+            this.lblTipoBusqueda.Text = "Buscar por:";
+
+            // ComboBox tipo de búsqueda
+            this.cmbTipoBusqueda = new ComboBox();
+            this.cmbTipoBusqueda.Font = new Font("Segoe UI", 10F);
+            this.cmbTipoBusqueda.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbTipoBusqueda.Location = new Point(110, 202);
+            this.cmbTipoBusqueda.Size = new Size(150, 25);
+
+            // Cargamos las opciones básicas (igual que en usuarios)
+            this.cmbTipoBusqueda.Items.AddRange(new object[] {
+                    "Todos",
+                    "ID",
+                    "Nombre",
+                    "Grupo Muscular"
+                });
+            this.cmbTipoBusqueda.SelectedIndex = 0; // Por defecto "Todos"
+
+            
+            this.cmbTipoBusqueda.SelectedIndexChanged += new EventHandler(this.cmbTipoBusqueda_SelectedIndexChanged);
+
 
             // DataGridView
             this.dgvEjercicios.Location = new Point(30, 240);
@@ -133,12 +172,12 @@ namespace GymManager.Views
             this.dgvEjercicios.CellMouseEnter += dgvEjercicios_CellMouseEnter;
 
             // UserControl
-            this.BackColor = Color.WhiteSmoke;
             this.Controls.AddRange(new Control[] {
-        lblTitulo, txtNombre, cmbMusculo, lblImagen, txtImagen, btnSeleccionarImagen,
-        pictureBoxEjercicio, btnAgregar, btnEditar, btnEliminar, btnLimpiar,
-        lblBuscar, txtBuscar, dgvEjercicios
-    });
+                    lblTitulo, txtNombre, cmbMusculo, lblImagen, txtImagen, btnSeleccionarImagen,
+                    pictureBoxEjercicio, btnAgregar, btnEditar, btnEliminar, btnLimpiar,
+                    lblBuscar, txtBuscar, lblTipoBusqueda, cmbTipoBusqueda, dgvEjercicios
+                });
+
             this.Size = new Size(800, 600);
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).EndInit();

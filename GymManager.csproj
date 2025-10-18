@@ -217,7 +217,6 @@
     <Folder Include="Resources\Ejercicios\Hombros\" />
     <Folder Include="Resources\Ejercicios\Pantorrillas\" />
     <Folder Include="Resources\Ejercicios\Pecho\" />
-    <Folder Include="Resources\Ejercicios\Piernas\" />
     <Folder Include="Resources\Ejercicios\Trapecio\" />
     <Folder Include="Resources\Ejercicios\Triceps\" />
     <Folder Include="Services\" />
@@ -227,6 +226,7 @@
     <Content Include="Resources\1026713.png" />
     <Content Include="Resources\11438089.png" />
     <Content Include="Resources\ChatGPT Image 8 sept 2025, 18_03_32.png" />
+    <Content Include="Resources\Ejercicios\Piernas\camilla_trasera.gif" />
     <None Include="Resources\Logo-gymM13.png" />
     <None Include="Resources\Logo-gymM12.png" />
     <None Include="Resources\Logo-gymM10.png" />
