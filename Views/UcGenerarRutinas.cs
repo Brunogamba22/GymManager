@@ -28,10 +28,12 @@ namespace GymManager.Views
         private readonly List<DetalleRutina> rutinaHombres = new List<DetalleRutina>();
         private readonly List<DetalleRutina> rutinaMujeres = new List<DetalleRutina>();
         private readonly List<DetalleRutina> rutinaDeportistas = new List<DetalleRutina>();
+        private List<Genero> _listaDeGeneros = new List<Genero>();
 
         private readonly EjercicioController _ejercicioController = new EjercicioController();
         private readonly RutinaController _rutinaController = new RutinaController();
         private readonly GrupoMuscularController _grupoMuscularController = new GrupoMuscularController();
+        private readonly GeneroController _generoController = new GeneroController();
 
         // Referencias a botones
         private Button btnEditarHombres, btnLimpiarHombres, btnGuardarHombres;
@@ -59,6 +61,8 @@ namespace GymManager.Views
                 chkListHombres.Items.AddRange(nombresGrupos);
                 chkListMujeres.Items.AddRange(nombresGrupos);
                 chkListDeportistas.Items.AddRange(nombresGrupos);
+
+                _listaDeGeneros = _generoController.ObtenerTodos();
             }
             catch (Exception ex)
             {
@@ -195,6 +199,7 @@ namespace GymManager.Views
 
         private void MostrarRutinaEnGrid(DataGridView grilla, List<DetalleRutina> rutina)
         {
+            grilla.Visible = rutina.Count > 0; // La grilla solo se ve si tiene datos
             grilla.Rows.Clear();
             foreach (var detalle in rutina)
             {
@@ -222,9 +227,17 @@ namespace GymManager.Views
                 if (detalles == null || detalles.Count == 0)
                     throw new InvalidOperationException("No hay ejercicios en la rutina para guardar.");
 
+                // Buscamos en la lista de géneros el que coincida con el nombre de la pestaña (ej: "Hombres")
+                var generoEncontrado = _listaDeGeneros.FirstOrDefault(g => g.Nombre.Equals(tipoRutina, StringComparison.OrdinalIgnoreCase));
+
+                // Si no lo encontramos, usamos 1 como valor por defecto para evitar errores.
+                int idGeneroParaGuardar = generoEncontrado?.Id ?? 1;
+
                 string gruposSeleccionados = string.Join(" + ", chkList.CheckedItems.Cast<string>());
                 string nombreRutina = $"Rutina {gruposSeleccionados} - {DateTime.Now:dd/MM/yyyy}";
-                int nuevoIdRutina = _rutinaController.CrearEncabezadoRutina(tipoRutina, Sesion.Actual.IdUsuario, nombreRutina);
+
+                // Llamamos al controlador con el ID de género correcto
+                int nuevoIdRutina = _rutinaController.CrearEncabezadoRutina(tipoRutina, Sesion.Actual.IdUsuario, nombreRutina, idGeneroParaGuardar);
 
                 foreach (var detalle in detalles)
                 {
@@ -233,6 +246,11 @@ namespace GymManager.Views
                 }
 
                 MessageBox.Show($"Rutina de '{gruposSeleccionados}' guardada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // Limpieza automática post-guardado
+                if (tipoRutina == "Hombres") LimpiarPanel(dgvHombres, rutinaHombres, chkListHombres);
+                if (tipoRutina == "Mujeres") LimpiarPanel(dgvMujeres, rutinaMujeres, chkListMujeres);
+                if (tipoRutina == "Deportistas") LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas);
             }
             catch (Exception ex)
             {
@@ -242,34 +260,41 @@ namespace GymManager.Views
 
         #region "Acciones (Limpiar, Editar, Habilitar, etc.)"
 
+        private void LimpiarPanel(DataGridView grilla, List<DetalleRutina> listaRutina, CheckedListBox chkList)
+        {
+            grilla.Rows.Clear();
+            grilla.Visible = false;
+            listaRutina.Clear();
+
+            for (int i = 0; i < chkList.Items.Count; i++)
+            {
+                chkList.SetItemChecked(i, false);
+            }
+
+            if (grilla == dgvHombres) HabilitarAccionesHombres(false);
+            if (grilla == dgvMujeres) HabilitarAccionesMujeres(false);
+            if (grilla == dgvDeportistas) HabilitarAccionesDeportistas(false);
+        }
+
         private void btnLimpiarHombres_Click(object sender, EventArgs e)
         {
             if (ConfirmarLimpieza("HOMBRES"))
             {
-                dgvHombres.Rows.Clear();
-                rutinaHombres.Clear();
-                HabilitarAccionesHombres(false);
-                for (int i = 0; i < chkListHombres.Items.Count; i++) chkListHombres.SetItemChecked(i, false);
+                LimpiarPanel(dgvHombres, rutinaHombres, chkListHombres);
             }
         }
         private void btnLimpiarMujeres_Click(object sender, EventArgs e)
         {
             if (ConfirmarLimpieza("MUJERES"))
             {
-                dgvMujeres.Rows.Clear();
-                rutinaMujeres.Clear();
-                HabilitarAccionesMujeres(false);
-                for (int i = 0; i < chkListMujeres.Items.Count; i++) chkListMujeres.SetItemChecked(i, false);
+                LimpiarPanel(dgvMujeres, rutinaMujeres, chkListMujeres);
             }
         }
         private void btnLimpiarDeportistas_Click(object sender, EventArgs e)
         {
             if (ConfirmarLimpieza("DEPORTISTAS"))
             {
-                dgvDeportistas.Rows.Clear();
-                rutinaDeportistas.Clear();
-                HabilitarAccionesDeportistas(false);
-                for (int i = 0; i < chkListDeportistas.Items.Count; i++) chkListDeportistas.SetItemChecked(i, false);
+                LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas);
             }
         }
 

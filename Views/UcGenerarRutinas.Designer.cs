@@ -114,15 +114,19 @@ namespace GymManager.Views
 
             var panelSelector = new Panel { Dock = DockStyle.Top, Height = 130, Padding = new Padding(0, 5, 0, 10) };
             var lblSelector = new Label { Text = "Seleccionar Grupos Musculares:", Dock = DockStyle.Top, Font = new Font("Segoe UI", 10), ForeColor = textColor, Height = 25 };
+
             chkListGrupos.Dock = DockStyle.Fill;
             chkListGrupos.Font = new Font("Segoe UI", 10);
             chkListGrupos.CheckOnClick = true;
             chkListGrupos.BorderStyle = BorderStyle.FixedSingle;
+            // chkListGrupos.SelectionMode = SelectionMode.None; // <-- REMOVÉ ESTA LÍNEA O COMENTALA
             chkListGrupos.ItemCheck += (sender, e) => OnGrupoMuscular_ItemCheck(chkListGrupos, btnGenerar);
+            chkListGrupos.SelectedIndexChanged += (sender, e) => { chkListGrupos.ClearSelected(); }; // <-- ¡AGREGÁ ESTA LÍNEA MÁGICA!
             panelSelector.Controls.AddRange(new Control[] { chkListGrupos, lblSelector });
 
             var lblEstadoVacio = new Label { Text = "Marcá los grupos musculares que querés entrenar y hacé clic en 'Generar Rutina'.", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10), ForeColor = Color.LightGray };
 
+            dgv.Visible = false;
             dgv.Dock = DockStyle.Fill;
             dgv.BackgroundColor = Color.White;
             dgv.BorderStyle = BorderStyle.None;

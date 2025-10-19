@@ -7,7 +7,7 @@ namespace GymManager.Controllers
 {
     public class RutinaController
     {
-        public int CrearEncabezadoRutina(string tipoRutina, int idProfesor, string nombre)
+        public int CrearEncabezadoRutina(string tipoRutina, int idProfesor, string nombre, int idGenero)
         {
             using (var conn = new SqlConnection(Conexion.Cadena))
             {
@@ -15,14 +15,15 @@ namespace GymManager.Controllers
 
                 // Tu base de datos no tiene fecha_creacion ni tipo, adapté la consulta a tu esquema
                 string query = @"
-                    INSERT INTO Rutina (nombre, fecha, creadaPor)
+                    INSERT INTO Rutina (nombre, fecha, creadaPor, id_genero)
                     OUTPUT INSERTED.id_rutina
-                    VALUES (@nombre, GETDATE(), @creadaPor);";
+                    VALUES (@nombre, GETDATE(), @creadaPor, @idGenero);";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@nombre", nombre);
                     cmd.Parameters.AddWithValue("@creadaPor", idProfesor);
+                    cmd.Parameters.AddWithValue("@idGenero", idGenero);
 
                     return (int)cmd.ExecuteScalar(); // Devuelve el ID recién creado
                 }

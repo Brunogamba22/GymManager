@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Controllers\DetalleRutinaController.cs" />
     <Compile Include="Controllers\EjercicioController.cs" />
+    <Compile Include="Controllers\GeneroController.cs" />
     <Compile Include="Controllers\GrupoMuscularController.cs" />
     <Compile Include="Controllers\PlantillaController.cs" />
     <Compile Include="Controllers\ReporteController.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="Models\DetalleRutina.cs" />
     <Compile Include="Models\Ejercicio.cs" />
     <Compile Include="Models\Eventos\RutinaGeneradaEventArgs.cs" />
+    <Compile Include="Models\Genero.cs" />
     <Compile Include="Models\GrupoMuscular.cs" />
     <Compile Include="Models\Rutina.cs" />
     <Compile Include="Models\Usuario.cs" />
