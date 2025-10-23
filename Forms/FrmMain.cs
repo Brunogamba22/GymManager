@@ -1,14 +1,16 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-using GymManager.Models;
+﻿using GymManager.Models;
 using GymManager.Utils;
 using GymManager.Views;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace GymManager.Forms
 {
     public partial class FrmMain : Form
     {
+
         // Variables para mantener las instancias de los UserControls
         private UcGenerarRutinas ucGenerarRutinas;
         private UcEditarRutina ucEditarRutina;
@@ -116,7 +118,7 @@ namespace GymManager.Forms
             panelContenido.Controls.Add(ucEditarRutina);
         }
 
-        private void MostrarPlanillas()
+        public void MostrarPlanillas()
         {
             panelContenido.Controls.Clear();
             ucPlanillasRutinas.Dock = DockStyle.Fill;
@@ -148,6 +150,15 @@ namespace GymManager.Forms
             btn.Click += (s, e) => onClick();
 
             panelNavbar.Controls.Add(btn);
+        }
+
+        public void MostrarPanelEdicion(List<DetalleRutina> rutinaAEditar, string tipoRutina)
+        {
+            if (ucEditarRutina != null)
+            {
+                ucEditarRutina.CargarRutinaParaEditar(rutinaAEditar, tipoRutina);
+                ucEditarRutina.BringToFront();
+            }
         }
 
         private void MostrarDashboard(Rol rol)

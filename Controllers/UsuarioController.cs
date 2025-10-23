@@ -10,6 +10,7 @@ using GymManager.Utils;               // Contiene la clase Conexion y PasswordHe
 using System;                         // Funcionalidades básicas (excepciones, tipos, etc.)
 using System.Collections.Generic;     // Permite el uso de List<T>
 using System.Data.SqlClient;          // Librería ADO.NET para conexión con SQL Server
+using System.Text;
 using System.Windows.Forms;
 
 namespace GymManager.Controllers
@@ -268,18 +269,17 @@ namespace GymManager.Controllers
             {
                 conn.Open();
 
-                // Consulta SQL para obtener el usuario por su correo
                 string query = @"
-                SELECT 
-                    u.id_usuario,
-                    u.nombre,
-                    u.apellido,
-                    u.email,
-                    u.password,
-                    r.tipo_rol
-                FROM dbo.Usuarios u
-                INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
-                WHERE u.email = @Email AND u.Activo = 1;";
+            SELECT 
+                u.id_usuario,
+                u.nombre,
+                u.apellido,
+                u.email,
+                u.password,
+                r.tipo_rol
+            FROM dbo.Usuarios u
+            INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
+            WHERE u.email = @Email AND u.Activo = 1;";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -287,18 +287,15 @@ namespace GymManager.Controllers
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        // Si el usuario existe en la BD
                         if (reader.Read())
                         {
-                            // Hash almacenado en la base de datos
-                            string storedHash = reader["password"].ToString().Trim();
+                            // Obtenemos el hash almacenado
+                            string storedHash = reader["password"].ToString()?.Trim();
 
-                            // Hash generado con la contraseña ingresada
-                            string enteredHash = PasswordHelper.HashPassword(password);
-
-                            // Verificamos si coinciden
+                            // Verificamos si la contraseña ingresada coincide
                             if (PasswordHelper.VerifyPassword(password, storedHash))
                             {
+                                // Login exitoso → devolvemos el objeto Usuario
                                 return new Usuario
                                 {
                                     IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
@@ -309,15 +306,18 @@ namespace GymManager.Controllers
                                     Rol = (Rol)Enum.Parse(typeof(Rol), reader["tipo_rol"].ToString(), true)
                                 };
                             }
-                            
                         }
                     }
                 }
             }
 
-            // Si no se encontró o no coincide la contraseña
+            // Si no se encontró o la contraseña no coincide
             return null;
         }
+
+
+
+
 
         // ============================================================
         // MÉTODO: ObtenerPorId()

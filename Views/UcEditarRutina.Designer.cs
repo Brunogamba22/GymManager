@@ -23,8 +23,7 @@ namespace GymManager.Views
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-                components.Dispose();
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
@@ -43,14 +42,14 @@ namespace GymManager.Views
             this.lblTitulo = new Label();
             this.lblDescripcion = new Label();
             this.panelAcciones = new Panel();
+            var centerPanel = new Panel();
 
-            // Configuración principal
+            // ((System.ComponentModel.ISupportInitialize)(this.dgvRutinas)).BeginInit(); // Si usas el diseñador visual, esto puede estar
             this.SuspendLayout();
             this.Size = new Size(900, 600);
 
             // Main Panel
             this.mainPanel.Dock = DockStyle.Fill;
-            this.mainPanel.BackColor = Color.FromArgb(248, 249, 250);
             this.mainPanel.Padding = new Padding(20);
 
             // Header Panel
@@ -61,62 +60,51 @@ namespace GymManager.Views
 
             // Content Panel
             this.contentPanel.Dock = DockStyle.Fill;
-            this.contentPanel.BackColor = Color.Transparent;
             this.contentPanel.Padding = new Padding(0, 10, 0, 10);
 
             // Footer Panel
             this.footerPanel.Dock = DockStyle.Bottom;
             this.footerPanel.Height = 70;
-            this.footerPanel.BackColor = Color.Transparent;
 
             // Título
             this.lblTitulo.Text = "✏️ EDITAR RUTINA";
             this.lblTitulo.Dock = DockStyle.Top;
             this.lblTitulo.Height = 35;
             this.lblTitulo.Font = new Font("Segoe UI", 16, FontStyle.Bold);
-            this.lblTitulo.ForeColor = Color.FromArgb(46, 134, 171);
             this.lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
 
             // Descripción
-            this.lblDescripcion.Text = "Modifica los ejercicios, series, repeticiones y tiempos de descanso según tus necesidades.";
+            this.lblDescripcion.Text = "Modifica los ejercicios, series, repeticiones...";
             this.lblDescripcion.Dock = DockStyle.Top;
             this.lblDescripcion.Height = 25;
             this.lblDescripcion.Font = new Font("Segoe UI", 9);
             this.lblDescripcion.ForeColor = Color.FromArgb(100, 100, 100);
             this.lblDescripcion.TextAlign = ContentAlignment.MiddleLeft;
 
-            // Panel de Acciones
+            // Panel de Acciones (Agregar, Eliminar, Limpiar)
             this.panelAcciones.Dock = DockStyle.Top;
             this.panelAcciones.Height = 45;
-            this.panelAcciones.BackColor = Color.Transparent;
             this.panelAcciones.Padding = new Padding(0, 0, 0, 5);
 
-            // Botón Agregar
-            this.btnAgregarEjercicio.Text = "AGREGAR";
-            this.btnAgregarEjercicio.Size = new Size(100, 35);
+            // Botones de Acción
+            this.btnAgregarEjercicio.Text = "➕ AGREGAR";
+            this.btnAgregarEjercicio.Size = new Size(120, 35);
             this.btnAgregarEjercicio.Location = new Point(0, 0);
-
-            // Botón Eliminar
-            this.btnEliminarEjercicio.Text = "ELIMINAR";
-            this.btnEliminarEjercicio.Size = new Size(100, 35);
-            this.btnEliminarEjercicio.Location = new Point(105, 0);
-
-            // Botón Limpiar
-            this.btnLimpiarTodo.Text = "LIMPIAR";
-            this.btnLimpiarTodo.Size = new Size(100, 35);
-            this.btnLimpiarTodo.Location = new Point(210, 0);
+            this.btnEliminarEjercicio.Text = "➖ ELIMINAR";
+            this.btnEliminarEjercicio.Size = new Size(120, 35);
+            this.btnEliminarEjercicio.Location = new Point(125, 0);
+            this.btnLimpiarTodo.Text = "🧹 LIMPIAR";
+            this.btnLimpiarTodo.Size = new Size(120, 35);
+            this.btnLimpiarTodo.Location = new Point(250, 0);
 
             // DataGridView
             this.dgvRutinas.Dock = DockStyle.Fill;
             this.dgvRutinas.Margin = new Padding(0, 5, 0, 0);
-
-            // Configurar columnas del DataGridView
+            // Columnas se definen aquí
             dgvRutinas.Columns.Add("Ejercicio", "EJERCICIO");
             dgvRutinas.Columns.Add("Series", "SERIES");
             dgvRutinas.Columns.Add("Repeticiones", "REPETICIONES");
             dgvRutinas.Columns.Add("Descanso", "DESCANSO (s)");
-
-            // Ajustar anchos de columnas
             dgvRutinas.Columns["Ejercicio"].FillWeight = 40;
             dgvRutinas.Columns["Series"].FillWeight = 20;
             dgvRutinas.Columns["Repeticiones"].FillWeight = 20;
@@ -124,48 +112,35 @@ namespace GymManager.Views
 
             // Botón Guardar
             this.btnGuardar.Text = "💾 GUARDAR CAMBIOS";
-            this.btnGuardar.Size = new Size(180, 45);
+            this.btnGuardar.Size = new Size(200, 45);
             this.btnGuardar.Anchor = AnchorStyles.None;
 
-            // Agregar controles a los paneles
-            this.panelAcciones.Controls.Add(btnAgregarEjercicio);
-            this.panelAcciones.Controls.Add(btnEliminarEjercicio);
-            this.panelAcciones.Controls.Add(btnLimpiarTodo);
-
-            this.headerPanel.Controls.Add(lblDescripcion);
-            this.headerPanel.Controls.Add(lblTitulo);
-
-            this.contentPanel.Controls.Add(dgvRutinas);
-            this.contentPanel.Controls.Add(panelAcciones);
-
-            // Panel para centrar el botón Guardar
-            var centerPanel = new Panel();
+            // Ensamblar controles
+            this.panelAcciones.Controls.AddRange(new Control[] { btnAgregarEjercicio, btnEliminarEjercicio, btnLimpiarTodo });
+            this.headerPanel.Controls.AddRange(new Control[] { lblDescripcion, lblTitulo });
+            this.contentPanel.Controls.AddRange(new Control[] { dgvRutinas, panelAcciones });
             centerPanel.Dock = DockStyle.Fill;
             centerPanel.Controls.Add(btnGuardar);
             this.footerPanel.Controls.Add(centerPanel);
-
-            this.mainPanel.Controls.Add(contentPanel);
-            this.mainPanel.Controls.Add(footerPanel);
-            this.mainPanel.Controls.Add(headerPanel);
-
+            this.mainPanel.Controls.AddRange(new Control[] { contentPanel, footerPanel, headerPanel });
             this.Controls.Add(mainPanel);
 
-            // Eventos
+            // Asignar Eventos (SOLO LA ASIGNACIÓN +=)
             this.btnGuardar.Click += new EventHandler(btnGuardar_Click);
             this.btnAgregarEjercicio.Click += new EventHandler(btnAgregarEjercicio_Click);
             this.btnEliminarEjercicio.Click += new EventHandler(btnEliminarEjercicio_Click);
             this.btnLimpiarTodo.Click += new EventHandler(btnLimpiarTodo_Click);
-            this.Load += new EventHandler(UcEditarRutina_Load); 
+            this.Load += new EventHandler(UcEditarRutina_Load);
 
             // Centrar botón Guardar después del layout
             this.Load += (sender, e) => {
-                btnGuardar.Location = new Point(
-                    (centerPanel.Width - btnGuardar.Width) / 2,
-                    (centerPanel.Height - btnGuardar.Height) / 2
-                );
+                btnGuardar.Location = new Point((centerPanel.Width - btnGuardar.Width) / 2, (centerPanel.Height - btnGuardar.Height) / 2);
             };
 
+            // ((System.ComponentModel.ISupportInitialize)(this.dgvRutinas)).EndInit(); // Si usas el diseñador visual
             this.ResumeLayout(false);
         }
+
+        // NO HAY IMPLEMENTACIÓN DE MÉTODOS AQUÍ
     }
 }

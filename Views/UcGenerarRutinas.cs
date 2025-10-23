@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using GymManager.Controllers;
 using GymManager.Models;
 using GymManager.Utils;
+using GymManager.Forms; // Necesario para referenciar FrmMain
 
 namespace GymManager.Views
 {
@@ -35,7 +36,7 @@ namespace GymManager.Views
         private readonly GrupoMuscularController _grupoMuscularController = new GrupoMuscularController();
         private readonly GeneroController _generoController = new GeneroController();
 
-        // Referencias a botones
+        // Referencias a botones (el Designer las asigna)
         private Button btnEditarHombres, btnLimpiarHombres, btnGuardarHombres;
         private Button btnEditarMujeres, btnLimpiarMujeres, btnGuardarMujeres;
         private Button btnEditarDeportistas, btnLimpiarDeportistas, btnGuardarDeportistas;
@@ -48,16 +49,16 @@ namespace GymManager.Views
 
         private void UcGenerarRutinas_Load(object sender, EventArgs e)
         {
+            // Es crucial inicializar estos arrays DESPUÉS de InitializeComponent
             tabPanels = new[] { panelHombres, panelMujeres, panelDeportistas };
             tabLabels = new[] { lblTabHombres, lblTabMujeres, lblTabDeportistas };
-            ShowTab(0);
+            ShowTab(0); // Ahora sí se puede llamar
 
-            // Cargar los grupos musculares en las listas con casillas
+            // Cargar datos en los CheckedListBox
             try
             {
                 var gruposMusculares = _grupoMuscularController.ObtenerTodos();
                 var nombresGrupos = gruposMusculares.Select(g => g.Nombre).ToArray();
-
                 chkListHombres.Items.AddRange(nombresGrupos);
                 chkListMujeres.Items.AddRange(nombresGrupos);
                 chkListDeportistas.Items.AddRange(nombresGrupos);
@@ -66,12 +67,13 @@ namespace GymManager.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar los grupos musculares: " + ex.Message, "Error de conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error al cargar datos iniciales: " + ex.Message, "Error de conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         #region "Lógica de UI (Tabs, Estilos, etc.)"
 
+        // Implementación del método StyleButton (debe estar aquí)
         private void StyleButton(Button boton, Color colorFondo)
         {
             if (boton == null) return;
@@ -86,8 +88,10 @@ namespace GymManager.Views
             boton.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(colorFondo, 0.2f);
         }
 
+        // Implementación del método ShowTab (debe estar aquí)
         private void ShowTab(int indiceTab)
         {
+            if (tabPanels == null || tabLabels == null) return; // Chequeo extra
             foreach (Panel panel in tabPanels) panel.Visible = false;
             foreach (Label etiqueta in tabLabels)
             {
@@ -109,15 +113,16 @@ namespace GymManager.Views
             _ => primaryColor
         };
 
+        // Implementaciones de los handlers de eventos
         private void lblTabHombres_Click(object sender, EventArgs e) => ShowTab(0);
         private void lblTabMujeres_Click(object sender, EventArgs e) => ShowTab(1);
         private void lblTabDeportistas_Click(object sender, EventArgs e) => ShowTab(2);
-        private void TabLabel_MouseEnter(object sender, EventArgs e) { /* Lógica de hover */ }
-        private void TabLabel_MouseLeave(object sender, EventArgs e) { /* Lógica de hover */ }
+        private void TabLabel_MouseEnter(object sender, EventArgs e) { /* Lógica de hover si la necesitas */ }
+        private void TabLabel_MouseLeave(object sender, EventArgs e) { /* Lógica de hover si la necesitas */ }
 
         #endregion
 
-        // Eventos "Generar" que ahora pasan el CheckedListBox
+        // Eventos "Generar"
         private void btnGenerarHombres_Click(object sender, EventArgs e)
             => GenerarRutinaReal("Hombres", dgvHombres, rutinaHombres, chkListHombres);
 
@@ -127,89 +132,63 @@ namespace GymManager.Views
         private void btnGenerarDeportistas_Click(object sender, EventArgs e)
             => GenerarRutinaReal("Deportistas", dgvDeportistas, rutinaDeportistas, chkListDeportistas);
 
-        // Evento que se dispara al marcar/desmarcar una casilla para habilitar/deshabilitar el botón
+        // Implementación del handler ItemCheck (debe estar aquí)
         private void OnGrupoMuscular_ItemCheck(CheckedListBox chkList, Button btnGenerar)
         {
+            // Usamos BeginInvoke para asegurar que la verificación se haga después de actualizar el estado
             this.BeginInvoke((MethodInvoker)delegate {
                 btnGenerar.Enabled = chkList.CheckedItems.Count > 0;
             });
         }
 
-        // Lógica de generación MODIFICADA para aceptar múltiples grupos
+
         private void GenerarRutinaReal(string tipo, DataGridView grilla, List<DetalleRutina> listaRutina, CheckedListBox chkList)
         {
             var gruposSeleccionados = chkList.CheckedItems.Cast<string>().ToList();
-
-            if (gruposSeleccionados.Count == 0)
-            {
-                MessageBox.Show("Por favor, seleccione al menos un grupo muscular.", "Información", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            if (gruposSeleccionados.Count == 0) { MessageBox.Show("Seleccione al menos un grupo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
 
             try
             {
                 listaRutina.Clear();
                 var ejerciciosParaRutina = new List<Ejercicio>();
-
-                int ejerciciosPorGrupo = 3; // Define cuántos ejercicios buscar por cada grupo muscular
+                int ejerciciosPorGrupo = 3;
 
                 foreach (string grupo in gruposSeleccionados)
                 {
                     List<Ejercicio> disponibles = _ejercicioController.ObtenerPorGrupoMuscular(grupo);
-
-                    if (disponibles.Count < ejerciciosPorGrupo)
-                    {
-                        MessageBox.Show($"No hay suficientes ejercicios de '{grupo}'. La rutina se generará con los {disponibles.Count} disponibles.", "Datos insuficientes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-
+                    if (disponibles.Count < ejerciciosPorGrupo) { MessageBox.Show($"No hay suficientes ejercicios de '{grupo}'. Se usarán {disponibles.Count}.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
                     Random rnd = new Random();
-                    ejerciciosParaRutina.AddRange(disponibles.OrderBy(x => rnd.Next()).Take(ejerciciosPorGrupo));
+                    ejerciciosParaRutina.AddRange(disponibles.OrderBy(x => rnd.Next()).Take(Math.Min(ejerciciosPorGrupo, disponibles.Count)));
                 }
+                ejerciciosParaRutina = ejerciciosParaRutina.GroupBy(ej => ej.Id).Select(g => g.First()).ToList(); // Evitar duplicados
 
-                if (ejerciciosParaRutina.Count == 0)
-                {
-                    MessageBox.Show("No se encontraron ejercicios para los grupos musculares seleccionados.", "Sin resultados", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
+                if (ejerciciosParaRutina.Count == 0) { MessageBox.Show("No se encontraron ejercicios.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
 
                 foreach (var ejercicio in ejerciciosParaRutina)
                 {
                     listaRutina.Add(new DetalleRutina
                     {
                         EjercicioNombre = ejercicio.Nombre,
-                        IdEjercicio = ejercicio.Id,
+                        IdEjercicio = ejercicio.Id, // Guardamos el ID
                         Series = 4,
                         Repeticiones = 12,
                         Descanso = 60
                     });
                 }
-
                 MostrarRutinaEnGrid(grilla, listaRutina);
 
-                // Habilitar botones de acción
                 if (tipo == "Hombres") HabilitarAccionesHombres(true);
                 if (tipo == "Mujeres") HabilitarAccionesMujeres(true);
                 if (tipo == "Deportistas") HabilitarAccionesDeportistas(true);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ocurrió un error al generar la rutina: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            catch (Exception ex) { MessageBox.Show($"Error al generar: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
         private void MostrarRutinaEnGrid(DataGridView grilla, List<DetalleRutina> rutina)
         {
-            grilla.Visible = rutina.Count > 0; // La grilla solo se ve si tiene datos
+            grilla.Visible = rutina.Count > 0;
             grilla.Rows.Clear();
-            foreach (var detalle in rutina)
-            {
-                grilla.Rows.Add(
-                    detalle.EjercicioNombre,
-                    detalle.Series,
-                    detalle.Repeticiones,
-                    $"{detalle.Descanso} s"
-                );
-            }
+            foreach (var detalle in rutina) { grilla.Rows.Add(detalle.EjercicioNombre, detalle.Series, detalle.Repeticiones, $"{detalle.Descanso} s"); }
         }
 
         // Eventos "Guardar"
@@ -221,91 +200,87 @@ namespace GymManager.Views
         {
             try
             {
-                if (Sesion.Actual == null)
-                    throw new InvalidOperationException("No hay un usuario logueado.");
+                if (Sesion.Actual == null) throw new InvalidOperationException("No logueado.");
+                if (detalles == null || detalles.Count == 0) throw new InvalidOperationException("Rutina vacía.");
 
-                if (detalles == null || detalles.Count == 0)
-                    throw new InvalidOperationException("No hay ejercicios en la rutina para guardar.");
-
-                // Buscamos en la lista de géneros el que coincida con el nombre de la pestaña (ej: "Hombres")
                 var generoEncontrado = _listaDeGeneros.FirstOrDefault(g => g.Nombre.Equals(tipoRutina, StringComparison.OrdinalIgnoreCase));
-
-                // Si no lo encontramos, usamos 1 como valor por defecto para evitar errores.
-                int idGeneroParaGuardar = generoEncontrado?.Id ?? 1;
+                int idGeneroParaGuardar = generoEncontrado?.Id ?? 1; // Fallback a ID 1 si no se encuentra
 
                 string gruposSeleccionados = string.Join(" + ", chkList.CheckedItems.Cast<string>());
                 string nombreRutina = $"Rutina {gruposSeleccionados} - {DateTime.Now:dd/MM/yyyy}";
 
-                // Llamamos al controlador con el ID de género correcto
                 int nuevoIdRutina = _rutinaController.CrearEncabezadoRutina(tipoRutina, Sesion.Actual.IdUsuario, nombreRutina, idGeneroParaGuardar);
 
                 foreach (var detalle in detalles)
                 {
                     detalle.IdRutina = nuevoIdRutina;
+                    if (detalle.IdEjercicio <= 0) { /* Manejar si falta ID */ }
                     _rutinaController.AgregarDetalle(detalle);
                 }
+                MessageBox.Show($"Rutina '{gruposSeleccionados}' guardada.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                MessageBox.Show($"Rutina de '{gruposSeleccionados}' guardada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // Limpieza automática post-guardado
                 if (tipoRutina == "Hombres") LimpiarPanel(dgvHombres, rutinaHombres, chkListHombres);
                 if (tipoRutina == "Mujeres") LimpiarPanel(dgvMujeres, rutinaMujeres, chkListMujeres);
                 if (tipoRutina == "Deportistas") LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas);
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al guardar la rutina: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            catch (Exception ex) { MessageBox.Show($"Error al guardar: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
         #region "Acciones (Limpiar, Editar, Habilitar, etc.)"
 
+        // Implementación de LimpiarPanel (debe estar aquí)
         private void LimpiarPanel(DataGridView grilla, List<DetalleRutina> listaRutina, CheckedListBox chkList)
         {
             grilla.Rows.Clear();
             grilla.Visible = false;
             listaRutina.Clear();
+            for (int i = 0; i < chkList.Items.Count; i++) { chkList.SetItemChecked(i, false); }
 
-            for (int i = 0; i < chkList.Items.Count; i++)
-            {
-                chkList.SetItemChecked(i, false);
-            }
-
-            if (grilla == dgvHombres) HabilitarAccionesHombres(false);
-            if (grilla == dgvMujeres) HabilitarAccionesMujeres(false);
-            if (grilla == dgvDeportistas) HabilitarAccionesDeportistas(false);
+            // Deshabilitar botones de acción secundarios Y el de generar
+            Button btnGenerar = null;
+            if (grilla == dgvHombres) { HabilitarAccionesHombres(false); btnGenerar = btnGenerarHombres; }
+            if (grilla == dgvMujeres) { HabilitarAccionesMujeres(false); btnGenerar = btnGenerarMujeres; }
+            if (grilla == dgvDeportistas) { HabilitarAccionesDeportistas(false); btnGenerar = btnGenerarDeportistas; }
+            if (btnGenerar != null) btnGenerar.Enabled = false;
         }
 
-        private void btnLimpiarHombres_Click(object sender, EventArgs e)
-        {
-            if (ConfirmarLimpieza("HOMBRES"))
-            {
-                LimpiarPanel(dgvHombres, rutinaHombres, chkListHombres);
-            }
-        }
-        private void btnLimpiarMujeres_Click(object sender, EventArgs e)
-        {
-            if (ConfirmarLimpieza("MUJERES"))
-            {
-                LimpiarPanel(dgvMujeres, rutinaMujeres, chkListMujeres);
-            }
-        }
-        private void btnLimpiarDeportistas_Click(object sender, EventArgs e)
-        {
-            if (ConfirmarLimpieza("DEPORTISTAS"))
-            {
-                LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas);
-            }
-        }
+        // Implementaciones de handlers Limpiar
+        private void btnLimpiarHombres_Click(object sender, EventArgs e) { if (ConfirmarLimpieza("HOMBRES")) { LimpiarPanel(dgvHombres, rutinaHombres, chkListHombres); } }
+        private void btnLimpiarMujeres_Click(object sender, EventArgs e) { if (ConfirmarLimpieza("MUJERES")) { LimpiarPanel(dgvMujeres, rutinaMujeres, chkListMujeres); } }
+        private void btnLimpiarDeportistas_Click(object sender, EventArgs e) { if (ConfirmarLimpieza("DEPORTISTAS")) { LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas); } }
 
-        private bool ConfirmarLimpieza(string tipo) { return MessageBox.Show($"¿Seguro querés limpiar la rutina de {tipo}?", "Confirmar limpieza", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes; }
+        private bool ConfirmarLimpieza(string tipo) { return MessageBox.Show($"¿Limpiar rutina de {tipo}?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes; }
         private void HabilitarAccionesHombres(bool habilitar) { if (btnEditarHombres != null) btnEditarHombres.Enabled = habilitar; if (btnGuardarHombres != null) btnGuardarHombres.Enabled = habilitar; if (btnLimpiarHombres != null) btnLimpiarHombres.Enabled = habilitar; }
         private void HabilitarAccionesMujeres(bool habilitar) { if (btnEditarMujeres != null) btnEditarMujeres.Enabled = habilitar; if (btnGuardarMujeres != null) btnGuardarMujeres.Enabled = habilitar; if (btnLimpiarMujeres != null) btnLimpiarMujeres.Enabled = habilitar; }
         private void HabilitarAccionesDeportistas(bool habilitar) { if (btnEditarDeportistas != null) btnEditarDeportistas.Enabled = habilitar; if (btnGuardarDeportistas != null) btnGuardarDeportistas.Enabled = habilitar; if (btnLimpiarDeportistas != null) btnLimpiarDeportistas.Enabled = habilitar; }
 
-        private void btnEditarHombres_Click(object sender, EventArgs e) => MessageBox.Show("La edición se realiza en el panel de Planillas.");
-        private void btnEditarMujeres_Click(object sender, EventArgs e) => MessageBox.Show("La edición se realiza en el panel de Planillas.");
-        private void btnEditarDeportistas_Click(object sender, EventArgs e) => MessageBox.Show("La edición se realiza en el panel de Planillas.");
+        // 🔥 EVENTOS EDITAR MODIFICADOS para llamar a NavegarAEdicion 🔥
+        private void btnEditarHombres_Click(object sender, EventArgs e) => NavegarAEdicion(rutinaHombres, "Hombres");
+        private void btnEditarMujeres_Click(object sender, EventArgs e) => NavegarAEdicion(rutinaMujeres, "Mujeres");
+        private void btnEditarDeportistas_Click(object sender, EventArgs e) => NavegarAEdicion(rutinaDeportistas, "Deportistas");
+
+        // 🔥 MÉTODO PARA NAVEGAR A EDICIÓN (Implementación aquí) 🔥
+        private void NavegarAEdicion(List<DetalleRutina> rutinaActual, string tipoRutina)
+        {
+            if (rutinaActual == null || rutinaActual.Count == 0) { /* Mensaje */ return; }
+
+            // 🔥 AVISO AL USUARIO 🔥
+            MessageBox.Show($"La rutina generada para '{tipoRutina}' se abrirá en el panel 'Editar Rutina'.",
+                            "Navegando a Edición", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            var rutinaParaEditar = new List<DetalleRutina>(rutinaActual.Select(d => new DetalleRutina
+            {
+                IdEjercicio = d.IdEjercicio,
+                EjercicioNombre = d.EjercicioNombre,
+                Series = d.Series,
+                Repeticiones = d.Repeticiones,
+                Descanso = d.Descanso
+            }));
+
+            var frmMain = this.ParentForm as FrmMain;
+            frmMain?.MostrarPanelEdicion(rutinaParaEditar, tipoRutina);
+        }
+
         #endregion
     }
 }
