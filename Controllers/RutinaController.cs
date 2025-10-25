@@ -32,24 +32,31 @@ namespace GymManager.Controllers
 
         public void AgregarDetalle(DetalleRutina detalle)
         {
-            using (var conn = new SqlConnection(Conexion.Cadena))
+            try
             {
-                conn.Open();
-                string query = @"
-                    INSERT INTO DetalleRutina (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
-                    VALUES (@idRutina, @idEjercicio, @series, @repeticiones, @carga, @descanso);";
-
-                using (var cmd = new SqlCommand(query, conn))
+                using (var conn = new SqlConnection(Conexion.Cadena))
                 {
-                    cmd.Parameters.AddWithValue("@idRutina", detalle.IdRutina);
-                    cmd.Parameters.AddWithValue("@idEjercicio", detalle.IdEjercicio);
-                    cmd.Parameters.AddWithValue("@series", detalle.Series);
-                    cmd.Parameters.AddWithValue("@repeticiones", detalle.Repeticiones);
-                    cmd.Parameters.AddWithValue("@carga", (object)detalle.Carga ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@descanso", (object)detalle.Descanso ?? DBNull.Value);
+                    conn.Open();
+                    string query = @"
+                        INSERT INTO DetalleRutina (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
+                        VALUES (@idRutina, @idEjercicio, @series, @repeticiones, @carga);";
 
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@idRutina", detalle.IdRutina);
+                        cmd.Parameters.AddWithValue("@idEjercicio", detalle.IdEjercicio);
+                        cmd.Parameters.AddWithValue("@series", detalle.Series);
+                        cmd.Parameters.AddWithValue("@repeticiones", detalle.Repeticiones);
+                        cmd.Parameters.AddWithValue("@carga", (object)detalle.Carga ?? DBNull.Value);
+
+
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al agregar detalle de rutina: " + ex.Message, ex);
             }
         }
 

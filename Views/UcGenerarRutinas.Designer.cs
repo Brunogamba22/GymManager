@@ -139,14 +139,18 @@ namespace GymManager.Views
             dgv.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.FromArgb(248, 249, 250), ForeColor = textColor, Font = new Font("Segoe UI", 9, FontStyle.Bold), Alignment = DataGridViewContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 10, 0) };
             dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
             dgv.ColumnHeadersHeight = 40;
-            dgv.DefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.White, ForeColor = textColor, Font = new Font("Segoe UI", 9), SelectionBackColor = primaryColor, SelectionForeColor = Color.White, Alignment = DataGridViewContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 10, 0) };
+            dgv.DefaultCellStyle = new DataGridViewCellStyle { SelectionBackColor = Color.White, SelectionForeColor = textColor, Font = new Font("Segoe UI", 9)};
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 249, 250);
             dgv.EnableHeadersVisualStyles = false;
             dgv.Columns.Add("Ejercicio", "EJERCICIO");
             dgv.Columns.Add("Series", "SERIES");
             dgv.Columns.Add("Repeticiones", "REPETICIONES");
-            dgv.Columns.Add("Descanso", "DESCANSO (s)");
+            dgv.Columns.Add("Carga", "CARGA (%)");
             dgv.Columns[0].FillWeight = 40;
+            dgv.Columns["Ejercicio"].ReadOnly = true;
+            dgv.Columns["Series"].ReadOnly = true;
+            dgv.Columns["Repeticiones"].ReadOnly = true;
+            dgv.Columns["Carga"].ReadOnly = true;
 
             var panelBotones = new TableLayoutPanel { Dock = DockStyle.Bottom, Height = 60, Padding = new Padding(0, 10, 0, 0), ColumnCount = 3, RowCount = 1 };
             panelBotones.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));

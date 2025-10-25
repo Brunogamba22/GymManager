@@ -172,7 +172,7 @@ namespace GymManager.Views
                         IdEjercicio = ejercicio.Id, // Guardamos el ID
                         Series = 4,
                         Repeticiones = 12,
-                        Descanso = 60
+                        Carga = null
                     });
                 }
                 MostrarRutinaEnGrid(grilla, listaRutina);
@@ -188,7 +188,7 @@ namespace GymManager.Views
         {
             grilla.Visible = rutina.Count > 0;
             grilla.Rows.Clear();
-            foreach (var detalle in rutina) { grilla.Rows.Add(detalle.EjercicioNombre, detalle.Series, detalle.Repeticiones, $"{detalle.Descanso} s"); }
+            foreach (var detalle in rutina) { grilla.Rows.Add(detalle.EjercicioNombre, detalle.Series, detalle.Repeticiones, detalle.Carga?.ToString() ?? "") ; }
         }
 
         // Eventos "Guardar"

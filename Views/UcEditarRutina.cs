@@ -1,12 +1,13 @@
-﻿using System;
+﻿using GymManager.Controllers;
+using GymManager.Forms;
+using GymManager.Models;
+using GymManager.Utils;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using GymManager.Controllers;
-using GymManager.Models;
-using GymManager.Utils;
-using GymManager.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace GymManager.Views
 {
@@ -36,6 +37,11 @@ namespace GymManager.Views
         private readonly GeneroController _generoController = new GeneroController();
         private readonly EjercicioController _ejercicioController = new EjercicioController();
         private List<Genero> _listaDeGeneros = new List<Genero>();
+
+        // --- NUEVO: Controlador y Listas para el menú ---
+        private readonly GrupoMuscularController _grupoMuscularController = new GrupoMuscularController();
+        private List<GrupoMuscular> _listaGruposBD = new List<GrupoMuscular>();
+        private List<Ejercicio> _listaEjerciciosBD = new List<Ejercicio>();
 
         private FrmMain _frmMain;
 
@@ -70,6 +76,21 @@ namespace GymManager.Views
             // NO mostramos ningún panel por defecto.
             pnlEdicion.Visible = false;
             pnlSeleccion.Visible = false;
+
+            // --- NUEVO: Cargar datos y poblar menú ---
+            try
+            {
+                // 1. Cargar datos de la BD
+                _listaGruposBD = _grupoMuscularController.ObtenerTodos();
+                _listaEjerciciosBD = _ejercicioController.ObtenerTodos(); // Usa el método del Paso 1
+
+                // 2. Construir el menú con los datos cargados
+                PoblarMenuEjercicios();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al cargar listas de ejercicios para el menú: " + ex.Message);
+            }
         }
 
         
@@ -167,7 +188,7 @@ namespace GymManager.Views
                     detalle.EjercicioNombre,
                     detalle.Series,
                     detalle.Repeticiones,
-                    detalle.Descanso
+                    detalle.Carga?.ToString() ?? ""
                 );
             }
 
@@ -205,13 +226,27 @@ namespace GymManager.Views
                     var ejercicioDb = _ejercicioController.ObtenerPorNombre(nombreEjercicio);
                     int idEjercicioReal = ejercicioDb?.Id ?? 0;
                     if (idEjercicioReal == 0) { /* ... */ return; }
+
+                    int? carga = null;
+                    if (row.Cells["Carga"].Value != null && !string.IsNullOrWhiteSpace(row.Cells["Carga"].Value.ToString()))
+                    {
+                        if (int.TryParse(row.Cells["Carga"].Value.ToString(), out int parsedCarga))
+                        {
+                            carga = parsedCarga;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"La carga para el ejercicio '{nombreEjercicio}' no es un número válido. Se ignorará.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+
                     rutinaModificada.Add(new DetalleRutina
                     {
                         IdEjercicio = idEjercicioReal,
                         EjercicioNombre = nombreEjercicio,
                         Series = Convert.ToInt32(row.Cells["Series"].Value),
                         Repeticiones = Convert.ToInt32(row.Cells["Repeticiones"].Value),
-                        Descanso = Convert.ToInt32(row.Cells["Descanso"].Value)
+                        Carga = carga
                     });
                 }
                 if (rutinaModificada.Count == 0) { /* ... */ return; }
@@ -280,30 +315,24 @@ namespace GymManager.Views
             dgvRutinas.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRutinas.ColumnHeadersHeight = 40;
             dgvRutinas.DefaultCellStyle.Font = new Font("Segoe UI", 9);
-            dgvRutinas.DefaultCellStyle.BackColor = Color.White;
-            dgvRutinas.DefaultCellStyle.ForeColor = textColor;
+            dgvRutinas.DefaultCellStyle.SelectionBackColor = Color.White;
+            dgvRutinas.DefaultCellStyle.SelectionForeColor = textColor;
             dgvRutinas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRutinas.DefaultCellStyle.Padding = new Padding(5);
             dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
-            dgvRutinas.Columns["Ejercicio"].ReadOnly = false;
+            dgvRutinas.Columns["Ejercicio"].ReadOnly = true;
             dgvRutinas.Columns["Series"].ReadOnly = false;
             dgvRutinas.Columns["Repeticiones"].ReadOnly = false;
-            dgvRutinas.Columns["Descanso"].ReadOnly = false;
+            dgvRutinas.Columns["Carga"].ReadOnly = false;
         }
         private void ConfigurarMenuContextual()
         { /* ... Tu código de ConfigurarMenuContextual ... */
-            menuEjercicios = new ContextMenuStrip { BackColor = Color.White, Font = new Font("Segoe UI", 9), ShowImageMargin = false };
-            ToolStripMenuItem itemPersonalizado = new ToolStripMenuItem("🎯 EJERCICIO PERSONALIZADO")
-            {
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = successColor
-            };
-            itemPersonalizado.Click += (s, e) => AgregarEjercicioPersonalizado();
-            menuEjercicios.Items.Add(itemPersonalizado);
+            menuEjercicios = new ContextMenuStrip { BackColor = Color.White, Font = new Font("Segoe UI", 9), ShowImageMargin = false, AutoSize = true };
         }
+            
         private void AgregarEjercicioPersonalizado()
         { /* ... Tu código de AgregarEjercicioPersonalizado ... */
-            dgvRutinas.Rows.Add("", "3", "10", "60");
+            dgvRutinas.Rows.Add("", "3", "10", "");
             if (dgvRutinas.Rows.Count > 0)
             {
                 int lastRow = dgvRutinas.Rows.Count - (dgvRutinas.AllowUserToAddRows ? 2 : 1);
@@ -374,6 +403,80 @@ namespace GymManager.Views
                 dgvRutinas.Rows.Clear();
         }
 
-        // --- LOS MÉTODOS DUPLICADOS FUERON ELIMINADOS DE AQUÍ ---
+        // NUEVO: Método para construir el menú dinámicamente
+        private void PoblarMenuEjercicios()
+        {
+            menuEjercicios.Items.Clear(); // Limpiamos por si acaso
+
+            // 1. Opción "Ejercicio Personalizado"
+            ToolStripMenuItem itemPersonalizado = new ToolStripMenuItem("🎯 EJERCICIO PERSONALIZADO")
+            {
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = successColor
+            };
+            itemPersonalizado.Click += (s, e) => AgregarEjercicioPersonalizado();
+            menuEjercicios.Items.Add(itemPersonalizado);
+            menuEjercicios.Items.Add(new ToolStripSeparator());
+
+            // 2. Loop por Grupos Musculares
+            foreach (var grupo in _listaGruposBD.OrderBy(g => g.Nombre))
+            {
+                ToolStripMenuItem itemGrupo = new ToolStripMenuItem(grupo.Nombre.ToUpper());
+                itemGrupo.ForeColor = primaryColor;
+                itemGrupo.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+
+                // 3. Filtrar ejercicios para este grupo (usando LINQ)
+                var ejerciciosDelGrupo = _listaEjerciciosBD
+                                          .Where(ej => ej.GrupoMuscularId == grupo.Id)
+                                          .OrderBy(ej => ej.Nombre);
+
+                if (ejerciciosDelGrupo.Any())
+                {
+                    // 4. Loop por Ejercicios y agregarlos al sub-menú del grupo
+                    foreach (var ejercicio in ejerciciosDelGrupo)
+                    {
+                        ToolStripMenuItem itemEjercicio = new ToolStripMenuItem(ejercicio.Nombre);
+
+                        // Guardamos el objeto Ejercicio completo en el Tag
+                        itemEjercicio.Tag = ejercicio;
+
+                        // Asignamos el handler
+                        itemEjercicio.Click += ItemEjercicio_Click;
+
+                        itemGrupo.DropDownItems.Add(itemEjercicio);
+                    }
+                }
+                else
+                {
+                    itemGrupo.Enabled = false; // Deshabilitar grupo si no tiene ejercicios
+                }
+
+                menuEjercicios.Items.Add(itemGrupo);
+            }
+        }
+
+        // NUEVO: Handler para cuando se hace clic en un ejercicio
+        private void ItemEjercicio_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem itemClickeado = sender as ToolStripMenuItem;
+            if (itemClickeado?.Tag is Ejercicio ejercicioSeleccionado)
+            {
+                // Añadir a la grilla con valores por defecto
+                dgvRutinas.Rows.Add(
+                    ejercicioSeleccionado.Nombre, // Nombre del ejercicio
+                    "3",                            // Series por defecto
+                    "10",                           // Repeticiones por defecto
+                    ""                              // Carga nula
+                );
+
+                // Opcional: enfocar la fila nueva
+                if (dgvRutinas.Rows.Count > 0)
+                {
+                    int lastRow = dgvRutinas.Rows.Count - (dgvRutinas.AllowUserToAddRows ? 2 : 1);
+                    dgvRutinas.CurrentCell = dgvRutinas.Rows[lastRow].Cells["Series"];
+                    dgvRutinas.BeginEdit(true);
+                }
+            }
+        }
     }
 }

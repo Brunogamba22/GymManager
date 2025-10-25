@@ -186,11 +186,11 @@ namespace GymManager.Views
             dgvRutinas.Columns.Add("Ejercicio", "EJERCICIO");
             dgvRutinas.Columns.Add("Series", "SERIES");
             dgvRutinas.Columns.Add("Repeticiones", "REPETICIONES");
-            dgvRutinas.Columns.Add("Descanso", "DESCANSO (s)");
+            dgvRutinas.Columns.Add("Carga", "CARGA (%)");
             dgvRutinas.Columns["Ejercicio"].FillWeight = 40;
-            dgvRutinas.Columns["Series"].FillWeight = 20;
-            dgvRutinas.Columns["Repeticiones"].FillWeight = 20;
-            dgvRutinas.Columns["Descanso"].FillWeight = 20;
+            dgvRutinas.Columns["Series"].FillWeight = 15;
+            dgvRutinas.Columns["Repeticiones"].FillWeight = 15;
+            dgvRutinas.Columns["Carga"].FillWeight = 20;
 
             // Botón Guardar (Edición)
             this.btnGuardar.Text = "💾 GUARDAR CAMBIOS";

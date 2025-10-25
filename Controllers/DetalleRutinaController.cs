@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using GymManager.Models;
+﻿using GymManager.Models;
 using GymManager.Utils;
+using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SqlClient;
 
 namespace GymManager.Controllers
 {
@@ -12,65 +13,47 @@ namespace GymManager.Controllers
         // ... MÉTODO: ObtenerPorRutina() ...
         public List<DetalleRutina> ObtenerPorRutina(int idRutina)
         {
-            var lista = new List<DetalleRutina>();
-
-            using (var conn = new SqlConnection(Conexion.Cadena))
+            var detalles = new List<DetalleRutina>();
+            try
             {
-                conn.Open();
-
-                string query = @"
-                    SELECT 
-                        d.id_detalle,
-                        d.id_rutina,
-                        d.id_ejercicio,
-                        e.nombre AS nombre_ejercicio,  -- Este es el nombre que necesitamos
-                        g.nombre AS grupo_muscular,
-                        d.series,
-                        d.repeticiones,
-                        d.carga,
-                        d.descanso
-                    FROM DetalleRutina d
-                    INNER JOIN Ejercicios e ON d.id_ejercicio = e.id_ejercicio
-                    INNER JOIN Grupo_Muscular g ON e.id_grupo_muscular = g.id_grupo_muscular
-                    WHERE d.id_rutina = @idRutina
-                    ORDER BY d.id_detalle;";
-
-                using (var cmd = new SqlCommand(query, conn))
+                using (var conn = new SqlConnection(Conexion.Cadena))
                 {
-                    cmd.Parameters.AddWithValue("@idRutina", idRutina);
-
-                    using (var reader = cmd.ExecuteReader())
+                    conn.Open();
+                    // Modifica el SELECT para incluir 'Carga' y eliminar 'Descanso'
+                    var query = "SELECT dr.IdDetalleRutina, dr.IdRutina, dr.IdEjercicio, e.Nombre AS EjercicioNombre, dr.Series, dr.Repeticiones, dr.Carga " +
+                                "FROM DetalleRutina dr INNER JOIN Ejercicio e ON dr.IdEjercicio = e.Id " +
+                                "WHERE dr.IdRutina = @IdRutina";
+                    using (var cmd = new SqlCommand(query, conn))
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@IdRutina", idRutina);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            var detalle = new DetalleRutina
+                            while (reader.Read())
                             {
-                                IdDetalle = reader.GetInt32(reader.GetOrdinal("id_detalle")),
-                                IdRutina = reader.GetInt32(reader.GetOrdinal("id_rutina")),
-                                IdEjercicio = reader.GetInt32(reader.GetOrdinal("id_ejercicio")),
-                                Series = reader.GetInt32(reader.GetOrdinal("series")),
-                                Repeticiones = reader.GetInt32(reader.GetOrdinal("repeticiones")),
-                                Carga = reader.IsDBNull(reader.GetOrdinal("carga"))
-                                        ? (double?)null
-                                        : reader.GetDouble(reader.GetOrdinal("carga")),
-                                Descanso = reader.IsDBNull(reader.GetOrdinal("descanso"))
-                                        ? 0
-                                        : reader.GetInt32(reader.GetOrdinal("descanso")),
+                                var detalle = new DetalleRutina
+                                {
+                                    IdDetalle = Convert.ToInt32(reader["IdDetalleRutina"]),
+                                    IdRutina = Convert.ToInt32(reader["IdRutina"]),
+                                    IdEjercicio = Convert.ToInt32(reader["IdEjercicio"]),
+                                    EjercicioNombre = reader["EjercicioNombre"].ToString(),
+                                    Series = Convert.ToInt32(reader["Series"]),
+                                    Repeticiones = Convert.ToInt32(reader["Repeticiones"]),
+                                    // Descanso = Convert.ToInt32(reader["Descanso"]) // ¡ELIMINA ESTA LÍNEA!
 
-                                // =========================================================
-                                // 🔥 CORRECCIÓN APLICADA AQUÍ 🔥
-                                // =========================================================
-                                // Asumimos que tu modelo DetalleRutina.cs tiene la propiedad 'EjercicioNombre'
-                                EjercicioNombre = reader.GetString(reader.GetOrdinal("nombre_ejercicio"))
-                            };
-
-                            lista.Add(detalle);
+                                    // Lee Carga, manejando el posible valor NULL
+                                    Carga = reader["Carga"] != DBNull.Value ? Convert.ToInt32(reader["Carga"]) : (int?)null
+                                };
+                                detalles.Add(detalle);
+                            }
                         }
                     }
                 }
             }
-
-            return lista;
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener detalles de rutina por ID de rutina: " + ex.Message, ex);
+            }
+            return detalles;
         }
 
         // ... MÉTODO: Agregar() ...
@@ -94,7 +77,7 @@ namespace GymManager.Controllers
                     cmd.Parameters.AddWithValue("@series", d.Series);
                     cmd.Parameters.AddWithValue("@reps", d.Repeticiones);
                     cmd.Parameters.AddWithValue("@carga", (object?)d.Carga ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@descanso", d.Descanso);
+                    
 
                     cmd.ExecuteNonQuery();
                 }
@@ -122,7 +105,6 @@ namespace GymManager.Controllers
                     cmd.Parameters.AddWithValue("@series", d.Series);
                     cmd.Parameters.AddWithValue("@reps", d.Repeticiones);
                     cmd.Parameters.AddWithValue("@carga", d.Carga.HasValue ? d.Carga.Value : (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@descanso", d.Descanso);
                     cmd.Parameters.AddWithValue("@idDetalle", d.IdDetalle);
 
                     cmd.ExecuteNonQuery();

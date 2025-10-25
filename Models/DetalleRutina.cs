@@ -14,7 +14,7 @@ namespace GymManager.Models
         public int Series { get; set; }
         public int Repeticiones { get; set; }
         public double? Carga { get; set; }
-        public int Descanso { get; set; } // en segundos
+        //public int Descanso { get; set; } // en segundos
                                           // AGREGA ESTA PROPIEDAD:
         public string EjercicioNombre { get; set; } = "";
     }
