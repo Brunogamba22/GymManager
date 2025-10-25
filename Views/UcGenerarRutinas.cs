@@ -26,20 +26,20 @@ namespace GymManager.Views
         private Label[] tabLabels;
 
         // Listas y Controladores
-        private readonly List<DetalleRutina> rutinaHombres = new List<DetalleRutina>();
-        private readonly List<DetalleRutina> rutinaMujeres = new List<DetalleRutina>();
-        private readonly List<DetalleRutina> rutinaDeportistas = new List<DetalleRutina>();
-        private List<Genero> _listaDeGeneros = new List<Genero>();
+        public List<DetalleRutina> rutinaHombres = new List<DetalleRutina>();
+        public List<DetalleRutina> rutinaMujeres = new List<DetalleRutina>();
+        public List<DetalleRutina> rutinaDeportistas = new List<DetalleRutina>();
 
+        private List<Genero> _listaDeGeneros = new List<Genero>();
         private readonly EjercicioController _ejercicioController = new EjercicioController();
         private readonly RutinaController _rutinaController = new RutinaController();
         private readonly GrupoMuscularController _grupoMuscularController = new GrupoMuscularController();
         private readonly GeneroController _generoController = new GeneroController();
 
         // Referencias a botones (el Designer las asigna)
-        private Button btnEditarHombres, btnLimpiarHombres, btnGuardarHombres;
-        private Button btnEditarMujeres, btnLimpiarMujeres, btnGuardarMujeres;
-        private Button btnEditarDeportistas, btnLimpiarDeportistas, btnGuardarDeportistas;
+        private Button btnLimpiarHombres, btnGuardarHombres;
+        private Button btnLimpiarMujeres, btnGuardarMujeres;
+        private Button btnLimpiarDeportistas, btnGuardarDeportistas;
 
         public UcGenerarRutinas()
         {
@@ -228,6 +228,23 @@ namespace GymManager.Views
 
         #region "Acciones (Limpiar, Editar, Habilitar, etc.)"
 
+        public void LimpiarRutinaGenerada(string tipoRutina)
+        {
+            if (tipoRutina.Equals("Hombres", StringComparison.OrdinalIgnoreCase))
+            {
+                LimpiarPanel(dgvHombres, rutinaHombres, chkListHombres);
+            }
+            if (tipoRutina.Equals("Mujeres", StringComparison.OrdinalIgnoreCase))
+            {
+                LimpiarPanel(dgvMujeres, rutinaMujeres, chkListMujeres);
+            }
+            if (tipoRutina.Equals("Deportistas", StringComparison.OrdinalIgnoreCase))
+            {
+                LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas);
+            }
+        }
+        // =========================================================
+
         // Implementación de LimpiarPanel (debe estar aquí)
         private void LimpiarPanel(DataGridView grilla, List<DetalleRutina> listaRutina, CheckedListBox chkList)
         {
@@ -250,36 +267,13 @@ namespace GymManager.Views
         private void btnLimpiarDeportistas_Click(object sender, EventArgs e) { if (ConfirmarLimpieza("DEPORTISTAS")) { LimpiarPanel(dgvDeportistas, rutinaDeportistas, chkListDeportistas); } }
 
         private bool ConfirmarLimpieza(string tipo) { return MessageBox.Show($"¿Limpiar rutina de {tipo}?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes; }
-        private void HabilitarAccionesHombres(bool habilitar) { if (btnEditarHombres != null) btnEditarHombres.Enabled = habilitar; if (btnGuardarHombres != null) btnGuardarHombres.Enabled = habilitar; if (btnLimpiarHombres != null) btnLimpiarHombres.Enabled = habilitar; }
-        private void HabilitarAccionesMujeres(bool habilitar) { if (btnEditarMujeres != null) btnEditarMujeres.Enabled = habilitar; if (btnGuardarMujeres != null) btnGuardarMujeres.Enabled = habilitar; if (btnLimpiarMujeres != null) btnLimpiarMujeres.Enabled = habilitar; }
-        private void HabilitarAccionesDeportistas(bool habilitar) { if (btnEditarDeportistas != null) btnEditarDeportistas.Enabled = habilitar; if (btnGuardarDeportistas != null) btnGuardarDeportistas.Enabled = habilitar; if (btnLimpiarDeportistas != null) btnLimpiarDeportistas.Enabled = habilitar; }
+        private void HabilitarAccionesHombres(bool habilitar) { if (btnGuardarHombres != null) btnGuardarHombres.Enabled = habilitar; if (btnLimpiarHombres != null) btnLimpiarHombres.Enabled = habilitar; }
+        private void HabilitarAccionesMujeres(bool habilitar) { if (btnGuardarMujeres != null) btnGuardarMujeres.Enabled = habilitar; if (btnLimpiarMujeres != null) btnLimpiarMujeres.Enabled = habilitar; }
+        private void HabilitarAccionesDeportistas(bool habilitar) { if (btnGuardarDeportistas != null) btnGuardarDeportistas.Enabled = habilitar; if (btnLimpiarDeportistas != null) btnLimpiarDeportistas.Enabled = habilitar; }
 
-        // 🔥 EVENTOS EDITAR MODIFICADOS para llamar a NavegarAEdicion 🔥
-        private void btnEditarHombres_Click(object sender, EventArgs e) => NavegarAEdicion(rutinaHombres, "Hombres");
-        private void btnEditarMujeres_Click(object sender, EventArgs e) => NavegarAEdicion(rutinaMujeres, "Mujeres");
-        private void btnEditarDeportistas_Click(object sender, EventArgs e) => NavegarAEdicion(rutinaDeportistas, "Deportistas");
 
         // 🔥 MÉTODO PARA NAVEGAR A EDICIÓN (Implementación aquí) 🔥
-        private void NavegarAEdicion(List<DetalleRutina> rutinaActual, string tipoRutina)
-        {
-            if (rutinaActual == null || rutinaActual.Count == 0) { /* Mensaje */ return; }
-
-            // 🔥 AVISO AL USUARIO 🔥
-            MessageBox.Show($"La rutina generada para '{tipoRutina}' se abrirá en el panel 'Editar Rutina'.",
-                            "Navegando a Edición", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            var rutinaParaEditar = new List<DetalleRutina>(rutinaActual.Select(d => new DetalleRutina
-            {
-                IdEjercicio = d.IdEjercicio,
-                EjercicioNombre = d.EjercicioNombre,
-                Series = d.Series,
-                Repeticiones = d.Repeticiones,
-                Descanso = d.Descanso
-            }));
-
-            var frmMain = this.ParentForm as FrmMain;
-            frmMain?.MostrarPanelEdicion(rutinaParaEditar, tipoRutina);
-        }
+        
 
         #endregion
     }

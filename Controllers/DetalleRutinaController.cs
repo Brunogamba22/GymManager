@@ -6,16 +6,10 @@ using GymManager.Utils;
 
 namespace GymManager.Controllers
 {
-    // ------------------------------------------------------------
-    // Controlador para gestionar los detalles de cada rutina
-    // (Series, Repeticiones, Carga y Descanso)
-    // ------------------------------------------------------------
+    // ... Controlador para gestionar los detalles ...
     public class DetalleRutinaController
     {
-        // ------------------------------------------------------------
-        // MÉTODO: ObtenerPorRutina()
-        // Devuelve todos los ejercicios (detalles) de una rutina específica
-        // ------------------------------------------------------------
+        // ... MÉTODO: ObtenerPorRutina() ...
         public List<DetalleRutina> ObtenerPorRutina(int idRutina)
         {
             var lista = new List<DetalleRutina>();
@@ -29,7 +23,7 @@ namespace GymManager.Controllers
                         d.id_detalle,
                         d.id_rutina,
                         d.id_ejercicio,
-                        e.nombre AS nombre_ejercicio,
+                        e.nombre AS nombre_ejercicio,  -- Este es el nombre que necesitamos
                         g.nombre AS grupo_muscular,
                         d.series,
                         d.repeticiones,
@@ -57,11 +51,17 @@ namespace GymManager.Controllers
                                 Series = reader.GetInt32(reader.GetOrdinal("series")),
                                 Repeticiones = reader.GetInt32(reader.GetOrdinal("repeticiones")),
                                 Carga = reader.IsDBNull(reader.GetOrdinal("carga"))
-                                            ? (double?)null
-                                            : reader.GetDouble(reader.GetOrdinal("carga")),
+                                        ? (double?)null
+                                        : reader.GetDouble(reader.GetOrdinal("carga")),
                                 Descanso = reader.IsDBNull(reader.GetOrdinal("descanso"))
-                                            ? 0
-                                            : reader.GetInt32(reader.GetOrdinal("descanso"))
+                                        ? 0
+                                        : reader.GetInt32(reader.GetOrdinal("descanso")),
+
+                                // =========================================================
+                                // 🔥 CORRECCIÓN APLICADA AQUÍ 🔥
+                                // =========================================================
+                                // Asumimos que tu modelo DetalleRutina.cs tiene la propiedad 'EjercicioNombre'
+                                EjercicioNombre = reader.GetString(reader.GetOrdinal("nombre_ejercicio"))
                             };
 
                             lista.Add(detalle);
@@ -73,10 +73,7 @@ namespace GymManager.Controllers
             return lista;
         }
 
-        // ------------------------------------------------------------
-        // MÉTODO: Agregar()
-        // Inserta un nuevo detalle (ejercicio) dentro de una rutina
-        // ------------------------------------------------------------
+        // ... MÉTODO: Agregar() ...
 #nullable enable
         public void Agregar(DetalleRutina d)
         {
@@ -85,10 +82,10 @@ namespace GymManager.Controllers
                 conn.Open();
 
                 string query = @"
-            INSERT INTO DetalleRutina 
-                (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
-            VALUES 
-                (@idRutina, @idEjercicio, @series, @reps, @carga, @descanso);";
+                INSERT INTO DetalleRutina 
+                    (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
+                VALUES 
+                    (@idRutina, @idEjercicio, @series, @reps, @carga, @descanso);";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -105,11 +102,7 @@ namespace GymManager.Controllers
         }
 #nullable disable
 
-
-        // ------------------------------------------------------------
-        // MÉTODO: Editar()
-        // Permite modificar un detalle de rutina existente
-        // ------------------------------------------------------------
+        // ... MÉTODO: Editar() ...
         public void Editar(DetalleRutina d)
         {
             using (var conn = new SqlConnection(Conexion.Cadena))
@@ -117,12 +110,12 @@ namespace GymManager.Controllers
                 conn.Open();
 
                 string query = @"
-            UPDATE DetalleRutina
-            SET series = @series,
-                repeticiones = @reps,
-                carga = @carga,
-                descanso = @descanso
-            WHERE id_detalle = @idDetalle;";
+                UPDATE DetalleRutina
+                SET series = @series,
+                    repeticiones = @reps,
+                    carga = @carga,
+                    descanso = @descanso
+                WHERE id_detalle = @idDetalle;";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -137,19 +130,13 @@ namespace GymManager.Controllers
             }
         }
 
-
-        // ------------------------------------------------------------
-        // MÉTODO: Eliminar()
-        // Elimina un ejercicio asociado a una rutina
-        // ------------------------------------------------------------
+        // ... MÉTODO: Eliminar() ...
         public void Eliminar(int idDetalle)
         {
             using (var conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
-
                 string query = "DELETE FROM DetalleRutina WHERE id_detalle = @idDetalle;";
-
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@idDetalle", idDetalle);
@@ -158,18 +145,13 @@ namespace GymManager.Controllers
             }
         }
 
-        // ------------------------------------------------------------
-        // MÉTODO: EliminarPorRutina()
-        // Elimina todos los detalles asociados a una rutina (ej: al borrar una rutina completa)
-        // ------------------------------------------------------------
+        // ... MÉTODO: EliminarPorRutina() ...
         public void EliminarPorRutina(int idRutina)
         {
             using (var conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
-
                 string query = "DELETE FROM DetalleRutina WHERE id_rutina = @idRutina;";
-
                 using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@idRutina", idRutina);

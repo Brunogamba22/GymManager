@@ -10,26 +10,36 @@ namespace GymManager.Forms
 {
     public partial class FrmMain : Form
     {
-
-        // Variables para mantener las instancias de los UserControls
+        // Instancias de los UserControls
         private UcGenerarRutinas ucGenerarRutinas;
         private UcEditarRutina ucEditarRutina;
         private UcPlanillasRutinas ucPlanillasRutinas;
 
+        // --- AÑADIDO ---
+        // Panel para el Dashboard (Inicio)
+        private Panel panelDashboard;
+
         public FrmMain()
         {
             InitializeComponent();
-            
-            // Inicializar los UserControls una sola vez
+            // Inicializar los UserControls (PERO NO agregarlos aún)
+            // Se agregarán en el FrmMain_Load
             InicializarUserControls();
         }
 
         private void InicializarUserControls()
         {
-            // Crear las instancias una sola vez (no cada vez que se hace clic)
+            // Solo crear las instancias
             ucGenerarRutinas = new UcGenerarRutinas();
             ucEditarRutina = new UcEditarRutina();
             ucPlanillasRutinas = new UcPlanillasRutinas();
+
+            // --- AÑADIDO: Crear el panel de Dashboard ---
+            panelDashboard = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White // O el color de fondo que prefieras
+            };
         }
 
         private void FrmMain_Load(object sender, EventArgs e)
@@ -46,6 +56,7 @@ namespace GymManager.Forms
             panelHeader.BackColor = globalColor;
             panelFooter.BackColor = globalColor;
 
+            // (Tu código del título de la Navbar aquí...)
             Label lblTitulo = new Label
             {
                 Text = "🏋️ GymManager",
@@ -57,9 +68,43 @@ namespace GymManager.Forms
             };
             panelNavbar.Controls.Add(lblTitulo);
 
-            
+
+            // --- AÑADIDO: Llenar el panel de Dashboard ---
+            // (Lo hacemos aquí porque necesitamos Sesion.Actual.Nombre)
+            Label lbl = new Label
+            {
+                Text = $"Bienvenido {Sesion.Actual.Nombre}, seleccioná una opción del menú.",
+                Dock = DockStyle.Top,
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                ForeColor = Color.DimGray,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Height = 60
+            };
+            PictureBox logo = new PictureBox
+            {
+                Image = Properties.Resources.Logo_gymM13, // Asegúrate que este recurso exista
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Dock = DockStyle.Fill
+            };
+            // Agregamos el logo y label AL panelDashboard
+            panelDashboard.Controls.Add(logo);
+            panelDashboard.Controls.Add(lbl);
+
+            // --- AÑADIDO: Agregar TODOS los paneles al panelContenido ---
+            // Los agregamos aquí, una sola vez.
+            ucGenerarRutinas.Dock = DockStyle.Fill;
+            ucEditarRutina.Dock = DockStyle.Fill;
+            ucPlanillasRutinas.Dock = DockStyle.Fill;
+            // panelDashboard ya tiene Dock.Fill de la inicialización
+
+            panelContenido.Controls.Add(ucGenerarRutinas);
+            panelContenido.Controls.Add(ucEditarRutina);
+            panelContenido.Controls.Add(ucPlanillasRutinas);
+            panelContenido.Controls.Add(panelDashboard); // <-- Añadir el dashboard
+            // -----------------------------------------------------------
+
             CargarNavbar(Sesion.Actual.Rol);
-            MostrarDashboard(Sesion.Actual.Rol);
+            MostrarDashboard(Sesion.Actual.Rol); // <-- Muestra el dashboard al inicio
         }
 
         private void CargarNavbar(Rol rol)
@@ -87,8 +132,6 @@ namespace GymManager.Forms
             if (rol == Rol.Recepcionista)
             {
                 AgregarBotonNav("Rutina", () => CargarVista(new Views.UcRecepcionistaDashboard()), DockStyle.Top);
-                //AgregarBotonNav("Imprimir rutina", () => MessageBox.Show("Aquí se imprimiría la rutina"), DockStyle.Top);
-                //AgregarBotonNav("Exportar", () => MessageBox.Show("Aquí se exportaría la rutina"), DockStyle.Top);
             }
 
             // Botón "Cerrar sesión"
@@ -99,33 +142,37 @@ namespace GymManager.Forms
             }, DockStyle.Bottom);
         }
 
-        // MÉTODOS ESPECÍFICOS PARA CADA VISTA (mantienen el estado)
+        // =========================================================
+        // 🔥 MÉTODOS DE NAVEGACIÓN CORREGIDOS (Usan BringToFront) 🔥
+        // =========================================================
+
         private void MostrarGenerarRutinas()
         {
-            panelContenido.Controls.Clear();
-            ucGenerarRutinas.Dock = DockStyle.Fill;
-
-            // RESTAURAR LAS RUTINAS AL MOSTRAR LA VISTA
-            //ucGenerarRutinas.RestaurarRutinas();
-
-            panelContenido.Controls.Add(ucGenerarRutinas);
+            ucGenerarRutinas.BringToFront();
         }
 
-        private void MostrarEditarRutina()
+        public void MostrarEditarRutina()
         {
-            panelContenido.Controls.Clear();
-            ucEditarRutina.Dock = DockStyle.Fill;
-            panelContenido.Controls.Add(ucEditarRutina);
+            // 1. Obtener las listas generadas (en memoria) desde ucGenerarRutinas
+            var listaHombres = ucGenerarRutinas.rutinaHombres;
+            var listaMujeres = ucGenerarRutinas.rutinaMujeres;
+            var listaDeportistas = ucGenerarRutinas.rutinaDeportistas;
+
+            // 2. Pasarlas al panel de edición para que actualice sus botones
+            ucEditarRutina.ActualizarYMostrarPanelSeleccion(listaHombres, listaMujeres, listaDeportistas);
+
+            // 3. Mostrar el panel de edición
+            ucEditarRutina.BringToFront();
         }
 
         public void MostrarPlanillas()
         {
-            panelContenido.Controls.Clear();
-            ucPlanillasRutinas.Dock = DockStyle.Fill;
-            panelContenido.Controls.Add(ucPlanillasRutinas);
+            ucPlanillasRutinas.BringToFront();
         }
 
-        // Método genérico para otras vistas (no mantiene estado)
+        // Este método para Admin/Recepcionista usa el patrón Clear/Add
+        // Esto romperá la navegación si vuelves a "Generar Rutina"
+        // (Considera crear UserControls únicos también para estas vistas)
         private void CargarVista(UserControl vista)
         {
             panelContenido.Controls.Clear();
@@ -152,40 +199,16 @@ namespace GymManager.Forms
             panelNavbar.Controls.Add(btn);
         }
 
-        public void MostrarPanelEdicion(List<DetalleRutina> rutinaAEditar, string tipoRutina)
+        public void LimpiarRutinaGeneradaEnPanel(string tipoRutina)
         {
-            if (ucEditarRutina != null)
-            {
-                ucEditarRutina.CargarRutinaParaEditar(rutinaAEditar, tipoRutina);
-                ucEditarRutina.BringToFront();
-            }
+            ucGenerarRutinas?.LimpiarRutinaGenerada(tipoRutina);
         }
 
         private void MostrarDashboard(Rol rol)
         {
-            panelContenido.Controls.Clear();
-
-            Label lbl = new Label
-            {
-                Text = $"Bienvenido {Sesion.Actual.Nombre}, seleccioná una opción del menú.",
-                Dock = DockStyle.Top,
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = Color.DimGray,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Height = 60
-            };
-
-            PictureBox logo = new PictureBox
-            {
-                Image = Properties.Resources.Logo_gymM13,
-                SizeMode = PictureBoxSizeMode.Zoom,
-                Dock = DockStyle.Fill
-            };
-
-            panelContenido.Controls.Add(logo);
-            panelContenido.Controls.Add(lbl);
+            // Ya no necesita Clear() ni Add()
+            // Solo trae el panel del dashboard al frente.
+            panelDashboard.BringToFront();
         }
-
-
     }
 }

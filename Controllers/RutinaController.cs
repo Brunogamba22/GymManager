@@ -52,5 +52,49 @@ namespace GymManager.Controllers
                 }
             }
         }
+
+        // ====================================================================
+        //  MÉTODO NUEVO REQUERIDO POR UcEditarRutina 
+        // ====================================================================
+        /// <summary>
+        /// Busca el encabezado de la última rutina creada para un género específico.
+        /// </summary>
+        /// <returns>Un objeto Rutina, o null si no se encuentra.</returns>
+        public Rutina ObtenerUltimaRutinaPorGenero(int idGenero)
+        {
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+
+                // Asume que la columna 'fecha' se mapea a 'FechaCreacion' en tu modelo Rutina
+                string query = @"
+                    SELECT TOP 1 id_rutina, nombre, fecha, creadaPor, id_genero
+                    FROM Rutina
+                    WHERE id_genero = @idGenero
+                    ORDER BY fecha DESC;";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@idGenero", idGenero);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Asumimos que tu modelo Rutina.cs tiene estas propiedades
+                            return new Rutina
+                            {
+                                IdRutina = reader.GetInt32(reader.GetOrdinal("id_rutina")),
+                                Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                                FechaCreacion = reader.GetDateTime(reader.GetOrdinal("fecha")),
+                                CreadaPor = reader.GetInt32(reader.GetOrdinal("creadaPor")),
+                                IdGenero = reader.GetInt32(reader.GetOrdinal("id_genero"))
+                            };
+                        }
+                    }
+                }
+            }
+            return null; // No se encontró rutina para ese género
+        }
     }
 }

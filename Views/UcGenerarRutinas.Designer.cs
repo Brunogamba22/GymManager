@@ -158,17 +158,17 @@ namespace GymManager.Views
             btnGenerar.Enabled = false;
 
             var panelAccionesDerecha = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight, WrapContents = false, AutoSize = true };
-            var btnEditar = new Button { Text = "✏️ EDITAR", Enabled = false, Size = new Size(110, 45) };
+            
             var btnGuardar = new Button { Text = "💾 GUARDAR", Enabled = false, Size = new Size(120, 45) };
             var btnLimpiar = new Button { Text = "🗑️ LIMPIAR", Enabled = false, Size = new Size(110, 45) };
 
             if (panel == panelHombres)
             {
                 btnGenerar.Click += btnGenerarHombres_Click;
-                btnEditar.Click += btnEditarHombres_Click;
+               
                 btnGuardar.Click += btnGuardarHombres_Click;
                 btnLimpiar.Click += btnLimpiarHombres_Click;
-                btnEditarHombres = btnEditar;
+                
                 btnGuardarHombres = btnGuardar;
                 btnLimpiarHombres = btnLimpiar;
                 StyleButton(btnGenerar, primaryColor);
@@ -176,10 +176,10 @@ namespace GymManager.Views
             else if (panel == panelMujeres)
             {
                 btnGenerar.Click += btnGenerarMujeres_Click;
-                btnEditar.Click += btnEditarMujeres_Click;
+                
                 btnGuardar.Click += btnGuardarMujeres_Click;
                 btnLimpiar.Click += btnLimpiarMujeres_Click;
-                btnEditarMujeres = btnEditar;
+               
                 btnGuardarMujeres = btnGuardar;
                 btnLimpiarMujeres = btnLimpiar;
                 StyleButton(btnGenerar, secondaryColor);
@@ -187,20 +187,20 @@ namespace GymManager.Views
             else
             {
                 btnGenerar.Click += btnGenerarDeportistas_Click;
-                btnEditar.Click += btnEditarDeportistas_Click;
+                
                 btnGuardar.Click += btnGuardarDeportistas_Click;
                 btnLimpiar.Click += btnLimpiarDeportistas_Click;
-                btnEditarDeportistas = btnEditar;
+                
                 btnGuardarDeportistas = btnGuardar;
                 btnLimpiarDeportistas = btnLimpiar;
                 StyleButton(btnGenerar, successColor);
             }
 
-            StyleButton(btnEditar, warningColor);
+           
             StyleButton(btnGuardar, successColor);
             StyleButton(btnLimpiar, dangerColor);
 
-            panelAccionesDerecha.Controls.AddRange(new Control[] { btnEditar, btnGuardar, btnLimpiar });
+            panelAccionesDerecha.Controls.AddRange(new Control[] { btnGuardar, btnLimpiar });
             panelBotones.Controls.Add(btnGenerar, 0, 0);
             panelBotones.Controls.Add(panelAccionesDerecha, 2, 0);
 
