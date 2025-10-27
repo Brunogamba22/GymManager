@@ -10,125 +10,184 @@ namespace GymManager.Views
 {
     public partial class UcReportes : UserControl
     {
-        // Controladores para acceder a los datos de usuarios y ejercicios
-        private UsuarioController controladorUsuarios = new UsuarioController();
-        private EjercicioController controladorEjercicios = new EjercicioController();
+        private readonly UsuarioController controladorUsuarios = new UsuarioController();
+        private readonly EjercicioController controladorEjercicios = new EjercicioController();
 
-        // ------------------------------------------------------------
-        // 🔹 CONSTRUCTOR DEL USER CONTROL
-        // ------------------------------------------------------------
         public UcReportes()
         {
-            InitializeComponent(); // Inicializa los componentes visuales del formulario
+            InitializeComponent();
+            this.BackColor = Color.FromArgb(245, 247, 250); // fondo gris claro
         }
 
-        // ------------------------------------------------------------
-        // 🚀 EVENTO LOAD: se ejecuta cuando se carga el control por primera vez
-        // ------------------------------------------------------------
         private void UcReportes_Load(object sender, EventArgs e)
         {
-            // ============================================================
-            // 📊 SECCIÓN 1 — ESTADÍSTICAS GENERALES
-            // ============================================================
-
-            // Obtiene el total de ejercicios existentes en la BD
-            int totalEjercicios = controladorEjercicios.ObtenerTodos().Count;
-            lblTotalEjercicios.Text = totalEjercicios.ToString(); // Muestra el número en el label
-
-            // Obtiene todos los usuarios activos desde el controlador
-            var listaUsuarios = controladorUsuarios.ObtenerTodos();
-
-            // Contamos usuarios por tipo de rol
-            int cantidadAdmins = listaUsuarios.Count(u => u.Rol == Rol.Administrador);
-            int cantidadProfes = listaUsuarios.Count(u => u.Rol == Rol.Profesor);
-            int cantidadReceps = listaUsuarios.Count(u => u.Rol == Rol.Recepcionista);
-
-            // Muestra el total general de usuarios
-            lblTotalUsuarios.Text = listaUsuarios.Count.ToString();
-
-            // Etiquetas informativas (opcional para KPIs visuales)
-            lblUsuariosTxt.Text = "Total de usuarios:";
-            lblEjerciciosTxt.Text = "Total de ejercicios:";
-
-            // ============================================================
-            // 🥧 SECCIÓN 2 — GRÁFICO DE TORTA: USUARIOS POR ROL
-            // ============================================================
-
-            chartUsuarios.Series.Clear(); // Limpia cualquier serie previa del gráfico
-
-            // Crea una nueva serie para representar los roles
-            var serieUsuarios = new Series("Usuarios")
-            {
-                ChartType = SeriesChartType.Pie,                   // Tipo de gráfico: torta
-                IsValueShownAsLabel = true,                        // Muestra los valores en cada porción
-                Label = "#VALX\n#VAL (#PERCENT{P0})",              // Ejemplo: Profesores 5 (33%)
-                Font = new Font("Segoe UI", 8, FontStyle.Bold),     // Fuente de las etiquetas
-                LabelForeColor = Color.Black                       // Color del texto de etiquetas
-            };
-
-            // Agrega los valores (X = nombre del rol, Y = cantidad)
-            serieUsuarios.Points.AddXY("Administradores", cantidadAdmins);
-            serieUsuarios.Points.AddXY("Profesores", cantidadProfes);
-            serieUsuarios.Points.AddXY("Recepcionistas", cantidadReceps);
-
-            // Agrega la serie al gráfico
-            chartUsuarios.Series.Add(serieUsuarios);
-
-            // Ubica la leyenda a la derecha del gráfico
-            chartUsuarios.Legends[0].Docking = Docking.Right;
-
-            // Configuración visual de las etiquetas de la torta
-            serieUsuarios["PieLabelStyle"] = "Outside"; // Muestra las etiquetas fuera de las porciones
-            serieUsuarios.SmartLabelStyle.Enabled = true; // Evita superposición de texto
-
-            // ============================================================
-            // 📊 SECCIÓN 3 — GRÁFICO DE BARRAS: EJERCICIOS POR MÚSCULO
-            // ============================================================
-
-            chartEjercicios.Series.Clear(); // Limpia series previas
-
-            // Nueva serie para las barras
-            var serieEjercicios = new Series("Ejercicios")
-            {
-                ChartType = SeriesChartType.Column,    // Tipo de gráfico: columnas
-                IsValueShownAsLabel = true,            // Muestra los valores encima de las barras
-                LabelForeColor = Color.Black           // Texto negro
-            };
-
-            // ⚠️ En el modelo actual, Ejercicio ya no tiene propiedad 'Musculo'.
-            // Por eso generamos un valor simulado o usamos el nombre del grupo muscular si existe.
-
-            var listaEjercicios = controladorEjercicios.ObtenerTodos();
-
-            // Creamos un agrupamiento temporal:
-            // si el modelo Ejercicio tiene IdGrupoMuscular, podemos usarlo para agrupar;
-            // en caso contrario, simulamos un campo genérico.
-            var ejerciciosAgrupados = listaEjercicios
-                .GroupBy(e =>
-                    e.GetType().GetProperty("GrupoMuscular") != null  // Si el modelo tiene esa propiedad
-                        ? e.GetType().GetProperty("GrupoMuscular").GetValue(e, null)?.ToString() ?? "Sin grupo"
-                        : "General"                                   // Si no, agrupamos bajo "General"
-                )
-                .Select(g => new
-                {
-                    Grupo = g.Key,          // Nombre del grupo o categoría
-                    Cantidad = g.Count()    // Total de ejercicios en ese grupo
-                });
-
-            // Agregamos los datos al gráfico de barras
-            foreach (var grupo in ejerciciosAgrupados)
-            {
-                serieEjercicios.Points.AddXY(grupo.Grupo, grupo.Cantidad);
-            }
-
-            // Agrega la serie de ejercicios al gráfico principal
-            chartEjercicios.Series.Add(serieEjercicios);
-
-            // Configuración visual del gráfico
-            chartEjercicios.ChartAreas[0].AxisX.LabelStyle.Angle = -45; // Rota etiquetas X para mejor lectura
-            chartEjercicios.ChartAreas[0].AxisX.Interval = 1;           // Muestra todas las etiquetas
-            chartEjercicios.ChartAreas[0].AxisY.Title = "Cantidad";     // Título del eje Y
-            chartEjercicios.ChartAreas[0].AxisX.Title = "Grupos musculares"; // Título del eje X
+            CargarDatosGenerales();
+            ConfigurarGraficos();
+            ConfigurarCards();
+            CargarGraficoUsuarios();
+            CargarGraficoEjercicios();
         }
+
+        // ============================================================
+        // 🔹 DATOS GENERALES
+        // ============================================================
+        private void CargarDatosGenerales()
+        {
+            int totalUsuarios = controladorUsuarios.ObtenerTodos().Count;
+            int totalEjercicios = controladorEjercicios.ObtenerTodos().Count;
+
+            lblTotalUsuarios.Text = totalUsuarios.ToString();
+            lblTotalEjercicios.Text = totalEjercicios.ToString();
+        }
+
+        // ============================================================
+        // 🔹 CONFIGURACIÓN GENERAL DE GRÁFICOS
+        // ============================================================
+        private void ConfigurarGraficos()
+        {
+            // Gráfico usuarios
+            chartUsuarios.ChartAreas[0].BackColor = Color.White;
+            chartUsuarios.BackColor = Color.White;
+            chartUsuarios.Legends[0].Docking = Docking.Right;
+            chartUsuarios.Legends[0].Font = new Font("Segoe UI", 8);
+            chartUsuarios.Legends[0].BackColor = Color.White;
+
+            // Gráfico ejercicios
+            var area = chartEjercicios.ChartAreas[0];
+            area.BackColor = Color.White;
+            area.AxisX.MajorGrid.Enabled = false;
+            area.AxisY.MajorGrid.LineColor = Color.LightGray;
+            area.AxisX.LabelStyle.Font = new Font("Segoe UI", 9);
+            area.AxisY.LabelStyle.Font = new Font("Segoe UI", 9);
+            area.AxisX.Title = "Grupos musculares";
+            area.AxisY.Title = "Cantidad";
+            area.Area3DStyle.Enable3D = false;
+            area.AxisX.Interval = 1; // ✅ mostrar todas las etiquetas
+        }
+
+        // ============================================================
+        // 🥧 GRÁFICO USUARIOS POR ROL
+        // ============================================================
+        private void CargarGraficoUsuarios()
+        {
+            var lista = controladorUsuarios.ObtenerTodos();
+
+            int admins = lista.Count(u => u.Rol == Rol.Administrador);
+            int profes = lista.Count(u => u.Rol == Rol.Profesor);
+            int receps = lista.Count(u => u.Rol == Rol.Recepcionista);
+
+            chartUsuarios.Series.Clear();
+
+            var serie = new Series("Usuarios")
+            {
+                ChartType = SeriesChartType.Pie,
+                IsValueShownAsLabel = true,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                LabelForeColor = Color.Black
+            };
+
+            serie.Points.AddXY("Administradores", admins);
+            serie.Points.AddXY("Profesores", profes);
+            serie.Points.AddXY("Recepcionistas", receps);
+
+            serie.Points[0].Color = Color.FromArgb(54, 162, 235);
+            serie.Points[1].Color = Color.FromArgb(255, 206, 86);
+            serie.Points[2].Color = Color.FromArgb(255, 99, 132);
+
+            serie["PieDrawingStyle"] = "Concave";
+            serie["PieLabelStyle"] = "Outside";
+            serie.SmartLabelStyle.Enabled = true;
+
+            chartUsuarios.Series.Add(serie);
+        }
+
+        // ============================================================
+        // 📊 GRÁFICO EJERCICIOS POR GRUPO MUSCULAR (real)
+        // ============================================================
+       private void CargarGraficoEjercicios()
+{
+    var lista = controladorEjercicios.ObtenerTodos();
+
+    // Agrupar por el nombre del grupo muscular
+    var grupos = lista
+        .GroupBy(e => string.IsNullOrWhiteSpace(e.GrupoMuscularNombre) ? "Sin grupo" : e.GrupoMuscularNombre)
+        .Select(g => new { Grupo = g.Key, Cantidad = g.Count() })
+        .OrderBy(g => g.Grupo)
+        .ToList();
+
+    chartEjercicios.Series.Clear();
+
+    var serie = new Series("Ejercicios")
+    {
+        ChartType = SeriesChartType.Column,
+        IsValueShownAsLabel = true,
+        Font = new Font("Segoe UI", 9, FontStyle.Bold),
+        LabelForeColor = Color.Black
+    };
+
+    foreach (var grupo in grupos)
+    {
+        int idx = serie.Points.AddXY(grupo.Grupo, grupo.Cantidad);
+        serie.Points[idx].Color = Color.FromArgb(54, 162, 235);
+    }
+
+    serie["PointWidth"] = "0.55";
+    chartEjercicios.Series.Add(serie);
+
+    // Configurar área
+    var area = chartEjercicios.ChartAreas[0];
+    area.AxisX.Interval = 1;
+    area.AxisX.LabelStyle.Angle = -30; // para leer mejor si hay muchos grupos
+}
+
+
+        // ============================================================
+        // 🧱 CONFIGURACIÓN DE LAS CARDS
+        // ============================================================
+        private void ConfigurarCards()
+        {
+            // --- CARD USUARIOS
+            lblUsuariosTxt.Text = "Total de usuarios";
+            lblUsuariosTxt.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblTotalUsuarios.Font = new Font("Segoe UI", 30, FontStyle.Bold);
+            lblTotalUsuarios.ForeColor = Color.FromArgb(54, 162, 235);
+            lblTotalUsuarios.Location = new Point(25, 45);
+
+            // Limpia cualquier ícono previo
+            cardUsuarios.Controls.OfType<Label>()
+                .Where(l => l.Text == "👥").ToList()
+                .ForEach(l => cardUsuarios.Controls.Remove(l));
+
+            var iconUsuarios = new Label
+            {
+                Text = "👥",
+                Font = new Font("Segoe UI Emoji", 34),
+                AutoSize = true,
+                Location = new Point(190, 40)
+            };
+            cardUsuarios.Controls.Add(iconUsuarios);
+
+            // --- CARD EJERCICIOS
+            lblEjerciciosTxt.Text = "Total de ejercicios";
+            lblEjerciciosTxt.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblTotalEjercicios.Font = new Font("Segoe UI", 30, FontStyle.Bold);
+            lblTotalEjercicios.ForeColor = Color.FromArgb(255, 159, 64);
+            lblTotalEjercicios.Location = new Point(25, 45);
+
+            // Limpia cualquier ícono previo
+            cardEjercicios.Controls.OfType<Label>()
+                .Where(l => l.Text == "💪").ToList()
+                .ForEach(l => cardEjercicios.Controls.Remove(l));
+
+            var iconEjercicios = new Label
+            {
+                Text = "💪",
+                Font = new Font("Segoe UI Emoji", 34),
+                AutoSize = true,
+                Location = new Point(190, 40)
+            };
+            cardEjercicios.Controls.Add(iconEjercicios);
+        }
+
     }
 }
