@@ -20,9 +20,16 @@ namespace GymManager.Controllers
                 {
                     conn.Open();
                     // Modifica el SELECT para incluir 'Carga' y eliminar 'Descanso'
-                    var query = "SELECT dr.IdDetalleRutina, dr.IdRutina, dr.IdEjercicio, e.Nombre AS EjercicioNombre, dr.Series, dr.Repeticiones, dr.Carga " +
-                                "FROM DetalleRutina dr INNER JOIN Ejercicio e ON dr.IdEjercicio = e.Id " +
-                                "WHERE dr.IdRutina = @IdRutina";
+                    var query = @"SELECT dr.id_detalle AS IdDetalle, 
+                             dr.id_rutina AS IdRutina, 
+                             dr.id_ejercicio AS IdEjercicio, 
+                             e.nombre AS EjercicioNombre, 
+                             dr.series AS Series, 
+                             dr.repeticiones AS Repeticiones, 
+                             dr.carga AS Carga
+                      FROM DetalleRutina dr 
+                      INNER JOIN Ejercicios e ON dr.id_ejercicio = e.id_ejercicio 
+                      WHERE dr.id_rutina = @IdRutina";
                     using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@IdRutina", idRutina);
@@ -66,9 +73,9 @@ namespace GymManager.Controllers
 
                 string query = @"
                 INSERT INTO DetalleRutina 
-                    (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
+                    (id_rutina, id_ejercicio, series, repeticiones, carga)
                 VALUES 
-                    (@idRutina, @idEjercicio, @series, @reps, @carga, @descanso);";
+                    (@idRutina, @idEjercicio, @series, @reps, @carga);";
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
@@ -97,7 +104,6 @@ namespace GymManager.Controllers
                 SET series = @series,
                     repeticiones = @reps,
                     carga = @carga,
-                    descanso = @descanso
                 WHERE id_detalle = @idDetalle;";
 
                 using (var cmd = new SqlCommand(query, conn))

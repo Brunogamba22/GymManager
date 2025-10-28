@@ -22,5 +22,8 @@ namespace GymManager.Models
 
         // Las propiedades 'Tipo' y 'Activo' no existen en tu
         // diagrama de BD, por eso las quitamos.
+        // (Estas no existen en la tabla 'Rutina', se llenan con consultas)
+        public string NombreProfesor { get; set; } = "";
+        public string NombreGenero { get; set; } = "";
     }
 }

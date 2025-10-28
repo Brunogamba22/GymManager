@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using GymManager.Models;
 
 namespace GymManager.Views
 {
@@ -65,27 +66,20 @@ namespace GymManager.Views
             dgvEjercicios.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
         }
 
-        // Método para cargar los datos de la rutina
-        // ------------------------------------------------------------
-        // 📋 CARGAR LOS DATOS DE UNA RUTINA EN LA VISTA DETALLE
-        // ------------------------------------------------------------
-        // Este método recibe toda la información de una rutina generada:
-        // - nombreRutina: el título visible
-        // - tipoRutina: HOMBRES, MUJERES, DEPORTISTAS, etc.
-        // - profesor: nombre del docente que la generó
-        // - fecha: fecha y hora de creación
-        // - ejercicios: lista de ejercicios simulados (RutinaSimulador.EjercicioRutina)
-        //
-        // Carga esta información en los labels y el DataGridView para mostrarla.
-        // ------------------------------------------------------------
+        // =========================================================
+        // MÉTODO ACTUALIZADO: Acepta el modelo real
+        // =========================================================
+        /// <summary>
+        /// Carga los datos de una rutina real desde la base de datos.
+        /// </summary>
         public void CargarRutina(string nombreRutina, string tipoRutina, string profesor,
-                                 DateTime fecha, List<RutinaSimulador.EjercicioRutina> ejercicios)
+                                     DateTime fecha, List<DetalleRutina> ejercicios) // <-- CAMBIO DE TIPO
         {
             // 🔹 Título principal
             lblTitulo.Text = nombreRutina;
 
             // 🔹 Subtítulo con tipo, profesor y fecha
-            lblDetalles.Text = $"🏷️ {tipoRutina} | 👤 {profesor} | 📅 {fecha:dd/MM/yyyy HH:mm}";
+            lblDetalles.Text = $"🏷️ {tipoRutina.ToUpper()} | 👤 {profesor} | 📅 {fecha:dd/MM/yyyy HH:mm}";
 
             // 🔹 Contador total de ejercicios
             lblContador.Text = $"📊 Total de ejercicios: {ejercicios.Count}";
@@ -97,10 +91,10 @@ namespace GymManager.Views
             foreach (var ejercicio in ejercicios)
             {
                 dgvEjercicios.Rows.Add(
-                    ejercicio.Nombre,                    // Nombre del ejercicio
-                    ejercicio.Series,                    // Cantidad de series
-                    ejercicio.Repeticiones,              // Cantidad de repeticiones
-                    $"{ejercicio.DescansoSegundos} s"    // Tiempo de descanso (segundos)
+                    ejercicio.EjercicioNombre,        // Nombre del ejercicio (del JOIN)
+                    ejercicio.Series,               // Cantidad de series
+                    ejercicio.Repeticiones,         // Cantidad de repeticiones
+                    ejercicio.Carga?.ToString() ?? "" // Carga (o vacío si es null)
                 );
             }
         }
@@ -122,7 +116,7 @@ namespace GymManager.Views
 
         private void btnCerrar_Click(object sender, EventArgs e)
         {
-            // 🔥 DISPARAR EVENTO PARA QUE EL PADRE SEPA QUE SE CERRÓ
+            //DISPARAR EVENTO PARA QUE EL PADRE SEPA QUE SE CERRÓ
             OnCerrarDetalle?.Invoke(this, EventArgs.Empty);
         }
 

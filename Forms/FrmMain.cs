@@ -168,6 +168,7 @@ namespace GymManager.Forms
         public void MostrarPlanillas()
         {
             ucPlanillasRutinas.BringToFront();
+            ucPlanillasRutinas.CargarDatos();
         }
 
         // Este método para Admin/Recepcionista usa el patrón Clear/Add

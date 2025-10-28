@@ -204,9 +204,7 @@ namespace GymManager.Views
             {
                 var row = dgvRutinas.Rows[i];
                 if (string.IsNullOrWhiteSpace(row.Cells["Ejercicio"].Value?.ToString())) { /* ... */ return; }
-                if (!int.TryParse(row.Cells["Series"].Value?.ToString(), out _) ||
-                    !int.TryParse(row.Cells["Repeticiones"].Value?.ToString(), out _) ||
-                    !int.TryParse(row.Cells["Descanso"].Value?.ToString(), out _)) { /* ... */ return; }
+               
             }
             GuardarRutinaEditadaEnBD();
         }
@@ -227,16 +225,20 @@ namespace GymManager.Views
                     int idEjercicioReal = ejercicioDb?.Id ?? 0;
                     if (idEjercicioReal == 0) { /* ... */ return; }
 
-                    int? carga = null;
-                    if (row.Cells["Carga"].Value != null && !string.IsNullOrWhiteSpace(row.Cells["Carga"].Value.ToString()))
+                    double? carga = null;
+                    var cargaValue = row.Cells["Carga"].Value; // Lee de la celda 'Carga'
+
+                    if (cargaValue != null && !string.IsNullOrWhiteSpace(cargaValue.ToString()))
                     {
-                        if (int.TryParse(row.Cells["Carga"].Value.ToString(), out int parsedCarga))
+                        if (double.TryParse(cargaValue.ToString(), out double parsedCarga))
                         {
                             carga = parsedCarga;
                         }
                         else
                         {
-                            MessageBox.Show($"La carga para el ejercicio '{nombreEjercicio}' no es un número válido. Se ignorará.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            // La validación de CellValidating ya previno esto,
+                            // pero es bueno tener una segunda capa.
+                            MessageBox.Show($"Valor de Carga inválido para '{nombreEjercicio}'. Se guardará como Nulo.", "Dato Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
 

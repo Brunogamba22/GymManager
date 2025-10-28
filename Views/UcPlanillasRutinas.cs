@@ -1,4 +1,5 @@
-﻿using GymManager.Models.Events;
+﻿using GymManager.Controllers;
+using GymManager.Models;
 using GymManager.Utils;
 using System;
 using System.Collections.Generic;
@@ -19,18 +20,18 @@ namespace GymManager.Views
         // 🔥 VARIABLE PARA EL CONTROL DE DETALLES
         private UcDetalleRutina ucDetalle = null;
 
+        private readonly RutinaController _rutinaController = new RutinaController();
+        private readonly DetalleRutinaController _detalleController = new DetalleRutinaController();
+
         // 🔥 LISTA PARA ALMACENAR RUTINAS GUARDADAS
-        private List<RutinaGuardada> rutinasGuardadas = new List<RutinaGuardada>();
+        private List<Rutina> rutinasGuardadas = new List<Rutina>();
 
         public UcPlanillasRutinas()
         {
             InitializeComponent();
             ApplyModernStyles();
             ConfigurarGrid();
-            CargarPlanillasDemo(); // 🔥 DESCOMENTADO PARA PRUEBAS
-
-            // 🔥 SUSCRIBIRSE AL EVENTO DE RUTINAS GUARDADAS
-            EventosRutina.RutinaGuardada += OnRutinaGuardada;
+            
         }
 
         private void ApplyModernStyles()
@@ -77,64 +78,41 @@ namespace GymManager.Views
             dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
         }
 
-        // ------------------------------------------------------------
-        // 🔹 CARGA DE PLANILLAS DEMO (para pruebas sin base de datos)
-        // ------------------------------------------------------------
-        // Este método genera rutinas de ejemplo con ejercicios cargados
-        // en memoria. Sirve para visualizar cómo se verán las planillas
-        // en la interfaz antes de conectar con la BD real.
-        //
-        // ✅ Se reemplazó la propiedad "Descanso" por "DescansoSegundos"
-        // para coincidir con la nueva versión del modelo EjercicioRutina.
-        // ------------------------------------------------------------
-        private void CargarPlanillasDemo()
-        {
-            // 🔹 Rutina de ejemplo para HOMBRES
-            rutinasGuardadas.Add(new RutinaGuardada
-            {
-                Nombre = "Rutina Hombres - Fuerza",
-                TipoRutina = "HOMBRES",
-                Profesor = "Juan Pérez",
-                FechaCreacion = DateTime.Now.AddDays(-5),
-                Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>
-        {
-            // ⬇️ Se corrigió Descanso → DescansoSegundos
-            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Press banca", Series = 3, Repeticiones = "10", DescansoSegundos = 60 },
-            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Sentadillas", Series = 4, Repeticiones = "8", DescansoSegundos = 90 },
-            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Dominadas", Series = 3, Repeticiones = "8", DescansoSegundos = 75 }
-        }
-            });
+        
 
-            // 🔹 Rutina de ejemplo para MUJERES
-            rutinasGuardadas.Add(new RutinaGuardada
-            {
-                Nombre = "Rutina Mujeres - Glúteos",
-                TipoRutina = "MUJERES",
-                Profesor = "María Gómez",
-                FechaCreacion = DateTime.Now.AddDays(-3),
-                Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>
+        public void CargarDatos()
         {
-            // ⬇️ También corregido Descanso → DescansoSegundos
-            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Peso muerto", Series = 3, Repeticiones = "12", DescansoSegundos = 60 },
-            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Zancadas", Series = 4, Repeticiones = "10", DescansoSegundos = 90 },
-            new Utils.RutinaSimulador.EjercicioRutina { Nombre = "Hip thrust", Series = 4, Repeticiones = "12", DescansoSegundos = 60 }
-        }
-            });
+            try
+            {
+                // 1. Llamar al nuevo método del controlador
+                rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla();
 
-            // 🔹 Actualizamos el DataGridView con las nuevas planillas
-            ActualizarGrid();
+                // --- 🔥 AÑADE ESTA LÍNEA TEMPORALMENTE ---
+                MessageBox.Show($"Se cargaron {rutinasGuardadas.Count} rutinas desde la BD.");
+                // --- FIN DE LÍNEA TEMPORAL ---
+
+                // 2. Actualizar la grilla
+                ActualizarGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar planillas: {ex.Message}", "Error de Base de Datos", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
+        
 
 
         // 🔥 ACTUALIZAR GRID CON LAS RUTINAS GUARDADAS
         private void ActualizarGrid()
         {
             dgvPlanillas.Rows.Clear();
+
             foreach (var rutina in rutinasGuardadas.OrderByDescending(r => r.FechaCreacion))
             {
                 dgvPlanillas.Rows.Add(
                     rutina.Nombre,
-                    rutina.Profesor,
+                    rutina.NombreProfesor,
                     rutina.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
                 );
             }
@@ -158,10 +136,8 @@ namespace GymManager.Views
             }
         }
 
-        // 🔥 MÉTODO PARA MOSTRAR EL DETALLE
-        private void MostrarDetalleRutina(RutinaGuardada rutina)
+        private void MostrarDetalleRutina(Rutina rutinaHeader)
         {
-            // Ocultar la lista de planillas
             mainPanel.Visible = false;
 
             // Crear o mostrar el control de detalle
@@ -171,20 +147,28 @@ namespace GymManager.Views
                 ucDetalle.Dock = DockStyle.Fill;
                 ucDetalle.OnCerrarDetalle += (s, e) => OcultarDetalle();
                 this.Controls.Add(ucDetalle);
-                ucDetalle.BringToFront(); // 🔥 AÑADIDO: Traer al frente
             }
 
-            // Cargar datos en el detalle
-            ucDetalle.CargarRutina(
-                rutina.Nombre,
-                rutina.TipoRutina,
-                rutina.Profesor,
-                rutina.FechaCreacion,
-                rutina.Ejercicios
-            );
+            
 
+            // 1. Buscamos los detalles (ejercicios) de esta rutina en la BD
+            List<DetalleRutina> detallesDeRutina = _detalleController.ObtenerPorRutina(rutinaHeader.IdRutina);
+
+            // 2. Cargamos el detalle
+            // TU CÓDIGO ACTUAL (demo) espera una lista de 'Utils.RutinaSimulador.EjercicioRutina'
+            // AHORA le estamos pasando una lista de 'Models.DetalleRutina'
+            // Esto causará un error que debemos arreglar en 'UcDetalleRutina.cs'
+
+            ucDetalle.CargarRutina(
+                rutinaHeader.Nombre,
+                rutinaHeader.NombreGenero,    // Pasamos el nombre del género
+                rutinaHeader.NombreProfesor,  // Pasamos el nombre del profesor
+                rutinaHeader.FechaCreacion,
+                detallesDeRutina            // Pasamos los detalles REALES
+            );
+            
             ucDetalle.Visible = true;
-            ucDetalle.BringToFront(); // 🔥 AÑADIDO: Asegurar que esté al frente
+            ucDetalle.BringToFront();
         }
 
         // 🔥 MÉTODO PARA OCULTAR EL DETALLE
@@ -226,36 +210,8 @@ namespace GymManager.Views
                           MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        // 🔥 MÉTODO PARA CAPTURAR RUTINAS GUARDADAS DESDE GENERAR RUTINAS
-        private void OnRutinaGuardada(object sender, RutinaGuardadaEventArgs e)
-        {
-            // Simular nombre de profesor (en un sistema real esto vendría del usuario logueado)
-            string nombreProfesor = "Profesor Actual";
+        
 
-            var nuevaRutina = new RutinaGuardada
-            {
-                Nombre = e.NombreRutina,
-                TipoRutina = e.TipoRutina,
-                Profesor = nombreProfesor,
-                FechaCreacion = e.FechaCreacion,
-                Ejercicios = new List<Utils.RutinaSimulador.EjercicioRutina>(e.Ejercicios)
-            };
-
-            rutinasGuardadas.Add(nuevaRutina);
-            ActualizarGrid();
-
-            MessageBox.Show($"✅ Rutina guardada en Planillas: {e.NombreRutina}",
-                          "Rutina Guardada", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        // 🔥 CLASE INTERNA PARA MANEJAR RUTINAS GUARDADAS
-        private class RutinaGuardada
-        {
-            public string Nombre { get; set; } = "";
-            public string TipoRutina { get; set; } = "";
-            public string Profesor { get; set; } = "";
-            public DateTime FechaCreacion { get; set; } = DateTime.Now;
-            public List<Utils.RutinaSimulador.EjercicioRutina> Ejercicios { get; set; } = new List<Utils.RutinaSimulador.EjercicioRutina>();
-        }
+        
     }
 }

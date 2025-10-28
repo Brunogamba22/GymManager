@@ -19,6 +19,12 @@ namespace GymManager.Views
         private Button btnImprimir;
         private Button btnExportar;
 
+        private DataGridViewTextBoxColumn colEjercicio;
+        private DataGridViewTextBoxColumn colSeries;
+        private DataGridViewTextBoxColumn colRepeticiones;
+        private DataGridViewTextBoxColumn colCarga; 
+        private DataGridViewTextBoxColumn colDescanso;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -39,6 +45,12 @@ namespace GymManager.Views
             this.btnCerrar = new Button();
             this.btnImprimir = new Button();
             this.btnExportar = new Button();
+
+            this.colEjercicio = new DataGridViewTextBoxColumn();
+            this.colSeries = new DataGridViewTextBoxColumn();
+            this.colRepeticiones = new DataGridViewTextBoxColumn();
+            this.colCarga = new DataGridViewTextBoxColumn(); 
+            this.colDescanso = new DataGridViewTextBoxColumn();
 
             this.SuspendLayout();
             this.Size = new Size(900, 650);
@@ -94,10 +106,28 @@ namespace GymManager.Views
             this.dgvEjercicios.Margin = new Padding(0, 5, 0, 0);
 
             // Configurar columnas del DataGridView
-            dgvEjercicios.Columns.Add("Ejercicio", "EJERCICIO");
-            dgvEjercicios.Columns.Add("Series", "SERIES");
-            dgvEjercicios.Columns.Add("Repeticiones", "REPETICIONES");
-            dgvEjercicios.Columns.Add("Descanso", "DESCANSO (s)");
+            this.colEjercicio.HeaderText = "EJERCICIO";
+            this.colEjercicio.Name = "colEjercicio";
+            this.colEjercicio.FillWeight = 35; // Ajustado
+
+            this.colSeries.HeaderText = "SERIES";
+            this.colSeries.Name = "colSeries";
+            this.colSeries.FillWeight = 15;
+
+            this.colRepeticiones.HeaderText = "REPETICIONES";
+            this.colRepeticiones.Name = "colRepeticiones";
+            this.colRepeticiones.FillWeight = 15;
+
+            this.colCarga.HeaderText = "CARGA (%)"; // AÑADIDO
+            this.colCarga.Name = "colCarga";
+            this.colCarga.FillWeight = 15;
+
+            this.dgvEjercicios.Columns.AddRange(new DataGridViewColumn[] {
+                this.colEjercicio,
+                this.colSeries,
+                this.colRepeticiones,
+                this.colCarga, // AÑADIDO
+            });
 
             // Botón Cerrar
             this.btnCerrar.Text = "❌ CERRAR";

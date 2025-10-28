@@ -1,6 +1,7 @@
 ﻿using GymManager.Models;
 using GymManager.Utils;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 
 namespace GymManager.Controllers
@@ -38,7 +39,7 @@ namespace GymManager.Controllers
                 {
                     conn.Open();
                     string query = @"
-                        INSERT INTO DetalleRutina (id_rutina, id_ejercicio, series, repeticiones, carga, descanso)
+                        INSERT INTO DetalleRutina (id_rutina, id_ejercicio, series, repeticiones, carga)
                         VALUES (@idRutina, @idEjercicio, @series, @repeticiones, @carga);";
 
                     using (var cmd = new SqlCommand(query, conn))
@@ -102,6 +103,55 @@ namespace GymManager.Controllers
                 }
             }
             return null; // No se encontró rutina para ese género
+        }
+
+        // =========================================================
+        // MÉTODO NUEVO (para el panel Planillas) 
+        // =========================================================
+        /// <summary>
+        /// Obtiene todos los encabezados de rutinas guardadas, incluyendo
+        /// el nombre del profesor y el género.
+        /// </summary>
+        public List<Rutina> ObtenerTodasParaPlanilla()
+        {
+            var lista = new List<Rutina>();
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+                // Esta consulta une Rutina, Usuarios y Genero
+                string query = @"
+                    SELECT 
+                        r.id_rutina, r.nombre, r.fecha, r.creadaPor, r.id_genero,
+                        u.nombre AS nombreProfesor,
+                        g.nombre AS nombreGenero
+                    FROM Rutina r
+                    INNER JOIN Usuarios u ON r.creadaPor = u.id_usuario
+                    INNER JOIN Genero g ON r.id_genero = g.id_genero
+                    ORDER BY r.fecha DESC"; // Ordenadas por fecha más reciente
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new Rutina
+                            {
+                                IdRutina = reader.GetInt32(reader.GetOrdinal("id_rutina")),
+                                Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                                FechaCreacion = reader.GetDateTime(reader.GetOrdinal("fecha")),
+                                CreadaPor = reader.GetInt32(reader.GetOrdinal("creadaPor")),
+                                IdGenero = reader.GetInt32(reader.GetOrdinal("id_genero")),
+
+                                // Asignamos los valores de los JOINs
+                                NombreProfesor = reader.GetString(reader.GetOrdinal("nombreProfesor")),
+                                NombreGenero = reader.GetString(reader.GetOrdinal("nombreGenero"))
+                            });
+                        }
+                    }
+                }
+            }
+            return lista;
         }
     }
 }
