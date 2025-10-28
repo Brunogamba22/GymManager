@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -13,6 +15,9 @@ namespace GymManager.Views
         private readonly UsuarioController controladorUsuarios = new UsuarioController();
         private readonly EjercicioController controladorEjercicios = new EjercicioController();
 
+        // ============================================================
+        // 🔹 CONSTRUCTOR
+        // ============================================================
         public UcReportes()
         {
             InitializeComponent();
@@ -26,6 +31,107 @@ namespace GymManager.Views
             ConfigurarCards();
             CargarGraficoUsuarios();
             CargarGraficoEjercicios();
+
+            // Configurar estilo del botón Backup
+            ConfigurarBotonBackup();
+        }
+
+        // ============================================================
+        // 🔸 CONFIGURAR BOTÓN BACKUP (estilo + evento)
+        // ============================================================
+        private void ConfigurarBotonBackup()
+        {
+            btnBackup.Text = "💾  Crear Backup";
+            btnBackup.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnBackup.BackColor = Color.FromArgb(54, 162, 235);
+            btnBackup.ForeColor = Color.White;
+            btnBackup.FlatStyle = FlatStyle.Flat;
+            btnBackup.FlatAppearance.BorderSize = 0;
+            btnBackup.Cursor = Cursors.Hand;
+            btnBackup.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnBackup.Click += BtnBackup_Click;
+        }
+
+        // ============================================================
+        // 🔸 EVENTO CLICK: HACER BACKUP DE LA BASE DE DATOS
+        // ============================================================
+        private void BtnBackup_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Ruta por defecto (puede ser externa)
+                string defaultFolder = @"C:\Usuarios\Bruno\source\repos\Backups_GymManager\";
+                Directory.CreateDirectory(defaultFolder);
+
+                string defaultName = $"GymManagerDB_BACKUP_{DateTime.Now:yyyyMMdd_HHmm}.bak";
+
+                using (var dlg = new SaveFileDialog())
+                {
+                    dlg.InitialDirectory = defaultFolder;
+                    dlg.FileName = defaultName;
+                    dlg.Filter = "SQL Server Backup (*.bak)|*.bak";
+                    dlg.Title = "Guardar respaldo de la base de datos";
+
+                    if (dlg.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    // Ejecutar respaldo
+                    HacerBackupFull(dlg.FileName);
+
+                    MessageBox.Show($"✅ Backup completado con éxito.\nArchivo guardado en:\n{dlg.FileName}",
+                                    "Respaldo realizado",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("❌ Error al realizar el backup:\n" + ex.Message,
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+            }
+        }
+
+        // ============================================================
+        // 🔸 MÉTODO: REALIZA EL BACKUP FULL
+        // ============================================================
+        private void HacerBackupFull(string rutaDestino)
+        {
+            // Usamos la base master para ejecutar el BACKUP
+            string cadena = ObtenerCadenaConexionMaster();
+
+            using (var cn = new SqlConnection(cadena))
+            using (var cmd = cn.CreateCommand())
+            {
+                cn.Open();
+                cmd.CommandTimeout = 0;
+                cmd.CommandText = @"
+                    BACKUP DATABASE GymManagerDB
+                    TO DISK = @ruta
+                    WITH INIT, STATS = 10;";
+                cmd.Parameters.AddWithValue("@ruta", rutaDestino);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        private string ObtenerCadenaConexionMaster()
+        {
+            // Adaptá tu cadena según la configuración del proyecto
+            string cs = @"Server=DESKTOP-K765B76\SQLEXPRESS;Database=GymManagerDB;Trusted_Connection=True;";
+
+            // Reemplaza el nombre de base por "master"
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(cs);
+                builder.InitialCatalog = "master";
+                return builder.ToString();
+            }
+            catch
+            {
+                return cs.Replace("Database=GymManagerDB", "Database=master")
+                         .Replace("Initial Catalog=GymManagerDB", "Initial Catalog=master");
+            }
         }
 
         // ============================================================
@@ -41,18 +147,18 @@ namespace GymManager.Views
         }
 
         // ============================================================
-        // 🔹 CONFIGURACIÓN GENERAL DE GRÁFICOS
+        // 🔹 CONFIGURACIÓN DE GRÁFICOS
         // ============================================================
         private void ConfigurarGraficos()
         {
-            // Gráfico usuarios
+            // Usuarios
             chartUsuarios.ChartAreas[0].BackColor = Color.White;
             chartUsuarios.BackColor = Color.White;
             chartUsuarios.Legends[0].Docking = Docking.Right;
             chartUsuarios.Legends[0].Font = new Font("Segoe UI", 8);
             chartUsuarios.Legends[0].BackColor = Color.White;
 
-            // Gráfico ejercicios
+            // Ejercicios
             var area = chartEjercicios.ChartAreas[0];
             area.BackColor = Color.White;
             area.AxisX.MajorGrid.Enabled = false;
@@ -61,12 +167,11 @@ namespace GymManager.Views
             area.AxisY.LabelStyle.Font = new Font("Segoe UI", 9);
             area.AxisX.Title = "Grupos musculares";
             area.AxisY.Title = "Cantidad";
-            area.Area3DStyle.Enable3D = false;
-            area.AxisX.Interval = 1; // ✅ mostrar todas las etiquetas
+            area.AxisX.Interval = 1;
         }
 
         // ============================================================
-        // 🥧 GRÁFICO USUARIOS POR ROL
+        // 🥧 GRÁFICO USUARIOS
         // ============================================================
         private void CargarGraficoUsuarios()
         {
@@ -77,7 +182,6 @@ namespace GymManager.Views
             int receps = lista.Count(u => u.Rol == Rol.Recepcionista);
 
             chartUsuarios.Series.Clear();
-
             var serie = new Series("Usuarios")
             {
                 ChartType = SeriesChartType.Pie,
@@ -93,53 +197,46 @@ namespace GymManager.Views
             serie.Points[0].Color = Color.FromArgb(54, 162, 235);
             serie.Points[1].Color = Color.FromArgb(255, 206, 86);
             serie.Points[2].Color = Color.FromArgb(255, 99, 132);
-
             serie["PieDrawingStyle"] = "Concave";
             serie["PieLabelStyle"] = "Outside";
             serie.SmartLabelStyle.Enabled = true;
-
             chartUsuarios.Series.Add(serie);
         }
 
         // ============================================================
-        // 📊 GRÁFICO EJERCICIOS POR GRUPO MUSCULAR (real)
+        // 📊 GRÁFICO EJERCICIOS
         // ============================================================
-       private void CargarGraficoEjercicios()
-{
-    var lista = controladorEjercicios.ObtenerTodos();
+        private void CargarGraficoEjercicios()
+        {
+            var lista = controladorEjercicios.ObtenerTodos();
+            var grupos = lista
+                .GroupBy(e => string.IsNullOrWhiteSpace(e.GrupoMuscularNombre) ? "Sin grupo" : e.GrupoMuscularNombre)
+                .Select(g => new { Grupo = g.Key, Cantidad = g.Count() })
+                .OrderBy(g => g.Grupo)
+                .ToList();
 
-    // Agrupar por el nombre del grupo muscular
-    var grupos = lista
-        .GroupBy(e => string.IsNullOrWhiteSpace(e.GrupoMuscularNombre) ? "Sin grupo" : e.GrupoMuscularNombre)
-        .Select(g => new { Grupo = g.Key, Cantidad = g.Count() })
-        .OrderBy(g => g.Grupo)
-        .ToList();
+            chartEjercicios.Series.Clear();
+            var serie = new Series("Ejercicios")
+            {
+                ChartType = SeriesChartType.Column,
+                IsValueShownAsLabel = true,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                LabelForeColor = Color.Black
+            };
 
-    chartEjercicios.Series.Clear();
+            foreach (var grupo in grupos)
+            {
+                int idx = serie.Points.AddXY(grupo.Grupo, grupo.Cantidad);
+                serie.Points[idx].Color = Color.FromArgb(54, 162, 235);
+            }
 
-    var serie = new Series("Ejercicios")
-    {
-        ChartType = SeriesChartType.Column,
-        IsValueShownAsLabel = true,
-        Font = new Font("Segoe UI", 9, FontStyle.Bold),
-        LabelForeColor = Color.Black
-    };
+            serie["PointWidth"] = "0.55";
+            chartEjercicios.Series.Add(serie);
 
-    foreach (var grupo in grupos)
-    {
-        int idx = serie.Points.AddXY(grupo.Grupo, grupo.Cantidad);
-        serie.Points[idx].Color = Color.FromArgb(54, 162, 235);
-    }
-
-    serie["PointWidth"] = "0.55";
-    chartEjercicios.Series.Add(serie);
-
-    // Configurar área
-    var area = chartEjercicios.ChartAreas[0];
-    area.AxisX.Interval = 1;
-    area.AxisX.LabelStyle.Angle = -30; // para leer mejor si hay muchos grupos
-}
-
+            var area = chartEjercicios.ChartAreas[0];
+            area.AxisX.Interval = 1;
+            area.AxisX.LabelStyle.Angle = -30;
+        }
 
         // ============================================================
         // 🧱 CONFIGURACIÓN DE LAS CARDS
@@ -152,11 +249,6 @@ namespace GymManager.Views
             lblTotalUsuarios.Font = new Font("Segoe UI", 30, FontStyle.Bold);
             lblTotalUsuarios.ForeColor = Color.FromArgb(54, 162, 235);
             lblTotalUsuarios.Location = new Point(25, 45);
-
-            // Limpia cualquier ícono previo
-            cardUsuarios.Controls.OfType<Label>()
-                .Where(l => l.Text == "👥").ToList()
-                .ForEach(l => cardUsuarios.Controls.Remove(l));
 
             var iconUsuarios = new Label
             {
@@ -174,11 +266,6 @@ namespace GymManager.Views
             lblTotalEjercicios.ForeColor = Color.FromArgb(255, 159, 64);
             lblTotalEjercicios.Location = new Point(25, 45);
 
-            // Limpia cualquier ícono previo
-            cardEjercicios.Controls.OfType<Label>()
-                .Where(l => l.Text == "💪").ToList()
-                .ForEach(l => cardEjercicios.Controls.Remove(l));
-
             var iconEjercicios = new Label
             {
                 Text = "💪",
@@ -188,6 +275,5 @@ namespace GymManager.Views
             };
             cardEjercicios.Controls.Add(iconEjercicios);
         }
-
     }
 }

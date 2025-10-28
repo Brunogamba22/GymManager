@@ -16,6 +16,7 @@ namespace GymManager.Views
         private Chart chartEjercicios;
         private Panel cardUsuarios;
         private Panel cardEjercicios;
+        private Button btnBackup; // 🔹 Botón de Backup
 
         private void InitializeComponent()
         {
@@ -34,6 +35,25 @@ namespace GymManager.Views
                 Location = new Point(30, 20),
                 AutoSize = true
             };
+
+            // ============================================================
+            // 💾 BOTÓN BACKUP
+            // ============================================================
+            btnBackup = new Button
+            {
+                Name = "btnBackup",
+                Text = "💾  Crear Backup",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Size = new Size(150, 38),
+                BackColor = Color.FromArgb(54, 162, 235),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand,
+                Location = new Point(900, 20), // 👈 más arriba y más a la derecha
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            btnBackup.FlatAppearance.BorderSize = 0;
+            btnBackup.Click += new EventHandler(this.BtnBackup_Click);
 
             // ============================================================
             // 🧍 CARD USUARIOS
@@ -72,8 +92,6 @@ namespace GymManager.Views
                 Location = new Point(190, 38)
             };
 
-            // limpiar duplicados y agregar
-            cardUsuarios.Controls.Clear();
             cardUsuarios.Controls.AddRange(new Control[] { lblUsuariosTxt, lblTotalUsuarios, iconUsuarios });
 
             // ============================================================
@@ -113,8 +131,6 @@ namespace GymManager.Views
                 Location = new Point(190, 38)
             };
 
-            // limpiar duplicados y agregar
-            cardEjercicios.Controls.Clear();
             cardEjercicios.Controls.AddRange(new Control[] { lblEjerciciosTxt, lblTotalEjercicios, iconEjercicios });
 
             // ============================================================
@@ -123,7 +139,7 @@ namespace GymManager.Views
             chartUsuarios = new Chart
             {
                 Location = new Point(40, 190),
-                Size = new Size(510, 350), // 📈 AUMENTADO
+                Size = new Size(510, 350),
                 BackColor = Color.White
             };
             chartUsuarios.ChartAreas.Add(areaUsuarios);
@@ -135,7 +151,7 @@ namespace GymManager.Views
             chartEjercicios = new Chart
             {
                 Location = new Point(560, 190),
-                Size = new Size(530, 350), // 📈 AMPLIADO HORIZONTALMENTE
+                Size = new Size(530, 350),
                 BackColor = Color.White
             };
             chartEjercicios.ChartAreas.Add(areaEjercicios);
@@ -150,6 +166,7 @@ namespace GymManager.Views
             this.Controls.Add(cardEjercicios);
             this.Controls.Add(chartUsuarios);
             this.Controls.Add(chartEjercicios);
+            this.Controls.Add(btnBackup); // 🔹 botón agregado al panel
             this.Name = "UcReportes";
             this.Size = new Size(1100, 600);
             this.Load += new EventHandler(this.UcReportes_Load);
