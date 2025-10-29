@@ -34,10 +34,17 @@ namespace GymManager.Views
 
             // Configurar estilo del botón Backup
             ConfigurarBotonBackup();
+
+            ColocarBackupArribaDerecha();                 //  forzamos posición/visible
+            CargarUltimoBackupDesdeCarpeta();   // muestra el último .bak si existe
+            this.Resize += (s, ev) => ColocarBackupArribaDerecha();//  que siga anclado
+
+
+
         }
 
         // ============================================================
-        // 🔸 CONFIGURAR BOTÓN BACKUP (estilo + evento)
+        //  CONFIGURAR BOTÓN BACKUP (estilo + evento)
         // ============================================================
         private void ConfigurarBotonBackup()
         {
@@ -50,6 +57,11 @@ namespace GymManager.Views
             btnBackup.Cursor = Cursors.Hand;
             btnBackup.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnBackup.Click += BtnBackup_Click;
+            // Tooltip
+            // Mostrar texto al pasar el mouse sobre el botón
+            var tt = new ToolTip { IsBalloon = false, InitialDelay = 200 };
+            tt.SetToolTip(btnBackup, "Crear respaldo de la base de datos (.bak)");
+
         }
 
         // ============================================================
@@ -64,7 +76,7 @@ namespace GymManager.Views
                 Directory.CreateDirectory(defaultFolder);
 
                 string defaultName = $"GymManagerDB_BACKUP_{DateTime.Now:yyyyMMdd_HHmm}.bak";
-
+                // Diálogo para guardar el archivo .bak
                 using (var dlg = new SaveFileDialog())
                 {
                     dlg.InitialDirectory = defaultFolder;
@@ -76,14 +88,19 @@ namespace GymManager.Views
                         return;
 
                     // Ejecutar respaldo
+                    // Realizar el backup full
                     HacerBackupFull(dlg.FileName);
+                    // Actualizar la etiqueta del último backup                  
+                    ActualizarUltimoBackup(DateTime.Now);
 
+                    // Mostrar mensaje de éxito
                     MessageBox.Show($"✅ Backup completado con éxito.\nArchivo guardado en:\n{dlg.FileName}",
                                     "Respaldo realizado",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Information);
                 }
             }
+            
             catch (Exception ex)
             {
                 MessageBox.Show("❌ Error al realizar el backup:\n" + ex.Message,
@@ -114,6 +131,52 @@ namespace GymManager.Views
                 cmd.ExecuteNonQuery();
             }
         }
+        // ============================================================
+        // 🔸 MÉTODOS AUXILIARES BACKUP
+        private string GetDefaultBackupFolder()
+        {
+            // Ajustá si cambiás la carpeta
+            return @"C:\Usuarios\Bruno\source\repos\Backups_GymManager\";
+        }
+
+        private void CargarUltimoBackupDesdeCarpeta()
+        {
+            try
+            {
+                var folder = GetDefaultBackupFolder();
+                if (!Directory.Exists(folder))
+                {
+                    lblUltimoBackup.Text = "Último backup: —";
+                    return;
+                }
+
+                var ultimoBak = new DirectoryInfo(folder)
+                    .GetFiles("*.bak")
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .FirstOrDefault();
+
+                if (ultimoBak != null)
+                {
+                    lblUltimoBackup.Text = $"Último backup: {ultimoBak.LastWriteTime:dd/MM/yyyy - HH:mm} hs";
+                }
+                else
+                {
+                    lblUltimoBackup.Text = "Último backup: —";
+                }
+            }
+            catch
+            {
+                lblUltimoBackup.Text = "Último backup: —";
+            }
+        }
+        // Actualiza la etiqueta del último backup con una fecha dada
+        private void ActualizarUltimoBackup(DateTime fecha)
+        {
+            lblUltimoBackup.Text = $"Último backup: {fecha:dd/MM/yyyy - HH:mm} hs";
+        }
+
+
+
 
         private string ObtenerCadenaConexionMaster()
         {
@@ -275,5 +338,35 @@ namespace GymManager.Views
             };
             cardEjercicios.Controls.Add(iconEjercicios);
         }
+
+        private void ColocarBackupArribaDerecha()
+        {
+            if (btnBackup == null || lblUltimoBackup == null) return;
+            // Margen desde el borde derecho y desde arriba
+            const int rightPadding = 40;   // ⬅️ antes era ~20; probá 40–60 si querés más
+            const int topPadding = 16;
+
+            // --- Botón ---
+            btnBackup.Visible = true;
+            btnBackup.Parent = this;
+            btnBackup.BringToFront();
+
+            int margen = 20;
+            int x = this.ClientSize.Width - btnBackup.Width - margen;
+            int y = Math.Max(15, lblTitulo.Top);
+            btnBackup.Location = new Point(Math.Max(0, x), y);
+
+            // --- Label debajo del botón ---
+            lblUltimoBackup.Visible = true;
+            lblUltimoBackup.Parent = this;
+            lblUltimoBackup.BringToFront();
+            lblUltimoBackup.Location = new Point(
+                btnBackup.Left,
+                btnBackup.Bottom + 5 //  un poquito debajo del botón
+            );
+        }
+
+
+
     }
 }
