@@ -342,19 +342,19 @@ namespace GymManager.Views
         private void ColocarBackupArribaDerecha()
         {
             if (btnBackup == null || lblUltimoBackup == null) return;
-            // Margen desde el borde derecho y desde arriba
-            const int rightPadding = 40;   // ⬅️ antes era ~20; probá 40–60 si querés más
-            const int topPadding = 16;
+
+            // Margen desde el borde derecho y superior
+            const int rightPadding = 60;  //  más espacio desde la derecha 
+            const int topPadding = 25;    //  más espacio desde arriba
 
             // --- Botón ---
             btnBackup.Visible = true;
             btnBackup.Parent = this;
             btnBackup.BringToFront();
 
-            int margen = 20;
-            int x = this.ClientSize.Width - btnBackup.Width - margen;
-            int y = Math.Max(15, lblTitulo.Top);
-            btnBackup.Location = new Point(Math.Max(0, x), y);
+            int x = this.ClientSize.Width - btnBackup.Width - rightPadding;
+            int y = topPadding;
+            btnBackup.Location = new Point(x, y);
 
             // --- Label debajo del botón ---
             lblUltimoBackup.Visible = true;
@@ -362,11 +362,9 @@ namespace GymManager.Views
             lblUltimoBackup.BringToFront();
             lblUltimoBackup.Location = new Point(
                 btnBackup.Left,
-                btnBackup.Bottom + 5 //  un poquito debajo del botón
+                btnBackup.Bottom + 6
             );
         }
-
-
 
     }
 }
