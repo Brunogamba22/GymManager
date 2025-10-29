@@ -62,6 +62,9 @@ namespace GymManager.Views
             dgvEjercicios.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvEjercicios.DefaultCellStyle.Padding = new Padding(5);
 
+            dgvEjercicios.DefaultCellStyle.SelectionBackColor = Color.White; // Same as normal background
+            dgvEjercicios.DefaultCellStyle.SelectionForeColor = textColor;
+
             // Filas alternadas
             dgvEjercicios.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
         }
