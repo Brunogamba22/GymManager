@@ -11,6 +11,8 @@ namespace GymManager.Controllers
     public class DetalleRutinaController
     {
         // ... MÉTODO: ObtenerPorRutina() ...
+        // En DetalleRutinaController.cs
+
         public List<DetalleRutina> ObtenerPorRutina(int idRutina)
         {
             var detalles = new List<DetalleRutina>();
@@ -19,42 +21,49 @@ namespace GymManager.Controllers
                 using (var conn = new SqlConnection(Conexion.Cadena))
                 {
                     conn.Open();
-                    // Modifica el SELECT para incluir 'Carga' y eliminar 'Descanso'
-                    var query = @"SELECT dr.id_detalle AS IdDetalle, 
-                             dr.id_rutina AS IdRutina, 
-                             dr.id_ejercicio AS IdEjercicio, 
-                             e.nombre AS EjercicioNombre, 
-                             dr.series AS Series, 
-                             dr.repeticiones AS Repeticiones, 
+                    // La consulta SQL está bien (usa alias)
+                    var query = @"SELECT dr.id_detalle AS IdDetalle,
+                             dr.id_rutina AS IdRutina,
+                             dr.id_ejercicio AS IdEjercicio,
+                             e.nombre AS EjercicioNombre,
+                             dr.series AS Series,
+                             dr.repeticiones AS Repeticiones,
                              dr.carga AS Carga
-                      FROM DetalleRutina dr 
-                      INNER JOIN Ejercicios e ON dr.id_ejercicio = e.id_ejercicio 
+                      FROM DetalleRutina dr
+                      INNER JOIN Ejercicios e ON dr.id_ejercicio = e.id_ejercicio
                       WHERE dr.id_rutina = @IdRutina";
+
                     using (var cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@IdRutina", idRutina);
                         using (var reader = cmd.ExecuteReader())
                         {
+                            // =========================================================
+                            // 🔥 CORRECCIÓN: Usar GetOrdinal para leer los datos 🔥
+                            // =========================================================
                             while (reader.Read())
                             {
                                 var detalle = new DetalleRutina
                                 {
-                                    IdDetalle = Convert.ToInt32(reader["IdDetalleRutina"]),
-                                    IdRutina = Convert.ToInt32(reader["IdRutina"]),
-                                    IdEjercicio = Convert.ToInt32(reader["IdEjercicio"]),
-                                    EjercicioNombre = reader["EjercicioNombre"].ToString(),
-                                    Series = Convert.ToInt32(reader["Series"]),
-                                    Repeticiones = Convert.ToInt32(reader["Repeticiones"]),
-                                    // Descanso = Convert.ToInt32(reader["Descanso"]) // ¡ELIMINA ESTA LÍNEA!
-
-                                    // Lee Carga, manejando el posible valor NULL
-                                    Carga = reader["Carga"] != DBNull.Value ? Convert.ToInt32(reader["Carga"]) : (int?)null
+                                    // Usamos GetOrdinal con el nombre del ALIAS de la consulta SQL
+                                    IdDetalle = reader.GetInt32(reader.GetOrdinal("IdDetalle")),
+                                    IdRutina = reader.GetInt32(reader.GetOrdinal("IdRutina")),
+                                    IdEjercicio = reader.GetInt32(reader.GetOrdinal("IdEjercicio")),
+                                    EjercicioNombre = reader.GetString(reader.GetOrdinal("EjercicioNombre")),
+                                    Series = reader.GetInt32(reader.GetOrdinal("Series")),
+                                    Repeticiones = reader.GetInt32(reader.GetOrdinal("Repeticiones")),
+                                    Carga = reader.IsDBNull(reader.GetOrdinal("Carga")) ? (double?)null : reader.GetDouble(reader.GetOrdinal("Carga"))
                                 };
                                 detalles.Add(detalle);
                             }
+                            
                         }
                     }
                 }
+            }
+            catch (IndexOutOfRangeException ioorex) // Captura específica por si GetOrdinal falla
+            {
+                throw new Exception($"Error al leer columna de detalles: Columna no encontrada ({ioorex.Message})", ioorex);
             }
             catch (Exception ex)
             {

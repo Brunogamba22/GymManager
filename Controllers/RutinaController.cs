@@ -105,32 +105,63 @@ namespace GymManager.Controllers
             return null; // No se encontró rutina para ese género
         }
 
+        
         // =========================================================
-        // MÉTODO NUEVO (para el panel Planillas) 
+        // 🔥 MÉTODO ACTUALIZADO (para el panel Planillas con filtros) 🔥
         // =========================================================
         /// <summary>
-        /// Obtiene todos los encabezados de rutinas guardadas, incluyendo
-        /// el nombre del profesor y el género.
+        /// Obtiene todos los encabezados de rutinas guardadas, opcionalmente filtrados
+        /// por fecha y/o género. Incluye nombre de profesor y género.
         /// </summary>
-        public List<Rutina> ObtenerTodasParaPlanilla()
+        public List<Rutina> ObtenerTodasParaPlanilla(DateTime? fechaDesde = null, DateTime? fechaHasta = null, int? idGenero = null)
         {
             var lista = new List<Rutina>();
             using (var conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
-                // Esta consulta une Rutina, Usuarios y Genero
+
+                // Base de la consulta
                 string query = @"
-                    SELECT 
-                        r.id_rutina, r.nombre, r.fecha, r.creadaPor, r.id_genero,
-                        u.nombre AS nombreProfesor,
-                        g.nombre AS nombreGenero
-                    FROM Rutina r
-                    INNER JOIN Usuarios u ON r.creadaPor = u.id_usuario
-                    INNER JOIN Genero g ON r.id_genero = g.id_genero
-                    ORDER BY r.fecha DESC"; // Ordenadas por fecha más reciente
+                SELECT 
+                    r.id_rutina, r.nombre, r.fecha, r.creadaPor, r.id_genero,
+                    u.nombre AS nombreProfesor,
+                    g.nombre AS nombreGenero
+                FROM Rutina r
+                INNER JOIN Usuarios u ON r.creadaPor = u.id_usuario
+                INNER JOIN Genero g ON r.id_genero = g.id_genero
+                WHERE 1=1 "; // Condición base para añadir AND fácilmente
+
+                var parameters = new List<SqlParameter>();
+
+                // Añadir filtro de fecha desde (si se proporcionó)
+                if (fechaDesde.HasValue)
+                {
+                    // Comparamos solo la parte de la fecha (ignorando la hora)
+                    query += " AND CONVERT(date, r.fecha) >= @fechaDesde ";
+                    parameters.Add(new SqlParameter("@fechaDesde", fechaDesde.Value.Date));
+                }
+
+                // Añadir filtro de fecha hasta (si se proporcionó)
+                if (fechaHasta.HasValue)
+                {
+                    // Comparamos solo la parte de la fecha
+                    query += " AND CONVERT(date, r.fecha) <= @fechaHasta ";
+                    parameters.Add(new SqlParameter("@fechaHasta", fechaHasta.Value.Date));
+                }
+
+                // Añadir filtro de género (si se proporcionó y es mayor a 0)
+                if (idGenero.HasValue && idGenero.Value > 0)
+                {
+                    query += " AND r.id_genero = @idGenero ";
+                    parameters.Add(new SqlParameter("@idGenero", idGenero.Value));
+                }
+
+                query += " ORDER BY r.fecha DESC"; // Ordenar siempre
 
                 using (var cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddRange(parameters.ToArray());
+
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -142,8 +173,6 @@ namespace GymManager.Controllers
                                 FechaCreacion = reader.GetDateTime(reader.GetOrdinal("fecha")),
                                 CreadaPor = reader.GetInt32(reader.GetOrdinal("creadaPor")),
                                 IdGenero = reader.GetInt32(reader.GetOrdinal("id_genero")),
-
-                                // Asignamos los valores de los JOINs
                                 NombreProfesor = reader.GetString(reader.GetOrdinal("nombreProfesor")),
                                 NombreGenero = reader.GetString(reader.GetOrdinal("nombreGenero"))
                             });
