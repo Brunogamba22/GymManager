@@ -202,12 +202,14 @@ namespace GymManager.Views
         // ============================================================
         private void CargarDatosGenerales()
         {
-            int totalUsuarios = controladorUsuarios.ObtenerTodos().Count;
+            int totalUsuarios = controladorUsuarios.ObtenerTodos()
+                                                    .Count(u => u.Activo); // solo activos
             int totalEjercicios = controladorEjercicios.ObtenerTodos().Count;
 
             lblTotalUsuarios.Text = totalUsuarios.ToString();
             lblTotalEjercicios.Text = totalEjercicios.ToString();
         }
+
 
         // ============================================================
         // 🔹 CONFIGURACIÓN DE GRÁFICOS
@@ -238,7 +240,11 @@ namespace GymManager.Views
         // ============================================================
         private void CargarGraficoUsuarios()
         {
-            var lista = controladorUsuarios.ObtenerTodos();
+ 
+            var lista = controladorUsuarios.ObtenerTodos()
+                               .Where(u => u.Activo) // solo activos
+                               .ToList();
+
 
             int admins = lista.Count(u => u.Rol == Rol.Administrador);
             int profes = lista.Count(u => u.Rol == Rol.Profesor);
@@ -364,6 +370,17 @@ namespace GymManager.Views
                 btnBackup.Left,
                 btnBackup.Bottom + 6
             );
+        }
+
+        // ============================================================
+        // 🔁 MÉTODO PÚBLICO PARA REFRESCAR LOS GRÁFICOS Y CONTADORES
+        // ============================================================
+        public void RefrescarGraficos()
+        {
+            // Vuelve a contar usuarios activos y ejercicios
+            CargarDatosGenerales();
+            CargarGraficoUsuarios();
+            CargarGraficoEjercicios();
         }
 
     }

@@ -152,7 +152,18 @@ namespace GymManager.Views
                             controller.Reactivar(usuario.IdUsuario);
                             MessageBox.Show("Usuario activado correctamente.",
                                 "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                             CargarUsuarios(); // Refrescamos tabla
+
+                            // 🔁 Refrescar torta de reportes si está abierta
+                            foreach (Control ctrl in this.Parent.Controls)
+                            {
+                                if (ctrl is GymManager.Views.UcReportes reportes)
+                                {
+                                    reportes.RefrescarGraficos();
+                                    break;
+                                }
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -163,6 +174,7 @@ namespace GymManager.Views
                 }
             }
         }
+
 
 
         // ============================================================
@@ -304,6 +316,17 @@ namespace GymManager.Views
 
                 CargarUsuarios();
                 LimpiarCampos();
+
+                // 🔁 Refrescar torta de reportes si está abierta
+                foreach (Control ctrl in this.Parent.Controls)
+                {
+                    if (ctrl is GymManager.Views.UcReportes reportes)
+                    {
+                        reportes.RefrescarGraficos();
+                        break;
+                    }
+                }
+
             }
             catch (Exception ex)
             {
