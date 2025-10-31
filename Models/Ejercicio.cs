@@ -29,6 +29,9 @@ namespace GymManager.Models
         /// </summary>
         public string Imagen { get; set; }  // permite null en .NET Framework
 
+        public bool Activo { get; set; } = true;// Indica si el ejercicio está activo o no
+
+
         // Helpers opcionales (no se persisten)
         public bool TieneImagen => !string.IsNullOrWhiteSpace(Imagen);
 

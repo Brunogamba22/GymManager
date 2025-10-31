@@ -179,9 +179,12 @@ namespace GymManager.Views
 
 
         private string ObtenerCadenaConexionMaster()
-        {
-            // Adaptá tu cadena según la configuración del proyecto
+
+        {   //servidor SQL de BRUNO :
             string cs = @"Server=DESKTOP-K765B76\SQLEXPRESS;Database=GymManagerDB;Trusted_Connection=True;";
+            
+            //servidor SQL de YONI :
+            //string cs = @"Server=localhost,1433;Database=GymManagerDB;Trusted_Connection=True;";
 
             // Reemplaza el nombre de base por "master"
             try
