@@ -26,6 +26,9 @@ namespace GymManager.Views
         //  Nuevo ComboBox y etiqueta para el tipo de búsqueda
         private ComboBox cmbTipoBusqueda;   // Permite seleccionar ID / Nombre / Grupo / Todos
         private Label lblTipoBusqueda;      // Texto descriptivo
+        private ComboBox cmbEstado;   //  Filtro por estado
+        private Label lblEstado;      // Texto "Estado:"
+
 
 
 
@@ -118,11 +121,11 @@ namespace GymManager.Views
             // Buscar
             this.lblBuscar.AutoSize = true;
             this.lblBuscar.Font = new Font("Segoe UI", 9F);
-            this.lblBuscar.Location = new Point(280, 205);
+            this.lblBuscar.Location = new Point(280, 235);
             this.lblBuscar.Text = "Buscar:";
 
             this.txtBuscar.Font = new Font("Segoe UI", 10F);
-            this.txtBuscar.Location = new Point(340, 202);
+            this.txtBuscar.Location = new Point(340, 232);
             this.txtBuscar.Size = new Size(200, 25);
             this.txtBuscar.TextChanged += new EventHandler(this.txtBuscar_TextChanged);
 
@@ -138,14 +141,14 @@ namespace GymManager.Views
             this.lblTipoBusqueda = new Label();
             this.lblTipoBusqueda.AutoSize = true;
             this.lblTipoBusqueda.Font = new Font("Segoe UI", 9F);
-            this.lblTipoBusqueda.Location = new Point(40, 205);
+            this.lblTipoBusqueda.Location = new Point(40, 235);
             this.lblTipoBusqueda.Text = "Buscar por:";
 
             // ComboBox tipo de búsqueda
             this.cmbTipoBusqueda = new ComboBox();
             this.cmbTipoBusqueda.Font = new Font("Segoe UI", 10F);
             this.cmbTipoBusqueda.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbTipoBusqueda.Location = new Point(110, 202);
+            this.cmbTipoBusqueda.Location = new Point(110, 232);
             this.cmbTipoBusqueda.Size = new Size(150, 25);
 
             // Cargamos las opciones básicas (igual que en usuarios)
@@ -160,22 +163,56 @@ namespace GymManager.Views
             
             this.cmbTipoBusqueda.SelectedIndexChanged += new EventHandler(this.cmbTipoBusqueda_SelectedIndexChanged);
 
+            // ======================================================
+            // 🔽 NUEVOS CONTROLES PARA FILTRO POR ESTADO
+            // ======================================================
+
+            // Label "Estado"
+            this.lblEstado = new Label();
+            this.lblEstado.AutoSize = true;
+            this.lblEstado.Font = new Font("Segoe UI", 9F);
+            this.lblEstado.Location = new Point(560, 235);
+            this.lblEstado.Text = "Estado:";
+
+            // ComboBox de estado
+            this.cmbEstado = new ComboBox();
+            this.cmbEstado.Font = new Font("Segoe UI", 10F);
+            this.cmbEstado.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbEstado.Location = new Point(620, 232);
+            this.cmbEstado.Size = new Size(150, 25);
+
+            // Carga inicial del combo (por si no lo hace el constructor)
+            this.cmbEstado.Items.AddRange(new object[] { "Todos", "Activos", "Inactivos" });
+            this.cmbEstado.SelectedIndex = 1;
+
+            // Cuando cambia la selección, refresca la grilla
+            this.cmbEstado.SelectedIndexChanged += (s, e) => RefrescarGrid();
 
             // DataGridView
-            this.dgvEjercicios.Location = new Point(30, 240);
-            this.dgvEjercicios.Size = new Size(740, 320);
+            this.dgvEjercicios.Location = new Point(30, 270);
+            this.dgvEjercicios.Size = new Size(860, 280);
             this.dgvEjercicios.ReadOnly = true;
             this.dgvEjercicios.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvEjercicios.SelectionChanged += new EventHandler(this.dgvEjercicios_SelectionChanged);
+            
+            this.dgvEjercicios.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+            this.dgvEjercicios.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            this.dgvEjercicios.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
 
-            //
+            // Evento para vista previa de imagen
             this.dgvEjercicios.CellMouseEnter += dgvEjercicios_CellMouseEnter;
+
+            // Evento para seleccionar ejercicio al hacer clic
+            this.dgvEjercicios.CellClick += new DataGridViewCellEventHandler(this.dgvEjercicios_CellClick);
+
 
             // UserControl
             this.Controls.AddRange(new Control[] {
                     lblTitulo, txtNombre, cmbMusculo, lblImagen, txtImagen, btnSeleccionarImagen,
                     pictureBoxEjercicio, btnAgregar, btnEditar, btnEliminar, btnLimpiar,
-                    lblBuscar, txtBuscar, lblTipoBusqueda, cmbTipoBusqueda, dgvEjercicios
+                    lblBuscar, txtBuscar, lblTipoBusqueda, cmbTipoBusqueda,
+                    lblEstado, cmbEstado, // 🔹 nuevos controles
+                    dgvEjercicios
                 });
 
             this.Size = new Size(800, 600);
@@ -184,6 +221,7 @@ namespace GymManager.Views
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxEjercicio)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
     }

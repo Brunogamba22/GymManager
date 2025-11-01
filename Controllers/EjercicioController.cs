@@ -285,5 +285,79 @@ namespace GymManager.Controllers
 
             return lista;
         }
+
+        // ------------------------------------------------------------
+        // REACTIVAR EJERCICIO (Activo = 1)
+        // ------------------------------------------------------------
+        public void Reactivar(int id)
+        {
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+                var query = "UPDATE dbo.Ejercicios SET Activo = 1 WHERE id_ejercicio = @id;";
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // ------------------------------------------------------------
+        // OBTENER TODOS (con filtro opcional por estado)
+        // ------------------------------------------------------------
+        public List<Ejercicio> ObtenerTodos(bool? soloActivos = null)
+        {
+            var lista = new List<Ejercicio>();
+
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+
+                var query = @"
+            SELECT
+                e.id_ejercicio       AS Id,
+                e.nombre             AS Nombre,
+                e.id_grupo_muscular  AS GrupoMuscularId,
+                gm.nombre            AS GrupoMuscularNombre,
+                e.creadoPor          AS CreadoPor,
+                e.imagen             AS Imagen,
+                e.Activo             AS Activo
+            FROM dbo.Ejercicios e
+            LEFT JOIN dbo.Grupo_Muscular gm 
+                   ON gm.id_grupo_muscular = e.id_grupo_muscular
+            WHERE (@estado IS NULL OR e.Activo = @estado)
+            ORDER BY e.id_ejercicio;";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@estado", (object)soloActivos ?? DBNull.Value);
+
+                    using (var rd = cmd.ExecuteReader())
+                    {
+                        while (rd.Read())
+                        {
+                            var ej = new Ejercicio
+                            {
+                                Id = rd.GetInt32(rd.GetOrdinal("Id")),
+                                Nombre = rd.GetString(rd.GetOrdinal("Nombre")),
+                                GrupoMuscularId = rd.GetInt32(rd.GetOrdinal("GrupoMuscularId")),
+                                GrupoMuscularNombre = rd.IsDBNull(rd.GetOrdinal("GrupoMuscularNombre")) ? string.Empty : rd.GetString(rd.GetOrdinal("GrupoMuscularNombre")),
+                                CreadoPor = rd.GetInt32(rd.GetOrdinal("CreadoPor")),
+                                Imagen = rd.IsDBNull(rd.GetOrdinal("Imagen")) ? null : rd.GetString(rd.GetOrdinal("Imagen")),
+                                Activo = rd.GetBoolean(rd.GetOrdinal("Activo"))
+                            };
+                            lista.Add(ej);
+                        }
+                    }
+                }
+            }
+
+            return lista;
+        }
+
+
+
+
     }
 }

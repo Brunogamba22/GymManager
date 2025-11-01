@@ -40,9 +40,9 @@ namespace GymManager.Views
             cmbTipoBusqueda.Items.Clear();
             cmbTipoBusqueda.Items.AddRange(new object[] { "Todos", "ID", "Nombre", "Grupo Muscular" });
             cmbTipoBusqueda.SelectedIndex = 0;
-
+            CargarComboEstado();
             RefrescarGrid();
-
+           
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
             AplicarPlaceholder(txtImagen, "Ruta relativa (p.ej. Pecho/press_banca.gif)");
         }
@@ -319,6 +319,13 @@ namespace GymManager.Views
                 c.ImageLayout = DataGridViewImageCellLayout.Zoom;
                 c.FillWeight = 30;
             }
+
+            // Centrar los textos del encabezado
+            foreach (DataGridViewColumn col in dgvEjercicios.Columns)
+            {
+                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+
         }
 
 
@@ -330,11 +337,29 @@ namespace GymManager.Views
         }
 
         // ------------------------------------------------------------
+        // Cargar combo de estado (Todos / Activos / Inactivos)
+        // ------------------------------------------------------------
+        private void CargarComboEstado()
+        {
+            cmbEstado.Items.Clear();
+            cmbEstado.Items.Add("Todos");
+            cmbEstado.Items.Add("Activos");
+            cmbEstado.Items.Add("Inactivos");
+            cmbEstado.SelectedIndex = 1; // mostrar solo activos por defecto
+        }
+
+
+        // ------------------------------------------------------------
         // Refrescar DataGridView (carga lista real y pinta tabla)
         // ------------------------------------------------------------
         private void RefrescarGrid()
-        {
-            listaActual = controller.ObtenerTodos();   // lista real de modelos (Imagen = RUTA RELATIVA)
+        {   // Filtro por estado (activo/inactivo/todos)
+            bool? estado = null;// todos
+            if (cmbEstado.SelectedIndex == 1) estado = true;// activo
+            if (cmbEstado.SelectedIndex == 2) estado = false;// inactivo
+
+            listaActual = controller.ObtenerTodos(estado);  // carga desde BD
+
             CargarGridDesde(listaActual);              // pinta la grilla con miniaturas
         }
 
@@ -347,21 +372,25 @@ namespace GymManager.Views
             tabla.Columns.Add("ID", typeof(int));
             tabla.Columns.Add("Ejercicio", typeof(string));
             tabla.Columns.Add("GrupoMuscular", typeof(string));
-            tabla.Columns.Add("Imagen", typeof(Image));   // miniatura
+            tabla.Columns.Add("Estado", typeof(string));   // ✅ nueva
+            tabla.Columns.Add("Imagen", typeof(Image));    // miniatura
 
             foreach (var e in fuente)
             {
                 Image img = null;
                 try
                 {
-                    // e.Imagen es RELATIVA -> la paso a ABSOLUTA para leer el archivo
-                    var abs = AbsPath(e.Imagen);
+                    var abs = AbsPath(e.Imagen);                 // e.Imagen es RELATIVA
                     if (!string.IsNullOrWhiteSpace(abs) && File.Exists(abs))
                         img = GetThumbnail70(abs);
                 }
                 catch { img = null; }
 
-                tabla.Rows.Add(e.Id, e.Nombre, e.GrupoMuscularNombre, img);
+                // ✅ cargar el valor de la columna Estado
+                string estadoStr = e.Activo ? "Activo" : "Inactivo";
+
+                // ⚠️ El orden de los valores debe coincidir con el orden de columnas
+                tabla.Rows.Add(e.Id, e.Nombre, e.GrupoMuscularNombre, estadoStr, img);
             }
 
             dgvEjercicios.DataSource = tabla;
@@ -372,20 +401,38 @@ namespace GymManager.Views
             dgvEjercicios.Columns["Ejercicio"].Width = 220;
             dgvEjercicios.Columns["GrupoMuscular"].Width = 150;
 
+            // ✅ ancho/estilo de Estado (opcional)
+            if (dgvEjercicios.Columns.Contains("Estado"))
+            {
+                dgvEjercicios.Columns["Estado"].Width = 90;
+                dgvEjercicios.Columns["Estado"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dgvEjercicios.Columns["Estado"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+
+            if (dgvEjercicios.Columns.Contains("GrupoMuscular"))
+            {
+                dgvEjercicios.Columns["GrupoMuscular"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dgvEjercicios.Columns["GrupoMuscular"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            }
+
+
             var colImg = (DataGridViewImageColumn)dgvEjercicios.Columns["Imagen"];
             colImg.ImageLayout = DataGridViewImageCellLayout.Zoom;
 
             EstilizarGrilla();
 
+            // (opcional) pintar filas inactivas en gris
+            foreach (DataGridViewRow row in dgvEjercicios.Rows)
+                if (row.Cells["Estado"].Value?.ToString() == "Inactivo")
+                    row.DefaultCellStyle.ForeColor = Color.Gray;
+
             dgvEjercicios.ClearSelection();
 
-            // 🔸 Si la grilla está vacía o no hay selección, ocultamos la imagen de vista previa
             if (fuente == null || fuente.Count == 0)
-            {
                 pictureBoxEjercicio.Image = null;
-            }
-
         }
+
+
 
         // ------------------------------------------------------------
         // Agregar
@@ -826,6 +873,36 @@ namespace GymManager.Views
             txtBuscar.Text = "";  // Limpia el texto para evitar filtros inconsistentes
             txtBuscar.Focus();    // Devuelve el foco al buscador
         }
+
+
+        private void dgvEjercicios_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            if (dgvEjercicios.Columns[e.ColumnIndex].Name == "Estado")
+            {
+                int id = Convert.ToInt32(dgvEjercicios.Rows[e.RowIndex].Cells["ID"].Value);
+                var ejercicio = listaActual.FirstOrDefault(x => x.Id == id);
+
+                if (ejercicio != null && !ejercicio.Activo)
+                {
+                    var confirmar = MessageBox.Show(
+                        $"¿Deseas reactivar el ejercicio '{ejercicio.Nombre}'?",
+                        "Confirmar reactivación",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question
+                    );
+
+                    if (confirmar == DialogResult.Yes)
+                    {
+                        controller.Reactivar(ejercicio.Id);
+                        RefrescarGrid();
+                    }
+                }
+            }
+        }
+
 
     }
 }
