@@ -140,33 +140,25 @@ namespace GymManager.Views
         /// <summary>
         /// Obtiene los valores de los filtros y recarga la grilla.
         /// </summary>
+        // En UcPlanillasRutinas.cs
+
         private void AplicarFiltrosYCargarGrid()
         {
             try
             {
-                // 1️⃣ Normalizamos las fechas para eliminar las horas
-                DateTime fechaDesde = dtpFechaDesde.Value.Date;
-                DateTime fechaHasta = dtpFechaHasta.Value.Date;
-
-                // 🔸 Aseguramos que "Hasta" incluya todo el día
-                fechaHasta = fechaHasta.AddDays(1).AddSeconds(-1);
+                
+                DateTime fechaDesde = dtpFechaDesde.Value.Date; // "03/10/2025 00:00:00"
+                DateTime fechaHasta = dtpFechaHasta.Value.Date.AddDays(1).AddSeconds(-1); // "03/11/2025 23:59:59"
 
                 int? idGenero = (int)cmbGenero.SelectedValue;
                 if (idGenero == 0) idGenero = null;
 
-                // 2️⃣ Cargar rutinas filtradas (ya con fechas truncadas)
-                rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla(fechaDesde, fechaHasta, idGenero);
+                
+                bool soloEditadas = chkSoloEditadas.Checked;
 
-                if (chkSoloEditadas.Checked)
-                {
-                    rutinasGuardadas = rutinasGuardadas.Where(r => r.EsEditada == true).ToList();
-                }
+                rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla(fechaDesde, fechaHasta, idGenero, soloEditadas);
 
-                // 3️⃣ Actualizar la grilla
                 ActualizarGrid();
-                Console.WriteLine($"Total rutinas cargadas: {rutinasGuardadas.Count}");
-                Console.WriteLine($"Editadas: {rutinasGuardadas.Count(r => r.EsEditada)}");
-
             }
             catch (Exception ex)
             {

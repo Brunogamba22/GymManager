@@ -428,6 +428,51 @@ namespace GymManager.Controllers
             return u;
         }
 
+        
 
+        
+        // MÉTODO: ObtenerProfesores()
+        // Devuelve una lista de todos los usuarios activos que
+        // tienen el rol de "Profesor".
+        
+        public List<Usuario> ObtenerProfesores()
+        {
+            var lista = new List<Usuario>();
+
+            using (SqlConnection conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+
+                // Consulta que filtra por 'tipo_rol' = 'Profesor' y 'Activo' = 1
+                string query = @"
+            SELECT 
+                u.id_usuario,
+                u.nombre,
+                u.apellido
+            FROM dbo.Usuarios u
+            INNER JOIN dbo.Roles r ON u.id_rol = r.id_rol
+            WHERE r.tipo_rol = 'Profesor' AND u.Activo = 1
+            ORDER BY u.apellido, u.nombre;";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var u = new Usuario
+                        {
+                            IdUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
+                            Nombre = reader["nombre"].ToString(),
+                            Apellido = reader["apellido"].ToString(),
+                            // No necesitamos leer los otros campos para el filtro
+                        };
+                        lista.Add(u);
+                    }
+                }
+            }
+            return lista;
+        }
+
+        
     }
 }

@@ -3,6 +3,7 @@ using GymManager.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace GymManager.Controllers
 {
@@ -55,7 +56,10 @@ namespace GymManager.Controllers
             }
         }
 
-        public List<Rutina> ObtenerTodasParaPlanilla(DateTime? fechaDesde = null, DateTime? fechaHasta = null, int? idGenero = null)
+       
+
+       
+        public List<Rutina> ObtenerTodasParaPlanilla(DateTime? fechaDesde = null, DateTime? fechaHasta = null, int? idGenero = null, bool? soloEditadas = null, int? idProfesor = null)
         {
             var lista = new List<Rutina>();
 
@@ -65,12 +69,7 @@ namespace GymManager.Controllers
 
                 string query = @"
             SELECT 
-                r.id_rutina, 
-                r.nombre, 
-                r.fecha,
-                r.creadaPor, 
-                r.id_genero,
-                r.esEditada,
+                r.id_rutina, r.nombre, r.fecha, r.creadaPor, r.id_genero, r.esEditada,
                 u.nombre AS nombreProfesor,
                 g.nombre AS nombreGenero
             FROM Rutina r
@@ -83,13 +82,15 @@ namespace GymManager.Controllers
                 if (fechaDesde.HasValue)
                 {
                     query += " AND r.fecha >= @fechaDesde";
-                    parameters.Add(new SqlParameter("@fechaDesde", fechaDesde.Value.Date));
+                    // 🔥 CORRECCIÓN: No usar .Date, pasar el valor tal como viene
+                    parameters.Add(new SqlParameter("@fechaDesde", fechaDesde.Value));
                 }
 
                 if (fechaHasta.HasValue)
                 {
                     query += " AND r.fecha <= @fechaHasta";
-                    parameters.Add(new SqlParameter("@fechaHasta", fechaHasta.Value.Date));
+                    //CORRECCIÓN: No usar .Date, pasar el valor tal como viene
+                    parameters.Add(new SqlParameter("@fechaHasta", fechaHasta.Value));
                 }
 
                 if (idGenero.HasValue && idGenero.Value > 0)
@@ -97,6 +98,19 @@ namespace GymManager.Controllers
                     query += " AND r.id_genero = @idGenero";
                     parameters.Add(new SqlParameter("@idGenero", idGenero.Value));
                 }
+
+                
+                if (soloEditadas.HasValue && soloEditadas.Value == true)
+                {
+                    query += " AND r.esEditada = 1"; // Filtra en la BD
+                }
+
+                if (idProfesor.HasValue && idProfesor.Value > 0)
+                {
+                    query += " AND r.creadaPor = @idProfesor";
+                    parameters.Add(new SqlParameter("@idProfesor", idProfesor.Value));
+                }
+
 
                 query += " ORDER BY r.fecha DESC;";
 
@@ -106,8 +120,20 @@ namespace GymManager.Controllers
 
                     using (var reader = cmd.ExecuteReader())
                     {
+                        // ... (Tu lógica de lectura del reader está perfecta, no la cambies) ...
                         while (reader.Read())
                         {
+                            // ... (tu código para leer y convertir 'esEditada') ...
+                            bool esEditada = false;
+                            var valor = reader["esEditada"];
+                            if (valor != DBNull.Value)
+                            {
+                                if (valor is bool b) esEditada = b;
+                                else if (valor is byte by) esEditada = by == 1;
+                                else if (valor is int i) esEditada = i == 1;
+                                else if (valor is string s) esEditada = s == "1" || s.Equals("true", StringComparison.OrdinalIgnoreCase);
+                            }
+
                             lista.Add(new Rutina
                             {
                                 IdRutina = reader.GetInt32(reader.GetOrdinal("id_rutina")),
@@ -115,7 +141,7 @@ namespace GymManager.Controllers
                                 FechaCreacion = reader.GetDateTime(reader.GetOrdinal("fecha")),
                                 CreadaPor = reader.GetInt32(reader.GetOrdinal("creadaPor")),
                                 IdGenero = reader.GetInt32(reader.GetOrdinal("id_genero")),
-                                EsEditada = Convert.ToBoolean(reader["esEditada"]),
+                                EsEditada = esEditada,
                                 NombreProfesor = reader.GetString(reader.GetOrdinal("nombreProfesor")),
                                 NombreGenero = reader.GetString(reader.GetOrdinal("nombreGenero"))
                             });
@@ -123,7 +149,6 @@ namespace GymManager.Controllers
                     }
                 }
             }
-
             return lista;
         }
 

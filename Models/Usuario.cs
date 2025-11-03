@@ -23,6 +23,7 @@ namespace GymManager.Models
         public string Password { get; set; } = "";
         public Rol Rol { get; set; }
         public bool Activo { get; set; } // Indica si el usuario está activo o no
+        public string FullName => $"{Apellido}, {Nombre}";
 
     }
 
