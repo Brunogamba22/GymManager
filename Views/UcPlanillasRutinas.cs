@@ -144,25 +144,37 @@ namespace GymManager.Views
         {
             try
             {
-                // 1. Obtener valores de los filtros
-                DateTime? fechaDesde = dtpFechaDesde.Value;
-                DateTime? fechaHasta = dtpFechaHasta.Value;
-                int? idGenero = (int)cmbGenero.SelectedValue;
+                // 1️⃣ Normalizamos las fechas para eliminar las horas
+                DateTime fechaDesde = dtpFechaDesde.Value.Date;
+                DateTime fechaHasta = dtpFechaHasta.Value.Date;
 
-                // Si se seleccionó "Todos", idGenero será 0, lo convertimos a null
+                // 🔸 Aseguramos que "Hasta" incluya todo el día
+                fechaHasta = fechaHasta.AddDays(1).AddSeconds(-1);
+
+                int? idGenero = (int)cmbGenero.SelectedValue;
                 if (idGenero == 0) idGenero = null;
 
-                // 2. Llamar al controlador con los filtros
+                // 2️⃣ Cargar rutinas filtradas (ya con fechas truncadas)
                 rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla(fechaDesde, fechaHasta, idGenero);
 
-                // 3. Actualizar la grilla
+                if (chkSoloEditadas.Checked)
+                {
+                    rutinasGuardadas = rutinasGuardadas.Where(r => r.EsEditada == true).ToList();
+                }
+
+                // 3️⃣ Actualizar la grilla
                 ActualizarGrid();
+                Console.WriteLine($"Total rutinas cargadas: {rutinasGuardadas.Count}");
+                Console.WriteLine($"Editadas: {rutinasGuardadas.Count(r => r.EsEditada)}");
+
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al cargar planillas filtradas: {ex.Message}", "Error de Base de Datos", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al cargar planillas filtradas: {ex.Message}", "Error de Base de Datos",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         // Evento del botón Filtrar
         private void BtnFiltrar_Click(object sender, EventArgs e)

@@ -253,10 +253,28 @@ namespace GymManager.Views
                 }
                 if (rutinaModificada.Count == 0) { /* ... */ return; }
 
-                var generoEncontrado = _listaDeGeneros.FirstOrDefault(g => g.Nombre.Equals(_tipoRutinaActual, StringComparison.OrdinalIgnoreCase));
-                int idGeneroParaGuardar = generoEncontrado?.Id ?? 1;
-                string nombreRutina = $"Rutina Editada {_tipoRutinaActual} - {DateTime.Now:dd/MM/yyyy}";
-                int nuevoIdRutina = _rutinaController.CrearEncabezadoRutina(_tipoRutinaActual, Sesion.Actual.IdUsuario, nombreRutina, idGeneroParaGuardar);
+                // Mapeo entre las pestañas del sistema y los nombres reales en la BD
+                string nombreGenero = _tipoRutinaActual switch
+                {
+                    "Hombres" => "Masculino",
+                    "Mujeres" => "Femenino",
+                    "Deportistas" => "Deportistas",
+                    _ => "Masculino"
+                };
+
+                // Buscar el ID real en la lista cargada
+                var generoEncontrado = _listaDeGeneros
+                    .FirstOrDefault(g => g.Nombre.Equals(nombreGenero, StringComparison.OrdinalIgnoreCase));
+
+                if (generoEncontrado == null)
+                    throw new Exception($"No se encontró el género '{nombreGenero}' en la base de datos.");
+
+                int idGeneroParaGuardar = generoEncontrado.Id;
+
+                // Crear el encabezado con el género correcto
+                string nombreRutina = $"Rutina Editada {nombreGenero} - {DateTime.Now:dd/MM/yyyy}";
+                int nuevoIdRutina = _rutinaController.CrearEncabezadoRutina(nombreGenero, Sesion.Actual.IdUsuario, nombreRutina, idGeneroParaGuardar, true);
+
                 foreach (var detalle in rutinaModificada)
                 {
                     detalle.IdRutina = nuevoIdRutina;

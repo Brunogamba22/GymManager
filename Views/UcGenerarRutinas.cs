@@ -203,8 +203,23 @@ namespace GymManager.Views
                 if (Sesion.Actual == null) throw new InvalidOperationException("No logueado.");
                 if (detalles == null || detalles.Count == 0) throw new InvalidOperationException("Rutina vacía.");
 
-                var generoEncontrado = _listaDeGeneros.FirstOrDefault(g => g.Nombre.Equals(tipoRutina, StringComparison.OrdinalIgnoreCase));
-                int idGeneroParaGuardar = generoEncontrado?.Id ?? 1; // Fallback a ID 1 si no se encuentra
+                // Mapea correctamente el tipo de pestaña al nombre del género en BD
+                string nombreGenero = tipoRutina switch
+                {
+                    "Hombres" => "Masculino",
+                    "Mujeres" => "Femenino",
+                    "Deportistas" => "Deportistas",
+                    _ => "Masculino"
+                };
+
+                var generoEncontrado = _listaDeGeneros
+                                        .FirstOrDefault(g => g.Nombre.Equals(nombreGenero, StringComparison.OrdinalIgnoreCase));
+
+                if (generoEncontrado == null)
+                    throw new Exception($"No se encontró el género '{nombreGenero}' en la base de datos.");
+
+                int idGeneroParaGuardar = generoEncontrado.Id;
+
 
                 string gruposSeleccionados = string.Join(" + ", chkList.CheckedItems.Cast<string>());
                 string nombreRutina = $"Rutina {gruposSeleccionados} - {DateTime.Now:dd/MM/yyyy}";

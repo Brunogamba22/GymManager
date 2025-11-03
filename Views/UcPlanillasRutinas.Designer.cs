@@ -13,6 +13,7 @@ namespace GymManager.Views
         private Panel contentPanel;     // Contiene Filtros y Grid
         private Panel pnlFiltros;       // Panel para los controles de filtro
         private DataGridView dgvPlanillas; // Grilla de resultados
+        private CheckBox chkSoloEditadas;
 
         // --- Controles de Header ---
         private Label lblTitulo;
@@ -155,6 +156,21 @@ namespace GymManager.Views
             cmbGenero.Location = new Point(lblFiltroGenero.Left + lblFiltroGenero.PreferredWidth + 4, topBase);
 
             currentLeft = cmbGenero.Right + 20;
+
+            // === Mostrar solo editadas ===
+            this.chkSoloEditadas = new CheckBox();
+            this.chkSoloEditadas.Text = "Mostrar solo editadas";
+            this.chkSoloEditadas.AutoSize = true;
+            this.chkSoloEditadas.Font = new Font("Segoe UI", 9);
+            this.chkSoloEditadas.ForeColor = Color.FromArgb(33, 37, 41);
+            this.chkSoloEditadas.Cursor = Cursors.Hand;
+            this.chkSoloEditadas.Checked = false;
+            this.pnlFiltros.Controls.Add(this.chkSoloEditadas);
+
+            // Ubicación: justo después del combo de género
+            this.chkSoloEditadas.Location = new Point(cmbGenero.Right + 20, topBase + 3);
+
+            currentLeft = chkSoloEditadas.Right + 20;
 
             // === Botones ===
             btnFiltrar.Text = "🔍 FILTRAR";

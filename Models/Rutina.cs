@@ -20,6 +20,8 @@ namespace GymManager.Models
         // Mapea la columna 'id_genero' (FK a Genero)
         public int IdGenero { get; set; }
 
+        public bool EsEditada { get; set; }
+
         // Las propiedades 'Tipo' y 'Activo' no existen en tu
         // diagrama de BD, por eso las quitamos.
         // (Estas no existen en la tabla 'Rutina', se llenan con consultas)
