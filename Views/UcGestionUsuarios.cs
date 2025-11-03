@@ -1,17 +1,11 @@
-﻿// ------------------------------------------------------------
-// NOMBRE DEL ARCHIVO: UcGestionUsuarios.cs
-// PROPÓSITO: Control visual para gestionar los usuarios desde
-//             el panel de administración del sistema GymManager.
-// AUTOR: Bruno Gamba
-// ------------------------------------------------------------
-
-using GymManager.Controllers;
+﻿using GymManager.Controllers;
 using GymManager.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace GymManager.Views
 {
@@ -20,65 +14,110 @@ namespace GymManager.Views
         // ============================================================
         // CAMPOS PRINCIPALES
         // ============================================================
+        private UsuarioController controller = new UsuarioController();
+        private List<Usuario> usuariosCache;
+        private int idSeleccionado = 0;
+        private string placeholderBuscar = "Nombre de usuario";
 
-        private UsuarioController controller = new UsuarioController(); // Controlador de BD
-        private List<Usuario> usuariosCache;                            // Cache temporal de usuarios
-        private int idSeleccionado = 0;                                 // ID del usuario seleccionado
-        private string placeholderBuscar = "Nombre de usuario";         // Placeholder por defecto
+        // Colores modernos para la aplicación
+        private readonly Color ColorPrimario = Color.FromArgb(41, 128, 185);
+        private readonly Color ColorSecundario = Color.FromArgb(52, 152, 219);
+        private readonly Color ColorExito = Color.FromArgb(46, 204, 113);
+        private readonly Color ColorAdvertencia = Color.FromArgb(241, 196, 15);
+        private readonly Color ColorPeligro = Color.FromArgb(231, 76, 60);
+        private readonly Color ColorFondo = Color.FromArgb(245, 247, 250);
+        private readonly Color ColorBorde = Color.FromArgb(224, 230, 237);
+        private readonly Color ColorTexto = Color.FromArgb(52, 73, 94);
 
-
-        // ============================================================
-        // CONSTRUCTOR
-        // ============================================================
         public UcGestionUsuarios()
         {
             InitializeComponent();
-            CargarUsuarios();          // Carga todos los usuarios
-            ConfigurarComboBusqueda(); // Combo "Buscar por"
-            ConfigurarPlaceholder();   // Placeholder dinámico
-            EstilizarBotones();        // Estilos visuales
+            AplicarEstiloModerno();
+            CargarUsuarios();
+            ConfigurarComboBusqueda();
+            ConfigurarPlaceholder();
+            EstilizarBotones();
             ActualizarPlaceholderBusqueda();
         }
 
+        // ============================================================
+        // MÉTODOS DE ESTILO MODERNO
+        // ============================================================
+        private void AplicarEstiloModerno()
+        {
+            this.BackColor = ColorFondo;
+            this.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            // Estilo del título
+            lblTitulo.ForeColor = ColorTexto;
+            lblTitulo.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            lblTitulo.BackColor = Color.Transparent;
+
+            // Estilo de labels
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Label label)
+                {
+                    label.ForeColor = ColorTexto;
+                    label.BackColor = Color.Transparent;
+                }
+            }
+
+            // Estilo de controles
+            EstilizarControles();
+        }
+
+        private void EstilizarControles()
+        {
+            // Estilo para TextBox
+            EstilizarTextBox(txtNombre);
+            EstilizarTextBox(txtApellido);
+            EstilizarTextBox(txtEmail);
+            EstilizarTextBox(txtPassword);
+            EstilizarTextBox(txtBuscar);
+
+            // Estilo para ComboBox
+            EstilizarComboBox(cmbRol);
+            EstilizarComboBox(cboBuscarPor);
+        }
+
+        private void EstilizarTextBox(TextBox txt)
+        {
+            txt.BorderStyle = BorderStyle.FixedSingle;
+            txt.BackColor = Color.White;
+            txt.ForeColor = ColorTexto;
+            txt.Font = new Font("Segoe UI", 9F);
+        }
+
+        private void EstilizarComboBox(ComboBox cmb)
+        {
+            cmb.FlatStyle = FlatStyle.Flat;
+            cmb.BackColor = Color.White;
+            cmb.ForeColor = ColorTexto;
+            cmb.Font = new Font("Segoe UI", 9F);
+        }
 
         // ============================================================
         // MÉTODO: CargarUsuarios
-        // ------------------------------------------------------------
-        // Carga todos los usuarios (activos e inactivos) y muestra
-        // su estado visual (verde/rojo) directamente.
-        // ============================================================
-        // ============================================================
-        // MÉTODO: CargarUsuarios
-        // ------------------------------------------------------------
-        // Muestra todos los usuarios (activos e inactivos) y aplica
-        // colores al estado mediante el evento CellFormatting.
         // ============================================================
         private void CargarUsuarios()
         {
-            // 1️⃣ Obtenemos la lista completa desde la base
             usuariosCache = controller.ObtenerTodos();
-
-            // 2️⃣ Limpiamos cualquier fuente anterior
             dgvUsuarios.DataSource = null;
             dgvUsuarios.Columns.Clear();
-
-            // 3️⃣ Asignamos la nueva lista
             dgvUsuarios.DataSource = usuariosCache;
 
-            // 4️⃣ Ocultamos columnas que no queremos mostrar directamente
             if (dgvUsuarios.Columns["Password"] != null)
                 dgvUsuarios.Columns["Password"].Visible = false;
 
             if (dgvUsuarios.Columns["Activo"] != null)
                 dgvUsuarios.Columns["Activo"].Visible = false;
 
-            // 5️⃣ Cambiamos encabezados
             if (dgvUsuarios.Columns["IdUsuario"] != null)
                 dgvUsuarios.Columns["IdUsuario"].HeaderText = "ID";
             if (dgvUsuarios.Columns["Email"] != null)
                 dgvUsuarios.Columns["Email"].HeaderText = "Correo";
 
-            // 6️⃣ Agregamos una columna visual para el estado (si no existe)
             if (!dgvUsuarios.Columns.Contains("Estado"))
             {
                 var colEstado = new DataGridViewTextBoxColumn
@@ -90,22 +129,45 @@ namespace GymManager.Views
                 dgvUsuarios.Columns.Add(colEstado);
             }
 
-            // 7️⃣ Evento que se dispara cada vez que se dibuja una celda
-            dgvUsuarios.CellFormatting -= DgvUsuarios_CellFormatting; // Evita duplicar
+            dgvUsuarios.CellFormatting -= DgvUsuarios_CellFormatting;
             dgvUsuarios.CellFormatting += DgvUsuarios_CellFormatting;
 
-            // 8️⃣ Ajustes visuales
-            dgvUsuarios.AlternatingRowsDefaultCellStyle.BackColor = Color.LightGray;
-            dgvUsuarios.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvUsuarios.RowTemplate.Height = 30;
-            dgvUsuarios.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            EstilizarGrilla();
         }
 
-        // ============================================================
-        // EVENTO: DgvUsuarios_CellFormatting
-        // ------------------------------------------------------------
-        // Aplica los valores y colores del estado dinámicamente.
-        // ============================================================
+        private void EstilizarGrilla()
+        {
+            var g = dgvUsuarios;
+
+            g.BorderStyle = BorderStyle.None;
+            g.BackgroundColor = Color.White;
+            g.EnableHeadersVisualStyles = false;
+            g.GridColor = ColorBorde;
+
+            // Encabezados modernos
+            g.ColumnHeadersDefaultCellStyle.BackColor = ColorPrimario;
+            g.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            g.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            g.ColumnHeadersHeight = 40;
+            g.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+            // Filas
+            g.DefaultCellStyle.BackColor = Color.White;
+            g.DefaultCellStyle.ForeColor = ColorTexto;
+            g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(232, 244, 253);
+            g.DefaultCellStyle.SelectionForeColor = ColorTexto;
+            g.DefaultCellStyle.Font = new Font("Segoe UI", 9F);
+            g.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
+
+            // Configuración general
+            g.RowHeadersVisible = false;
+            g.AllowUserToAddRows = false;
+            g.AllowUserToResizeRows = false;
+            g.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            g.RowTemplate.Height = 35;
+        }
+
         private void DgvUsuarios_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (dgvUsuarios.Columns[e.ColumnIndex].Name == "Estado" && e.RowIndex >= 0)
@@ -115,18 +177,13 @@ namespace GymManager.Views
                 {
                     e.Value = usuario.Activo ? "Activo" : "Inactivo";
                     e.CellStyle.ForeColor = usuario.Activo ? Color.Green : Color.Red;
-                    e.CellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+                    e.CellStyle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
                 }
             }
         }
 
-
-
         // ============================================================
         // EVENTO: dgvUsuarios_CellClick
-        // ------------------------------------------------------------
-        // Permite reactivar un usuario haciendo clic directamente
-        // sobre la celda "Inactivo".
         // ============================================================
         private void dgvUsuarios_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -153,9 +210,8 @@ namespace GymManager.Views
                             MessageBox.Show("Usuario activado correctamente.",
                                 "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                            CargarUsuarios(); // Refrescamos tabla
+                            CargarUsuarios();
 
-                            // 🔁 Refrescar torta de reportes si está abierta
                             foreach (Control ctrl in this.Parent.Controls)
                             {
                                 if (ctrl is GymManager.Views.UcReportes reportes)
@@ -175,12 +231,8 @@ namespace GymManager.Views
             }
         }
 
-
-
         // ============================================================
         // MÉTODO: LimpiarCampos
-        // ------------------------------------------------------------
-        // Deja en blanco todos los campos del formulario.
         // ============================================================
         private void LimpiarCampos()
         {
@@ -191,7 +243,6 @@ namespace GymManager.Views
             cmbRol.SelectedIndex = -1;
             idSeleccionado = 0;
         }
-
 
         // ============================================================
         // BOTÓN: Agregar
@@ -241,7 +292,6 @@ namespace GymManager.Views
             }
         }
 
-
         // ============================================================
         // BOTÓN: Editar
         // ============================================================
@@ -287,7 +337,6 @@ namespace GymManager.Views
             }
         }
 
-
         // ============================================================
         // BOTÓN: Eliminar (baja lógica)
         // ============================================================
@@ -317,7 +366,6 @@ namespace GymManager.Views
                 CargarUsuarios();
                 LimpiarCampos();
 
-                // 🔁 Refrescar torta de reportes si está abierta
                 foreach (Control ctrl in this.Parent.Controls)
                 {
                     if (ctrl is GymManager.Views.UcReportes reportes)
@@ -326,7 +374,6 @@ namespace GymManager.Views
                         break;
                     }
                 }
-
             }
             catch (Exception ex)
             {
@@ -334,7 +381,6 @@ namespace GymManager.Views
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
 
         // ============================================================
         // EVENTO: Selección de fila en la grilla
@@ -355,7 +401,6 @@ namespace GymManager.Views
 
             btnEliminar.Enabled = usuario.Rol != Rol.Administrador;
         }
-
 
         // ============================================================
         // BÚSQUEDA DINÁMICA
@@ -400,7 +445,6 @@ namespace GymManager.Views
                 dgvUsuarios.Columns["Password"].Visible = false;
         }
 
-
         // ============================================================
         // PLACEHOLDER Y BUSCADOR
         // ============================================================
@@ -411,7 +455,7 @@ namespace GymManager.Views
                 if (txtBuscar.Text == placeholderBuscar)
                 {
                     txtBuscar.Text = "";
-                    txtBuscar.ForeColor = Color.Black;
+                    txtBuscar.ForeColor = ColorTexto;
                 }
             };
 
@@ -452,27 +496,53 @@ namespace GymManager.Views
             txtBuscar.Text = placeholderBuscar;
         }
 
-
         // ============================================================
         // ESTILO DE BOTONES
         // ============================================================
         private void EstilizarBotones()
         {
             Button[] botones = { btnAgregar, btnEditar, btnEliminar, btnLimpiar };
+
             foreach (var b in botones)
             {
                 b.FlatStyle = FlatStyle.Flat;
-                b.UseVisualStyleBackColor = false;
+                b.FlatAppearance.BorderSize = 0;
+                b.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+                b.ForeColor = Color.White;
+                b.Size = new Size(100, 35);
+                b.Cursor = Cursors.Hand;
+
+                // Efecto hover moderno
+                b.MouseEnter += (s, e) => {
+                    b.FlatAppearance.MouseOverBackColor = ControlPaint.Dark(b.BackColor, 0.1f);
+                };
+                b.MouseLeave += (s, e) => {
+                    b.FlatAppearance.MouseOverBackColor = b.BackColor;
+                };
+
+                // Bordes redondeados
+                int radius = 6;
+                b.Paint += (s, e) =>
+                {
+                    var rect = new Rectangle(0, 0, b.Width, b.Height);
+                    using (var path = new GraphicsPath())
+                    {
+                        int d = radius * 2;
+                        path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+                        path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+                        path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+                        path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+                        path.CloseFigure();
+                        b.Region = new Region(path);
+                    }
+                };
             }
 
-            btnAgregar.BackColor = Color.FromArgb(46, 204, 113);
-            btnEditar.BackColor = Color.Gold;
-            btnEliminar.BackColor = Color.FromArgb(231, 76, 60);
-            btnLimpiar.BackColor = Color.RoyalBlue;
-
-            btnAgregar.ForeColor = btnEliminar.ForeColor = btnLimpiar.ForeColor = Color.White;
+            btnAgregar.BackColor = ColorExito;
+            btnEditar.BackColor = ColorSecundario;
+            btnEliminar.BackColor = ColorPeligro;
+            btnLimpiar.BackColor = Color.FromArgb(149, 165, 166);
         }
-
 
         // ============================================================
         // VALIDACIONES DE TEXTO
@@ -504,6 +574,5 @@ namespace GymManager.Views
                     "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-
     }
 }

@@ -8,45 +8,39 @@ namespace GymManager.Views
     {
         private System.ComponentModel.IContainer components = null;
 
-        // ------------------------------------------------------------
-        // 🧩 DECLARACIÓN DE CONTROLES
-        // ------------------------------------------------------------
-        private TextBox txtNombre;             // Campo para nombre del usuario
-        private TextBox txtApellido;           // Campo para apellido del usuario
-        private TextBox txtEmail;              // Campo para correo electrónico
-        private TextBox txtPassword;           // Campo para contraseña (oculta con asteriscos)
-        private ComboBox cmbRol;               // Combo para seleccionar el rol del usuario
-        private Button btnAgregar;             // Botón para agregar un nuevo usuario
-        private Button btnEditar;              // Botón para editar un usuario existente
-        private Button btnEliminar;            // Botón para eliminar (baja lógica)
-        private Button btnLimpiar;             // Botón para limpiar los campos del formulario
-        private DataGridView dgvUsuarios;      // Tabla donde se listan los usuarios
-        private TextBox txtBuscar;             // Campo de texto para búsqueda
-        private Label lblTitulo;               // Título del formulario
-        private Label lblNombre;               // Etiqueta "Nombre"
-        private Label lblApellido;             // Etiqueta "Apellido"
-        private Label lblEmail;                // Etiqueta "Email"
-        private Label lblPassword;             // Etiqueta "Contraseña"
-        private Label lblRol;                  // Etiqueta "Rol"
-        private Label lblBuscar;               // Etiqueta "Buscar:"
-        private ComboBox cboBuscarPor;         // Combo desplegable: buscar por Nombre, Rol o ID
+        private TextBox txtNombre;
+        private TextBox txtApellido;
+        private TextBox txtEmail;
+        private TextBox txtPassword;
+        private ComboBox cmbRol;
+        private Button btnAgregar;
+        private Button btnEditar;
+        private Button btnEliminar;
+        private Button btnLimpiar;
+        private DataGridView dgvUsuarios;
+        private TextBox txtBuscar;
+        private Label lblTitulo;
+        private Label lblNombre;
+        private Label lblApellido;
+        private Label lblEmail;
+        private Label lblPassword;
+        private Label lblRol;
+        private Label lblBuscar;
+        private ComboBox cboBuscarPor;
 
+        // Paneles para agrupar controles
+        private Panel panelFormulario;
+        private Panel panelBusqueda;
 
-        // ------------------------------------------------------------
-        // MÉTODO Dispose: libera los recursos utilizados
-        // ------------------------------------------------------------
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
             {
-                components.Dispose(); // Libera la memoria de los componentes
+                components.Dispose();
             }
             base.Dispose(disposing);
         }
 
-        // ------------------------------------------------------------
-        // MÉTODO DE INICIALIZACIÓN DE COMPONENTES (Diseño visual)
-        // ------------------------------------------------------------
         private void InitializeComponent()
         {
             this.txtNombre = new TextBox();
@@ -68,155 +62,162 @@ namespace GymManager.Views
             this.lblRol = new Label();
             this.lblBuscar = new Label();
             this.cboBuscarPor = new ComboBox();
+            this.panelFormulario = new Panel();
+            this.panelBusqueda = new Panel();
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).BeginInit();
+            this.panelFormulario.SuspendLayout();
+            this.panelBusqueda.SuspendLayout();
             this.SuspendLayout();
 
-            // ============================================================
-            // 🔹 TÍTULO PRINCIPAL
-            // ============================================================
+            // ==================== TÍTULO ====================
             this.lblTitulo.AutoSize = true;
-            this.lblTitulo.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            this.lblTitulo.Location = new Point(25, 15);
-            this.lblTitulo.Name = "lblTitulo";
-            this.lblTitulo.Size = new Size(260, 30);
-            this.lblTitulo.TabIndex = 0;
+            this.lblTitulo.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            this.lblTitulo.Location = new Point(25, 20);
             this.lblTitulo.Text = "👥 Gestión de Usuarios";
+            this.lblTitulo.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // ============================================================
-            // 🔹 LABELS E INPUTS DE FORMULARIO
-            // ============================================================
+            // ==================== PANEL FORMULARIO ====================
+            this.panelFormulario.BackColor = Color.White;
+            this.panelFormulario.BorderStyle = BorderStyle.FixedSingle;
+            this.panelFormulario.Location = new Point(25, 65);
+            this.panelFormulario.Size = new Size(380, 180); // 🔹 ANCHO AUMENTADO
 
-            // Nombre
-            this.lblNombre.Location = new Point(30, 70);
-            this.lblNombre.Size = new Size(70, 20);
+            // 🔹 AJUSTES DE POSICIÓN Y TAMAÑO PARA QUE ENTRE "CONTRASEÑA"
+            this.lblNombre.Location = new Point(20, 20);
+            this.lblNombre.Size = new Size(65, 20); // 🔹 TAMAÑO FIJO
             this.lblNombre.Text = "Nombre:";
-            this.txtNombre.Location = new Point(110, 70);
-            this.txtNombre.Size = new Size(220, 23);
+            this.lblNombre.ForeColor = Color.FromArgb(52, 73, 94);
+
+            this.txtNombre.Location = new Point(95, 20); // 🔹 POSICIÓN AJUSTADA
+            this.txtNombre.Size = new Size(250, 23); // 🔹 ANCHO AUMENTADO
+            this.txtNombre.BorderStyle = BorderStyle.FixedSingle;
             this.txtNombre.KeyPress += new KeyPressEventHandler(this.txtNombre_KeyPress);
 
-            // Apellido
-            this.lblApellido.Location = new Point(30, 105);
-            this.lblApellido.Size = new Size(70, 20);
+            this.lblApellido.Location = new Point(20, 55);
+            this.lblApellido.Size = new Size(65, 20);
             this.lblApellido.Text = "Apellido:";
-            this.txtApellido.Location = new Point(110, 105);
-            this.txtApellido.Size = new Size(220, 23);
+            this.lblApellido.ForeColor = Color.FromArgb(52, 73, 94);
+
+            this.txtApellido.Location = new Point(95, 55);
+            this.txtApellido.Size = new Size(250, 23);
+            this.txtApellido.BorderStyle = BorderStyle.FixedSingle;
             this.txtApellido.KeyPress += new KeyPressEventHandler(this.txtApellido_KeyPress);
 
-            // Email
-            this.lblEmail.Location = new Point(30, 140);
-            this.lblEmail.Size = new Size(70, 20);
+            this.lblEmail.Location = new Point(20, 90);
+            this.lblEmail.Size = new Size(65, 20);
             this.lblEmail.Text = "Email:";
-            this.txtEmail.Location = new Point(110, 140);
-            this.txtEmail.Size = new Size(220, 23);
+            this.lblEmail.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // Contraseña
-            this.lblPassword.Location = new Point(30, 175);
-            this.lblPassword.Size = new Size(80, 20);
+            this.txtEmail.Location = new Point(95, 90);
+            this.txtEmail.Size = new Size(250, 23);
+            this.txtEmail.BorderStyle = BorderStyle.FixedSingle;
+
+            this.lblPassword.Location = new Point(20, 125);
+            this.lblPassword.Size = new Size(70, 20); // 🔹 TAMAÑO AJUSTADO
             this.lblPassword.Text = "Contraseña:";
-            this.txtPassword.Location = new Point(110, 175);
-            this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new Size(220, 23);
+            this.lblPassword.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // Rol
-            this.lblRol.Location = new Point(30, 210);
-            this.lblRol.Size = new Size(60, 20);
+            this.txtPassword.Location = new Point(95, 125); // 🔹 POSICIÓN ALINEADA
+            this.txtPassword.PasswordChar = '*';
+            this.txtPassword.Size = new Size(250, 23); // 🔹 ANCHO AUMENTADO
+            this.txtPassword.BorderStyle = BorderStyle.FixedSingle;
+
+            this.lblRol.Location = new Point(20, 160);
+            this.lblRol.Size = new Size(65, 20);
             this.lblRol.Text = "Rol:";
+            this.lblRol.ForeColor = Color.FromArgb(52, 73, 94);
+
             this.cmbRol.DropDownStyle = ComboBoxStyle.DropDownList;
             this.cmbRol.Items.AddRange(new object[] { "Administrador", "Profesor", "Recepcionista" });
-            this.cmbRol.Location = new Point(110, 210);
-            this.cmbRol.Size = new Size(220, 23);
+            this.cmbRol.Location = new Point(95, 160);
+            this.cmbRol.Size = new Size(250, 23); // 🔹 ANCHO AUMENTADO
+            this.cmbRol.FlatStyle = FlatStyle.Flat;
 
-            // ============================================================
-            // 🔹 BOTONES DE ACCIÓN
-            // ============================================================
-
+            // ==================== BOTONES ====================
             this.btnAgregar.Text = "Agregar";
-            this.btnAgregar.Location = new Point(360, 70);
-            this.btnAgregar.Size = new Size(100, 28);
-            this.btnAgregar.Click += new EventHandler(this.btnAgregar_Click);
+            this.btnAgregar.Location = new Point(420, 75); // 🔹 POSICIÓN AJUSTADA
+            this.btnAgregar.Size = new Size(100, 35);
 
             this.btnEditar.Text = "Editar";
-            this.btnEditar.Location = new Point(360, 110);
-            this.btnEditar.Size = new Size(100, 28);
-            this.btnEditar.Click += new EventHandler(this.btnEditar_Click);
+            this.btnEditar.Location = new Point(420, 120);
+            this.btnEditar.Size = new Size(100, 35);
 
             this.btnLimpiar.Text = "Limpiar";
-            this.btnLimpiar.Location = new Point(360, 150);
-            this.btnLimpiar.Size = new Size(100, 28);
-            this.btnLimpiar.Click += new EventHandler(this.btnLimpiar_Click);
+            this.btnLimpiar.Location = new Point(420, 165);
+            this.btnLimpiar.Size = new Size(100, 35);
 
             this.btnEliminar.Text = "Eliminar";
-            this.btnEliminar.Location = new Point(360, 190);
-            this.btnEliminar.Size = new Size(100, 28);
+            this.btnEliminar.Location = new Point(420, 210);
+            this.btnEliminar.Size = new Size(100, 35);
+
+            this.btnAgregar.Click += new EventHandler(this.btnAgregar_Click);
+            this.btnEditar.Click += new EventHandler(this.btnEditar_Click);
+            this.btnLimpiar.Click += new EventHandler(this.btnLimpiar_Click);
             this.btnEliminar.Click += new EventHandler(this.btnEliminar_Click);
 
-            // ============================================================
-            // 🔹 BUSCADOR (Campo + Combo)
-            // ============================================================
+            // ==================== PANEL BÚSQUEDA ====================
+            this.panelBusqueda.BackColor = Color.White;
+            this.panelBusqueda.BorderStyle = BorderStyle.FixedSingle;
+            this.panelBusqueda.Location = new Point(25, 260); // 🔹 POSICIÓN MÁS ARRIBA
+            this.panelBusqueda.Size = new Size(860, 45);
 
-            this.lblBuscar.Location = new Point(30, 255);
+            this.lblBuscar.Location = new Point(20, 12);
             this.lblBuscar.Size = new Size(60, 20);
             this.lblBuscar.Text = "Buscar:";
+            this.lblBuscar.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // Combo “Buscar por”
             this.cboBuscarPor.DropDownStyle = ComboBoxStyle.DropDownList;
             this.cboBuscarPor.Items.AddRange(new object[] { "Nombre", "Rol", "ID" });
-            this.cboBuscarPor.Location = new Point(90, 253);
+            this.cboBuscarPor.Location = new Point(85, 10);
             this.cboBuscarPor.Size = new Size(120, 23);
+            this.cboBuscarPor.FlatStyle = FlatStyle.Flat;
 
-            // Campo de texto de búsqueda
-            this.txtBuscar.Location = new Point(220, 253);
+            this.txtBuscar.Location = new Point(215, 10);
             this.txtBuscar.Size = new Size(240, 23);
+            this.txtBuscar.BorderStyle = BorderStyle.FixedSingle;
             this.txtBuscar.TextChanged += new EventHandler(this.txtBuscar_TextChanged);
 
-            // ============================================================
-            // 🔹 TABLA DE USUARIOS
-            // ============================================================
-
-            this.dgvUsuarios.AllowUserToAddRows = false;
-            this.dgvUsuarios.Anchor = (AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right);
-            this.dgvUsuarios.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvUsuarios.BackgroundColor = Color.White;
-            this.dgvUsuarios.Location = new Point(30, 290);
-            this.dgvUsuarios.Name = "dgvUsuarios";
+            // ==================== DATA GRID VIEW ====================
+            this.dgvUsuarios.Location = new Point(25, 320); // 🔹 POSICIÓN MÁS ARRIBA
+            this.dgvUsuarios.Size = new Size(860, 250); // 🔹 ALTURA REDUCIDA
             this.dgvUsuarios.ReadOnly = true;
             this.dgvUsuarios.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            this.dgvUsuarios.Size = new Size(720, 330);
-
-            // Evento para selección y clic en celda “Estado”
+            this.dgvUsuarios.RowTemplate.Height = 30; // 🔹 FILAS MÁS COMPACTAS
             this.dgvUsuarios.SelectionChanged += new EventHandler(this.dgvUsuarios_SelectionChanged);
             this.dgvUsuarios.CellClick += new DataGridViewCellEventHandler(this.dgvUsuarios_CellClick);
 
-            // ============================================================
-            // 🔹 CONFIGURACIÓN FINAL DEL USERCONTROL
-            // ============================================================
+            // ==================== USER CONTROL ====================
+            this.Controls.AddRange(new Control[] {
+                    lblTitulo,
+                    panelFormulario,
+                    btnAgregar, btnEditar, btnEliminar, btnLimpiar,
+                    panelBusqueda,
+                    dgvUsuarios
+                });
 
-            this.BackColor = Color.White;
-            this.Controls.Add(this.lblTitulo);
-            this.Controls.Add(this.lblNombre);
-            this.Controls.Add(this.txtNombre);
-            this.Controls.Add(this.lblApellido);
-            this.Controls.Add(this.txtApellido);
-            this.Controls.Add(this.lblEmail);
-            this.Controls.Add(this.txtEmail);
-            this.Controls.Add(this.lblPassword);
-            this.Controls.Add(this.txtPassword);
-            this.Controls.Add(this.lblRol);
-            this.Controls.Add(this.cmbRol);
-            this.Controls.Add(this.btnAgregar);
-            this.Controls.Add(this.btnEditar);
-            this.Controls.Add(this.btnLimpiar);
-            this.Controls.Add(this.btnEliminar);
-            this.Controls.Add(this.lblBuscar);
-            this.Controls.Add(this.cboBuscarPor);
-            this.Controls.Add(this.txtBuscar);
-            this.Controls.Add(this.dgvUsuarios);
+            // Agregar controles al panel formulario
+            this.panelFormulario.Controls.AddRange(new Control[] {
+                    lblNombre, txtNombre,
+                    lblApellido, txtApellido,
+                    lblEmail, txtEmail,
+                    lblPassword, txtPassword,
+                    lblRol, cmbRol
+                });
 
-            this.Name = "UcGestionUsuarios";
-            this.Size = new Size(780, 650);
+            // Agregar controles al panel búsqueda
+            this.panelBusqueda.Controls.AddRange(new Control[] {
+                    lblBuscar, cboBuscarPor, txtBuscar
+                });
+
+            this.Size = new Size(900, 600); // 🔹 ALTURA TOTAL REDUCIDA
+            this.BackColor = Color.FromArgb(245, 247, 250);
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsuarios)).EndInit();
+            this.panelFormulario.ResumeLayout(false);
+            this.panelFormulario.PerformLayout();
+            this.panelBusqueda.ResumeLayout(false);
+            this.panelBusqueda.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
         }

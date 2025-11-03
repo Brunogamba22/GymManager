@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
-using System.Linq;                    // FirstOrDefault / Where
+using System.Linq;
 using System.Windows.Forms;
-using System.IO;                      // File / Path
-using System.Drawing.Drawing2D;       // GraphicsPath
-using System.Drawing.Imaging;         // FrameDimension (GIF)
+using System.IO;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace GymManager.Views
 {
@@ -18,49 +18,106 @@ namespace GymManager.Views
     {
         private readonly EjercicioController controller = new EjercicioController();
         private readonly Dictionary<string, int> gruposMusculares = new Dictionary<string, int>();
-
-        // Guardamos el ÚLTIMO archivo elegido ya copiado dentro del proyecto, en RUTA RELATIVA (lo que se guarda en BD)
         private string rutaRelativaSeleccionada = null;
-
-        // Respaldo de los objetos reales (la grilla usa DataTable)
         private List<Ejercicio> listaActual = new List<Ejercicio>();
 
-        // ====== Rutas base dentro del proyecto ======
-        // En tiempo de ejecución, la base es: <carpeta_del_exe>\Resources\Ejercicios
-        // Ej.: ...\GymManager\bin\Debug\net48\Resources\Ejercicios
         private static readonly string AssetsRoot =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Ejercicios");
+
+        // Colores modernos para la aplicación
+        private readonly Color ColorPrimario = Color.FromArgb(41, 128, 185);     // Azul profesional
+        private readonly Color ColorSecundario = Color.FromArgb(52, 152, 219);   // Azul claro
+        private readonly Color ColorExito = Color.FromArgb(46, 204, 113);        // Verde
+        private readonly Color ColorAdvertencia = Color.FromArgb(241, 196, 15);  // Amarillo
+        private readonly Color ColorPeligro = Color.FromArgb(231, 76, 60);       // Rojo
+        private readonly Color ColorFondo = Color.FromArgb(245, 247, 250);       // Gris muy claro
+        private readonly Color ColorBorde = Color.FromArgb(224, 230, 237);       // Gris borde
+        private readonly Color ColorTexto = Color.FromArgb(52, 73, 94);          // Gris oscuro texto
 
         public UcGestionEjercicios()
         {
             InitializeComponent();
+            AplicarEstiloModerno();
             CargarGruposMusculares();
             EstilizarBotones();
-            // 🔹 Inicializamos el combo de tipo de búsqueda (por si el diseñador se modifica)
+
             cmbTipoBusqueda.Items.Clear();
             cmbTipoBusqueda.Items.AddRange(new object[] { "Todos", "ID", "Nombre", "Grupo Muscular" });
             cmbTipoBusqueda.SelectedIndex = 0;
             CargarComboEstado();
             RefrescarGrid();
-           
+
             AplicarPlaceholder(txtNombre, "Nombre del ejercicio");
             AplicarPlaceholder(txtImagen, "Ruta relativa (p.ej. Pecho/press_banca.gif)");
         }
 
+        // ====================== MÉTODOS DE ESTILO MODERNO ======================
+
+        private void AplicarEstiloModerno()
+        {
+            this.BackColor = ColorFondo;
+            this.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            // Estilo del título
+            lblTitulo.ForeColor = ColorTexto;
+            lblTitulo.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            lblTitulo.BackColor = Color.Transparent;
+
+            // Estilo de labels
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Label label)
+                {
+                    label.ForeColor = ColorTexto;
+                    label.BackColor = Color.Transparent;
+                }
+            }
+
+            // Estilo de grupos/paneles
+            EstilizarControles();
+        }
+
+        private void EstilizarControles()
+        {
+            // Estilo para TextBox
+            EstilizarTextBox(txtNombre);
+            EstilizarTextBox(txtImagen);
+            EstilizarTextBox(txtBuscar);
+
+            // Estilo para ComboBox
+            EstilizarComboBox(cmbMusculo);
+            EstilizarComboBox(cmbTipoBusqueda);
+            EstilizarComboBox(cmbEstado);
+
+            // Estilo para PictureBox - SOLO CORREGIDO
+            pictureBoxEjercicio.BorderStyle = BorderStyle.FixedSingle;
+            pictureBoxEjercicio.BackColor = Color.White;
+        }
+
+        private void EstilizarTextBox(TextBox txt)
+        {
+            txt.BorderStyle = BorderStyle.FixedSingle;
+            txt.BackColor = Color.White;
+            txt.ForeColor = ColorTexto;
+            txt.Font = new Font("Segoe UI", 9F);
+        }
+
+        private void EstilizarComboBox(ComboBox cmb)
+        {
+            cmb.FlatStyle = FlatStyle.Flat;
+            cmb.BackColor = Color.White;
+            cmb.ForeColor = ColorTexto;
+            cmb.Font = new Font("Segoe UI", 9F);
+        }
+
         // ====================== HELPERS DE RUTAS/IMÁGENES ======================
 
-        /// <summary>
-        /// Convierte una ruta RELATIVA (guardada en BD) a ABSOLUTA dentro del proyecto.
-        /// Si relative es null/empty, devuelve null.
-        /// </summary>
         private static string AbsPath(string relative) =>
             string.IsNullOrWhiteSpace(relative) ? null : Path.Combine(AssetsRoot, relative);
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-
-            // 🔁 Actualiza los frames de todos los GIF activos
             if (pictureBoxEjercicio.Image != null &&
                 ImageFormat.Gif.Equals(pictureBoxEjercicio.Image.RawFormat))
             {
@@ -68,12 +125,6 @@ namespace GymManager.Views
             }
         }
 
-
-        /// <summary>
-        /// Copia el archivo "sourceFullPath" a Resources/Ejercicios/[subfolder opcional],
-        /// evitando sobrescribir (agrega sufijo _1, _2, ...), y devuelve la RUTA RELATIVA
-        /// que es la que se guarda en la base.
-        /// </summary>
         private static string ImportToAssets(string sourceFullPath, string subfolder = null)
         {
             Directory.CreateDirectory(AssetsRoot);
@@ -94,15 +145,9 @@ namespace GymManager.Views
                 target = Path.Combine(destFolder, $"{name}_{i++}{ext}");
 
             File.Copy(sourceFullPath, target, overwrite: false);
-
-            // Ruta relativa desde AssetsRoot (esto va a BD)
             return GetRelativePath(AssetsRoot, target);
         }
 
-        // ------------------------------------------------------------
-        // Carga una imagen (o GIF animado) y la prepara para ser mostrada
-        // sin bloquear el archivo y permitiendo animación.
-        // ------------------------------------------------------------
         private static Image LoadImageSafe(string absPath)
         {
             try
@@ -110,20 +155,16 @@ namespace GymManager.Views
                 if (string.IsNullOrWhiteSpace(absPath) || !File.Exists(absPath))
                     return null;
 
-                // ⚡ Copiamos el archivo a un temporal (para evitar lock en el original)
                 string tempFile = Path.GetTempFileName();
                 File.Copy(absPath, tempFile, true);
-
-                // ⚡ Cargamos la imagen desde el archivo temporal (no desde stream)
                 Image img = Image.FromFile(tempFile);
 
-                // Si es GIF, permitimos animación
                 if (ImageFormat.Gif.Equals(img.RawFormat))
                 {
                     System.Drawing.ImageAnimator.Animate(img, (s, e) => { });
                 }
 
-                return img; // se mantiene animado y estable
+                return img;
             }
             catch
             {
@@ -131,10 +172,6 @@ namespace GymManager.Views
             }
         }
 
-
-        /// <summary>
-        /// Devuelve una miniatura 70x70. Si es GIF animado, toma el primer frame.
-        /// </summary>
         private static Image GetThumbnail70(string absPath)
         {
             try
@@ -157,7 +194,7 @@ namespace GymManager.Views
                     using (var g = Graphics.FromImage(thumb))
                     {
                         g.Clear(Color.Transparent);
-                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
                         var ratio = Math.Min(70f / src.Width, 70f / src.Height);
                         var w = (int)(src.Width * ratio);
@@ -178,8 +215,6 @@ namespace GymManager.Views
             }
         }
 
-
-        // === Helpers para ruta relativa en .NET Framework ===
         private static string EnsureDirSep(string path)
         {
             if (string.IsNullOrEmpty(path)) return path;
@@ -189,19 +224,14 @@ namespace GymManager.Views
 
         private static string GetRelativePath(string basePath, string fullPath)
         {
-            // Usa URI para calcular ruta relativa (compatible .NET Framework)
             var baseUri = new Uri(EnsureDirSep(basePath));
             var fileUri = new Uri(fullPath);
-            var rel = baseUri.MakeRelativeUri(fileUri).ToString();   // usa '/'
+            var rel = baseUri.MakeRelativeUri(fileUri).ToString();
             return Uri.UnescapeDataString(rel).Replace('/', Path.DirectorySeparatorChar);
         }
 
+        // ====================== MÉTODOS PRINCIPALES ======================
 
-        // =================== FIN HELPERS ===================
-
-        // ------------------------------------------------------------
-        // Carga la lista de grupos musculares desde la base de datos
-        // ------------------------------------------------------------
         private void CargarGruposMusculares()
         {
             cmbMusculo.Items.Clear();
@@ -214,14 +244,12 @@ namespace GymManager.Views
                 {
                     conn.Open();
 
-                    // Pequeña semilla defensiva por si faltan
                     string checkQuery =
                         "IF NOT EXISTS (SELECT 1 FROM Grupo_Muscular WHERE nombre = 'Cardio') INSERT INTO Grupo_Muscular (nombre) VALUES ('Cardio'); " +
                         "IF NOT EXISTS (SELECT 1 FROM Grupo_Muscular WHERE nombre = 'Abdominales') INSERT INTO Grupo_Muscular (nombre) VALUES ('Abdominales'); ";
                     using (var checkCmd = new SqlCommand(checkQuery, conn))
                         checkCmd.ExecuteNonQuery();
 
-                    // Carga todos los grupos
                     string query = "SELECT id_grupo_muscular, nombre FROM Grupo_Muscular ORDER BY nombre";
                     using (var cmd = new SqlCommand(query, conn))
                     using (var reader = cmd.ExecuteReader())
@@ -245,13 +273,10 @@ namespace GymManager.Views
             cmbMusculo.ForeColor = Color.Gray;
             cmbMusculo.SelectedIndexChanged += (s, e) =>
             {
-                cmbMusculo.ForeColor = (cmbMusculo.SelectedIndex == 0) ? Color.Gray : Color.Black;
+                cmbMusculo.ForeColor = (cmbMusculo.SelectedIndex == 0) ? Color.Gray : ColorTexto;
             };
         }
 
-        // ------------------------------------------------------------
-        // Seleccionar imagen: copia al proyecto y guarda RUTA RELATIVA
-        // ------------------------------------------------------------
         private void btnSeleccionarImagen_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
@@ -259,16 +284,10 @@ namespace GymManager.Views
                 ofd.Filter = "Imágenes|*.jpg;*.jpeg;*.png;*.gif";
                 if (ofd.ShowDialog() != DialogResult.OK) return;
 
-                // Subcarpeta opcional: el grupo muscular elegido (si hay)
                 string sub = (cmbMusculo.SelectedIndex > 0) ? cmbMusculo.SelectedItem.ToString() : null;
-
-                // Copiamos al repo y obtenemos ruta RELATIVA (lo que se guarda en BD)
                 rutaRelativaSeleccionada = ImportToAssets(ofd.FileName, sub);
-
-                // Mostramos la relativa en el textbox (para que quede claro)
                 txtImagen.Text = rutaRelativaSeleccionada;
 
-                // Preview (GIF se anima)
                 var abs = AbsPath(rutaRelativaSeleccionada);
                 if (abs != null && File.Exists(abs))
                 {
@@ -285,85 +304,69 @@ namespace GymManager.Views
             g.BorderStyle = BorderStyle.None;
             g.BackgroundColor = Color.White;
             g.EnableHeadersVisualStyles = false;
-            g.GridColor = Color.Gainsboro;
+            g.GridColor = ColorBorde;
 
-            // Encabezados
-            g.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-            g.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+            // Encabezados modernos
+            g.ColumnHeadersDefaultCellStyle.BackColor = ColorPrimario;
+            g.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             g.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            g.ColumnHeadersHeight = 36;
+            g.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            g.ColumnHeadersHeight = 40;
+            g.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
 
             // Filas
             g.DefaultCellStyle.BackColor = Color.White;
-            g.DefaultCellStyle.ForeColor = Color.Black;
+            g.DefaultCellStyle.ForeColor = ColorTexto;
             g.DefaultCellStyle.SelectionBackColor = Color.FromArgb(232, 244, 253);
-            g.DefaultCellStyle.SelectionForeColor = Color.Black;
+            g.DefaultCellStyle.SelectionForeColor = ColorTexto;
+            g.DefaultCellStyle.Font = new Font("Segoe UI", 9F);
             g.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
 
-            // Sin row headers y sin fila “*”
+            // Configuración general
             g.RowHeadersVisible = false;
             g.AllowUserToAddRows = false;
             g.AllowUserToResizeRows = false;
-
-            // Autoajustes
             g.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            g.RowTemplate.Height = 80;
+            g.RowTemplate.Height = 70;
 
-            // Tamaños mínimos agradables
+            // Tamaños de columnas
             if (g.Columns.Contains("ID")) g.Columns["ID"].FillWeight = 8;
             if (g.Columns.Contains("Ejercicio")) g.Columns["Ejercicio"].FillWeight = 40;
             if (g.Columns.Contains("GrupoMuscular")) g.Columns["GrupoMuscular"].FillWeight = 22;
+            if (g.Columns.Contains("Estado")) g.Columns["Estado"].FillWeight = 15;
             if (g.Columns.Contains("Imagen"))
             {
                 var c = (DataGridViewImageColumn)g.Columns["Imagen"];
                 c.ImageLayout = DataGridViewImageCellLayout.Zoom;
-                c.FillWeight = 30;
+                c.FillWeight = 15;
             }
-
-            // Centrar los textos del encabezado
-            foreach (DataGridViewColumn col in dgvEjercicios.Columns)
-            {
-                col.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            }
-
         }
 
-
-        // Solo letras en nombre
         private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                 e.Handled = true;
         }
 
-        // ------------------------------------------------------------
-        // Cargar combo de estado (Todos / Activos / Inactivos)
-        // ------------------------------------------------------------
         private void CargarComboEstado()
         {
             cmbEstado.Items.Clear();
             cmbEstado.Items.Add("Todos");
             cmbEstado.Items.Add("Activos");
             cmbEstado.Items.Add("Inactivos");
-            cmbEstado.SelectedIndex = 1; // mostrar solo activos por defecto
+            cmbEstado.SelectedIndex = 1;
         }
 
-
-        // ------------------------------------------------------------
-        // Refrescar DataGridView (carga lista real y pinta tabla)
-        // ------------------------------------------------------------
         private void RefrescarGrid()
-        {   // Filtro por estado (activo/inactivo/todos)
-            bool? estado = null;// todos
-            if (cmbEstado.SelectedIndex == 1) estado = true;// activo
-            if (cmbEstado.SelectedIndex == 2) estado = false;// inactivo
+        {
+            bool? estado = null;
+            if (cmbEstado.SelectedIndex == 1) estado = true;
+            if (cmbEstado.SelectedIndex == 2) estado = false;
 
-            listaActual = controller.ObtenerTodos(estado);  // carga desde BD
-
-            CargarGridDesde(listaActual);              // pinta la grilla con miniaturas
+            listaActual = controller.ObtenerTodos(estado);
+            CargarGridDesde(listaActual);
         }
 
-        // Pinta la grilla desde una lista de Ejercicio
         private void CargarGridDesde(List<Ejercicio> fuente)
         {
             dgvEjercicios.Columns.Clear();
@@ -372,59 +375,53 @@ namespace GymManager.Views
             tabla.Columns.Add("ID", typeof(int));
             tabla.Columns.Add("Ejercicio", typeof(string));
             tabla.Columns.Add("GrupoMuscular", typeof(string));
-            tabla.Columns.Add("Estado", typeof(string));   // ✅ nueva
-            tabla.Columns.Add("Imagen", typeof(Image));    // miniatura
+            tabla.Columns.Add("Estado", typeof(string));
+            tabla.Columns.Add("Imagen", typeof(Image));
 
             foreach (var e in fuente)
             {
                 Image img = null;
                 try
                 {
-                    var abs = AbsPath(e.Imagen);                 // e.Imagen es RELATIVA
+                    var abs = AbsPath(e.Imagen);
                     if (!string.IsNullOrWhiteSpace(abs) && File.Exists(abs))
                         img = GetThumbnail70(abs);
                 }
                 catch { img = null; }
 
-                // ✅ cargar el valor de la columna Estado
                 string estadoStr = e.Activo ? "Activo" : "Inactivo";
-
-                // ⚠️ El orden de los valores debe coincidir con el orden de columnas
                 tabla.Rows.Add(e.Id, e.Nombre, e.GrupoMuscularNombre, estadoStr, img);
             }
 
             dgvEjercicios.DataSource = tabla;
+            dgvEjercicios.RowTemplate.Height = 70;
 
-            // Ajustes visuales
-            dgvEjercicios.RowTemplate.Height = 80;
-            dgvEjercicios.Columns["ID"].Width = 50;
-            dgvEjercicios.Columns["Ejercicio"].Width = 220;
-            dgvEjercicios.Columns["GrupoMuscular"].Width = 150;
-
-            // ✅ ancho/estilo de Estado (opcional)
+            // Ajustes de columnas
             if (dgvEjercicios.Columns.Contains("Estado"))
             {
                 dgvEjercicios.Columns["Estado"].Width = 90;
                 dgvEjercicios.Columns["Estado"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                dgvEjercicios.Columns["Estado"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
 
             if (dgvEjercicios.Columns.Contains("GrupoMuscular"))
             {
                 dgvEjercicios.Columns["GrupoMuscular"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-                dgvEjercicios.Columns["GrupoMuscular"].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             }
-
 
             var colImg = (DataGridViewImageColumn)dgvEjercicios.Columns["Imagen"];
             colImg.ImageLayout = DataGridViewImageCellLayout.Zoom;
 
             EstilizarGrilla();
 
-            // (opcional) pintar filas inactivas en gris
+            // Colorear estados
             foreach (DataGridViewRow row in dgvEjercicios.Rows)
+            {
                 if (row.Cells["Estado"].Value?.ToString() == "Inactivo")
+                {
                     row.DefaultCellStyle.ForeColor = Color.Gray;
+                    row.DefaultCellStyle.BackColor = Color.FromArgb(252, 252, 252);
+                }
+            }
 
             dgvEjercicios.ClearSelection();
 
@@ -432,14 +429,8 @@ namespace GymManager.Views
                 pictureBoxEjercicio.Image = null;
         }
 
-
-
-        // ------------------------------------------------------------
-        // Agregar
-        // ------------------------------------------------------------
         private void btnAgregar_Click(object sender, EventArgs e)
         {
-            // Validación del nombre
             if (string.IsNullOrWhiteSpace(txtNombre.Text) || txtNombre.ForeColor == Color.Gray)
             {
                 MessageBox.Show("Debes ingresar un nombre para el ejercicio.",
@@ -448,7 +439,6 @@ namespace GymManager.Views
                 return;
             }
 
-            // Validación del grupo muscular
             if (cmbMusculo.SelectedIndex <= 0)
             {
                 MessageBox.Show("Debes seleccionar un grupo muscular antes de agregar el ejercicio.",
@@ -481,10 +471,6 @@ namespace GymManager.Views
             }
         }
 
-
-        // ------------------------------------------------------------
-        // Editar (usa ID de la fila seleccionada y busca en listaActual)
-        // ------------------------------------------------------------
         private void btnEditar_Click(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null)
@@ -508,7 +494,6 @@ namespace GymManager.Views
 
                 ejercicio.Nombre = txtNombre.Text.Trim();
                 ejercicio.GrupoMuscularId = gruposMusculares[cmbMusculo.SelectedItem.ToString()];
-                // Si el usuario eligió nueva imagen, ya está en txtImagen como RUTA RELATIVA
                 ejercicio.Imagen = string.IsNullOrWhiteSpace(txtImagen.Text) ? null : txtImagen.Text.Trim();
 
                 controller.Editar(ejercicio);
@@ -525,9 +510,6 @@ namespace GymManager.Views
             }
         }
 
-        // ------------------------------------------------------------
-        // Eliminar (usa ID de la fila seleccionada)
-        // ------------------------------------------------------------
         private void btnEliminar_Click(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null)
@@ -554,15 +536,11 @@ namespace GymManager.Views
             }
         }
 
-        // Botón Limpiar
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             LimpiarCampos();
         }
 
-        // ------------------------------------------------------------
-        // Selección en la grilla (usa ID -> objeto real)
-        // ------------------------------------------------------------
         private void dgvEjercicios_SelectionChanged(object sender, EventArgs e)
         {
             if (dgvEjercicios.CurrentRow == null) return;
@@ -580,14 +558,13 @@ namespace GymManager.Views
             {
                 if (!string.IsNullOrWhiteSpace(abs) && File.Exists(abs))
                 {
-                    // 🔸 Liberar la imagen anterior de forma segura (sin provocar excepciones)
                     if (pictureBoxEjercicio.Image != null)
                     {
                         try
                         {
                             var temp = pictureBoxEjercicio.Image;
-                            pictureBoxEjercicio.Image = null; // desvinculamos primero
-                            temp.Dispose();                   // luego liberamos recursos
+                            pictureBoxEjercicio.Image = null;
+                            temp.Dispose();
                         }
                         catch (Exception ex)
                         {
@@ -595,11 +572,9 @@ namespace GymManager.Views
                         }
                     }
 
-                    // 🔸 Cargar y mostrar imagen
                     pictureBoxEjercicio.Image = LoadImageSafe(abs);
                     pictureBoxEjercicio.SizeMode = PictureBoxSizeMode.Zoom;
 
-                    // ✅ Validación antes de animar (para evitar ArgumentException)
                     if (pictureBoxEjercicio.Image == null ||
                         pictureBoxEjercicio.Image.Width == 0 ||
                         pictureBoxEjercicio.Image.Height == 0)
@@ -608,7 +583,6 @@ namespace GymManager.Views
                         return;
                     }
 
-                    // 🌀 Si es GIF, animarlo
                     if (ImageFormat.Gif.Equals(pictureBoxEjercicio.Image.RawFormat))
                     {
                         System.Drawing.ImageAnimator.Animate(pictureBoxEjercicio.Image, (s, e2) =>
@@ -628,19 +602,13 @@ namespace GymManager.Views
                 pictureBoxEjercicio.Image = null;
             }
 
-            // 🔸 Actualizar selección del combo
             int idx = cmbMusculo.FindStringExact(ejercicio.GrupoMuscularNombre ?? "");
             cmbMusculo.SelectedIndex = (idx >= 0) ? idx : 0;
 
-            txtNombre.ForeColor = Color.Black;
-            txtImagen.ForeColor = Color.Black;
+            txtNombre.ForeColor = ColorTexto;
+            txtImagen.ForeColor = ColorTexto;
         }
 
-
-
-        // ------------------------------------------------------------
-        // Limpiar campos
-        // ------------------------------------------------------------
         private void LimpiarCampos()
         {
             txtNombre.Text = "";
@@ -653,54 +621,40 @@ namespace GymManager.Views
             txtNombre.Focus();
         }
 
-        // ------------------------------------------------------------
-        // Búsqueda dinámica (filtra lista real y repinta grilla)
-        // ------------------------------------------------------------
-        // ------------------------------------------------------------
-        // 🔍 Búsqueda dinámica con tipo de filtro seleccionable
-        // ------------------------------------------------------------
         private void txtBuscar_TextChanged(object sender, EventArgs e)
         {
-            // Tomamos el texto escrito y el tipo de búsqueda elegido en el combo
             string filtro = txtBuscar.Text.Trim().ToLower();
             string tipo = cmbTipoBusqueda.SelectedItem?.ToString() ?? "Todos";
 
-            // Lista auxiliar donde guardaremos los resultados filtrados
             List<Ejercicio> filtrados;
 
-            // Si el campo de texto está vacío, mostramos todo
             if (string.IsNullOrWhiteSpace(filtro))
             {
                 filtrados = listaActual;
             }
             else
             {
-                // Aplicamos el filtro según el tipo elegido
                 switch (tipo)
                 {
                     case "ID":
-                        // Busca por coincidencia parcial de número (por ejemplo: "2" muestra ID 2, 12, 20, etc.)
                         filtrados = listaActual
                             .Where(x => x.Id.ToString().Contains(filtro))
                             .ToList();
                         break;
 
                     case "Nombre":
-                        // Busca por coincidencia parcial en el nombre del ejercicio
                         filtrados = listaActual
                             .Where(x => x.Nombre.ToLower().Contains(filtro))
                             .ToList();
                         break;
 
                     case "Grupo Muscular":
-                        // Busca por coincidencia parcial en el nombre del grupo muscular
                         filtrados = listaActual
                             .Where(x => x.GrupoMuscularNombre.ToLower().Contains(filtro))
                             .ToList();
                         break;
 
                     default:
-                        // "Todos": busca en todos los campos (ID, Nombre, Grupo)
                         filtrados = listaActual
                             .Where(x =>
                                 x.Id.ToString().Contains(filtro) ||
@@ -711,48 +665,34 @@ namespace GymManager.Views
                 }
             }
 
-            // Repintamos la grilla con los resultados filtrados
             CargarGridDesde(filtrados);
 
-            //  Si no hay resultados en la búsqueda, limpiamos la imagen
             if (filtrados.Count == 0)
             {
                 pictureBoxEjercicio.Image = null;
             }
-
         }
 
-        // ------------------------------------------------------------
-        // Restringe los caracteres permitidos según el tipo de búsqueda
-        // ------------------------------------------------------------
         private void txtBuscar_KeyPress(object sender, KeyPressEventArgs e)
         {
             string tipo = cmbTipoBusqueda.SelectedItem?.ToString() ?? "Todos";
 
             if (tipo == "ID")
             {
-                // Solo números, borrar o retroceso
                 if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
                     e.Handled = true;
             }
             else if (tipo == "Nombre" || tipo == "Grupo Muscular")
             {
-                // Solo letras, espacios o borrar
                 if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                     e.Handled = true;
             }
             else
             {
-                // En "Todos", se permite cualquier carácter
                 e.Handled = false;
             }
         }
 
-
-
-        // ------------------------------------------------------------
-        // Placeholder visual
-        // ------------------------------------------------------------
         private void AplicarPlaceholder(TextBox txt, string placeholder)
         {
             txt.ForeColor = Color.Gray;
@@ -763,7 +703,7 @@ namespace GymManager.Views
                 if (txt.Text == placeholder)
                 {
                     txt.Text = "";
-                    txt.ForeColor = Color.Black;
+                    txt.ForeColor = ColorTexto;
                 }
             };
 
@@ -776,6 +716,7 @@ namespace GymManager.Views
                 }
             };
         }
+
         private void dgvEjercicios_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -786,15 +727,13 @@ namespace GymManager.Views
 
             try
             {
-                
-                // 🔸 Liberar la imagen anterior para evitar bloqueos o excepciones
                 if (pictureBoxEjercicio.Image != null)
                 {
                     try
                     {
                         var temp = pictureBoxEjercicio.Image;
-                        pictureBoxEjercicio.Image = null; // primero desvinculamos
-                        temp.Dispose();                   // luego liberamos
+                        pictureBoxEjercicio.Image = null;
+                        temp.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -802,21 +741,18 @@ namespace GymManager.Views
                     }
                 }
 
-
-                // 🔸 Cargar la nueva imagen (puede ser GIF)
                 pictureBoxEjercicio.Image = (!string.IsNullOrWhiteSpace(abs) && File.Exists(abs))
                     ? LoadImageSafe(abs)
                     : null;
 
                 pictureBoxEjercicio.SizeMode = PictureBoxSizeMode.Zoom;
 
-                // 🌀 Si la imagen es GIF, activamos animación segura
                 if (pictureBoxEjercicio.Image != null &&
                     ImageFormat.Gif.Equals(pictureBoxEjercicio.Image.RawFormat))
                 {
                     System.Drawing.ImageAnimator.Animate(pictureBoxEjercicio.Image, (s, e2) =>
                     {
-                        pictureBoxEjercicio.Invalidate(); // redibuja el frame actual
+                        pictureBoxEjercicio.Invalidate();
                     });
                 }
             }
@@ -826,10 +762,6 @@ namespace GymManager.Views
             }
         }
 
-
-        // ------------------------------------------------------------
-        // Estilos de botones (compactos y sin APIs raras)
-        // ------------------------------------------------------------
         private void EstilizarBotones()
         {
             Button[] botones = { btnAgregar, btnEditar, btnEliminar, btnLimpiar, btnSeleccionarImagen };
@@ -840,10 +772,19 @@ namespace GymManager.Views
                 b.FlatAppearance.BorderSize = 0;
                 b.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
                 b.ForeColor = Color.White;
-                b.Size = new Size(95, 32);
+                b.Size = new Size(100, 35);
+                b.Cursor = Cursors.Hand;
 
-                // Bordes redondeados suaves
-                int radius = 8;
+                // Efecto hover moderno
+                b.MouseEnter += (s, e) => {
+                    b.FlatAppearance.MouseOverBackColor = ControlPaint.Dark(b.BackColor, 0.1f);
+                };
+                b.MouseLeave += (s, e) => {
+                    b.FlatAppearance.MouseOverBackColor = b.BackColor;
+                };
+
+                // Bordes redondeados
+                int radius = 6;
                 b.Paint += (s, e) =>
                 {
                     var rect = new Rectangle(0, 0, b.Width, b.Height);
@@ -860,20 +801,18 @@ namespace GymManager.Views
                 };
             }
 
-            btnAgregar.BackColor = Color.FromArgb(46, 204, 113);
-            btnEditar.BackColor = Color.FromArgb(241, 196, 15);
-            btnEliminar.BackColor = Color.FromArgb(231, 76, 60);
-            btnLimpiar.BackColor = Color.FromArgb(52, 152, 219);
-            btnSeleccionarImagen.BackColor = Color.FromArgb(155, 89, 182);
-
+            btnAgregar.BackColor = ColorExito;
+            btnEditar.BackColor = ColorSecundario;
+            btnEliminar.BackColor = ColorPeligro;
+            btnLimpiar.BackColor = Color.FromArgb(149, 165, 166);
+            btnSeleccionarImagen.BackColor = ColorPrimario;
         }
 
         private void cmbTipoBusqueda_SelectedIndexChanged(object sender, EventArgs e)
         {
-            txtBuscar.Text = "";  // Limpia el texto para evitar filtros inconsistentes
-            txtBuscar.Focus();    // Devuelve el foco al buscador
+            txtBuscar.Text = "";
+            txtBuscar.Focus();
         }
-
 
         private void dgvEjercicios_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -902,7 +841,5 @@ namespace GymManager.Views
                 }
             }
         }
-
-
     }
 }

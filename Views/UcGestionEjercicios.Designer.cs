@@ -23,14 +23,14 @@ namespace GymManager.Views
         private DataGridView dgvEjercicios;
         private PictureBox pictureBoxEjercicio;
         private Button btnSeleccionarImagen;
-        //  Nuevo ComboBox y etiqueta para el tipo de búsqueda
-        private ComboBox cmbTipoBusqueda;   // Permite seleccionar ID / Nombre / Grupo / Todos
-        private Label lblTipoBusqueda;      // Texto descriptivo
-        private ComboBox cmbEstado;   //  Filtro por estado
-        private Label lblEstado;      // Texto "Estado:"
+        private ComboBox cmbTipoBusqueda;
+        private Label lblTipoBusqueda;
+        private ComboBox cmbEstado;
+        private Label lblEstado;
 
-
-
+        // Paneles para agrupar controles
+        private Panel panelFormulario;
+        private Panel panelBusqueda;
 
         protected override void Dispose(bool disposing)
         {
@@ -55,58 +55,78 @@ namespace GymManager.Views
             this.btnSeleccionarImagen = new Button();
             this.dgvEjercicios = new DataGridView();
             this.pictureBoxEjercicio = new PictureBox();
+            this.cmbTipoBusqueda = new ComboBox();
+            this.lblTipoBusqueda = new Label();
+            this.cmbEstado = new ComboBox();
+            this.lblEstado = new Label();
+            this.panelFormulario = new Panel();
+            this.panelBusqueda = new Panel();
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxEjercicio)).BeginInit();
+            this.panelFormulario.SuspendLayout();
+            this.panelBusqueda.SuspendLayout();
             this.SuspendLayout();
 
-            // lblTitulo
+            // ==================== TÍTULO ====================
             this.lblTitulo.AutoSize = true;
-            this.lblTitulo.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            this.lblTitulo.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
             this.lblTitulo.Location = new Point(25, 20);
             this.lblTitulo.Text = "Gestión de Ejercicios";
+            this.lblTitulo.ForeColor = Color.FromArgb(52, 73, 94);
+
+            // ==================== PANEL FORMULARIO ====================
+            this.panelFormulario.BackColor = Color.White;
+            this.panelFormulario.BorderStyle = BorderStyle.FixedSingle;
+            this.panelFormulario.Location = new Point(25, 70);
+            this.panelFormulario.Size = new Size(350, 220);
 
             // txtNombre
             this.txtNombre.Font = new Font("Segoe UI", 10F);
-            this.txtNombre.Location = new Point(30, 70);
-            this.txtNombre.Size = new Size(260, 25);
+            this.txtNombre.Location = new Point(20, 30);
+            this.txtNombre.Size = new Size(300, 26);
+            this.txtNombre.BorderStyle = BorderStyle.FixedSingle;
             this.txtNombre.KeyPress += new KeyPressEventHandler(this.txtNombre_KeyPress);
 
             // cmbMusculo
             this.cmbMusculo.Font = new Font("Segoe UI", 10F);
             this.cmbMusculo.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbMusculo.Location = new Point(30, 105);
-            this.cmbMusculo.Size = new Size(260, 25);
+            this.cmbMusculo.Location = new Point(20, 75);
+            this.cmbMusculo.Size = new Size(300, 28);
+            this.cmbMusculo.FlatStyle = FlatStyle.Flat;
 
             // lblImagen
             this.lblImagen.AutoSize = true;
-            this.lblImagen.Font = new Font("Segoe UI", 9F);
-            this.lblImagen.Location = new Point(30, 140);
+            this.lblImagen.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            this.lblImagen.Location = new Point(20, 120);
             this.lblImagen.Text = "Ruta de imagen:";
+            this.lblImagen.ForeColor = Color.FromArgb(52, 73, 94);
 
             // txtImagen
             this.txtImagen.Font = new Font("Segoe UI", 10F);
-            this.txtImagen.Location = new Point(30, 160);
-            this.txtImagen.Size = new Size(260, 25);
+            this.txtImagen.Location = new Point(20, 140);
+            this.txtImagen.Size = new Size(195, 26);
+            this.txtImagen.BorderStyle = BorderStyle.FixedSingle;
 
             // btnSeleccionarImagen
             this.btnSeleccionarImagen.Text = "Seleccionar...";
-            this.btnSeleccionarImagen.Location = new Point(300, 160);
-            this.btnSeleccionarImagen.Size = new Size(90, 28);
+            this.btnSeleccionarImagen.Location = new Point(225, 140);
+            this.btnSeleccionarImagen.Size = new Size(95, 26);
             this.btnSeleccionarImagen.Click += new EventHandler(this.btnSeleccionarImagen_Click);
 
-            // pictureBoxEjercicio
+            // ==================== PICTURE BOX ====================
             this.pictureBoxEjercicio.BorderStyle = BorderStyle.FixedSingle;
-            this.pictureBoxEjercicio.Location = new Point(420, 60);
-            this.pictureBoxEjercicio.Size = new Size(150, 120);
+            this.pictureBoxEjercicio.Location = new Point(400, 70);
+            this.pictureBoxEjercicio.Size = new Size(180, 180);
             this.pictureBoxEjercicio.SizeMode = PictureBoxSizeMode.Zoom;
+            this.pictureBoxEjercicio.BackColor = Color.White;
 
-            // Botones
-            this.btnAgregar.Location = new Point(600, 60);
-            this.btnEditar.Location = new Point(600, 100);
-            this.btnEliminar.Location = new Point(600, 140);
-            this.btnLimpiar.Location = new Point(600, 180);
-            this.btnAgregar.Size = this.btnEditar.Size = this.btnEliminar.Size = this.btnLimpiar.Size = new Size(120, 35);
+            // ==================== BOTONES ====================
+            this.btnAgregar.Location = new Point(600, 70);
+            this.btnEditar.Location = new Point(600, 115);
+            this.btnEliminar.Location = new Point(600, 160);
+            this.btnLimpiar.Location = new Point(600, 205);
+            this.btnAgregar.Size = this.btnEditar.Size = this.btnEliminar.Size = this.btnLimpiar.Size = new Size(100, 35);
 
             this.btnAgregar.Text = "Agregar";
             this.btnEditar.Text = "Editar";
@@ -118,111 +138,106 @@ namespace GymManager.Views
             this.btnEliminar.Click += new EventHandler(this.btnEliminar_Click);
             this.btnLimpiar.Click += new EventHandler(this.btnLimpiar_Click);
 
-            // Buscar
-            this.lblBuscar.AutoSize = true;
-            this.lblBuscar.Font = new Font("Segoe UI", 9F);
-            this.lblBuscar.Location = new Point(280, 235);
-            this.lblBuscar.Text = "Buscar:";
+            // ==================== PANEL BÚSQUEDA ====================
+            this.panelBusqueda.BackColor = Color.White;
+            this.panelBusqueda.BorderStyle = BorderStyle.FixedSingle;
+            this.panelBusqueda.Location = new Point(25, 310);
+            this.panelBusqueda.Size = new Size(860, 50);
 
-            this.txtBuscar.Font = new Font("Segoe UI", 10F);
-            this.txtBuscar.Location = new Point(340, 232);
-            this.txtBuscar.Size = new Size(200, 25);
-            this.txtBuscar.TextChanged += new EventHandler(this.txtBuscar_TextChanged);
-
-            //restriccion de caracteres
-            this.txtBuscar.KeyPress += new KeyPressEventHandler(this.txtBuscar_KeyPress);
-
-
-            // ======================================================
-            // 🔽 NUEVOS CONTROLES PARA TIPO DE BÚSQUEDA
-            // ======================================================
-
-            // Label "Tipo de búsqueda"
-            this.lblTipoBusqueda = new Label();
+            // lblTipoBusqueda
             this.lblTipoBusqueda.AutoSize = true;
-            this.lblTipoBusqueda.Font = new Font("Segoe UI", 9F);
-            this.lblTipoBusqueda.Location = new Point(40, 235);
+            this.lblTipoBusqueda.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            this.lblTipoBusqueda.Location = new Point(20, 15);
             this.lblTipoBusqueda.Text = "Buscar por:";
+            this.lblTipoBusqueda.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // ComboBox tipo de búsqueda
-            this.cmbTipoBusqueda = new ComboBox();
+            // cmbTipoBusqueda
             this.cmbTipoBusqueda.Font = new Font("Segoe UI", 10F);
             this.cmbTipoBusqueda.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbTipoBusqueda.Location = new Point(110, 232);
+            this.cmbTipoBusqueda.Location = new Point(95, 12);
             this.cmbTipoBusqueda.Size = new Size(150, 25);
-
-            // Cargamos las opciones básicas (igual que en usuarios)
+            this.cmbTipoBusqueda.FlatStyle = FlatStyle.Flat;
             this.cmbTipoBusqueda.Items.AddRange(new object[] {
                     "Todos",
                     "ID",
                     "Nombre",
                     "Grupo Muscular"
                 });
-            this.cmbTipoBusqueda.SelectedIndex = 0; // Por defecto "Todos"
-
-            
+            this.cmbTipoBusqueda.SelectedIndex = 0;
             this.cmbTipoBusqueda.SelectedIndexChanged += new EventHandler(this.cmbTipoBusqueda_SelectedIndexChanged);
 
-            // ======================================================
-            // 🔽 NUEVOS CONTROLES PARA FILTRO POR ESTADO
-            // ======================================================
+            // lblBuscar
+            this.lblBuscar.AutoSize = true;
+            this.lblBuscar.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            this.lblBuscar.Location = new Point(260, 15);
+            this.lblBuscar.Text = "Buscar:";
+            this.lblBuscar.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // Label "Estado"
-            this.lblEstado = new Label();
+            // txtBuscar
+            this.txtBuscar.Font = new Font("Segoe UI", 10F);
+            this.txtBuscar.Location = new Point(310, 12);
+            this.txtBuscar.Size = new Size(200, 25);
+            this.txtBuscar.BorderStyle = BorderStyle.FixedSingle;
+            this.txtBuscar.TextChanged += new EventHandler(this.txtBuscar_TextChanged);
+            this.txtBuscar.KeyPress += new KeyPressEventHandler(this.txtBuscar_KeyPress);
+
+            // lblEstado
             this.lblEstado.AutoSize = true;
-            this.lblEstado.Font = new Font("Segoe UI", 9F);
-            this.lblEstado.Location = new Point(560, 235);
+            this.lblEstado.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
+            this.lblEstado.Location = new Point(530, 15);
             this.lblEstado.Text = "Estado:";
+            this.lblEstado.ForeColor = Color.FromArgb(52, 73, 94);
 
-            // ComboBox de estado
-            this.cmbEstado = new ComboBox();
+            // cmbEstado
             this.cmbEstado.Font = new Font("Segoe UI", 10F);
             this.cmbEstado.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbEstado.Location = new Point(620, 232);
-            this.cmbEstado.Size = new Size(150, 25);
-
-            // Carga inicial del combo (por si no lo hace el constructor)
+            this.cmbEstado.Location = new Point(585, 12);
+            this.cmbEstado.Size = new Size(120, 25);
+            this.cmbEstado.FlatStyle = FlatStyle.Flat;
             this.cmbEstado.Items.AddRange(new object[] { "Todos", "Activos", "Inactivos" });
             this.cmbEstado.SelectedIndex = 1;
-
-            // Cuando cambia la selección, refresca la grilla
             this.cmbEstado.SelectedIndexChanged += (s, e) => RefrescarGrid();
 
-            // DataGridView
-            this.dgvEjercicios.Location = new Point(30, 270);
-            this.dgvEjercicios.Size = new Size(860, 280);
+            // ==================== DATA GRID VIEW ====================
+            this.dgvEjercicios.Location = new Point(25, 375);
+            this.dgvEjercicios.Size = new Size(860, 230);
             this.dgvEjercicios.ReadOnly = true;
             this.dgvEjercicios.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvEjercicios.SelectionChanged += new EventHandler(this.dgvEjercicios_SelectionChanged);
-            
-            this.dgvEjercicios.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-            this.dgvEjercicios.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            this.dgvEjercicios.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-
-            // Evento para vista previa de imagen
             this.dgvEjercicios.CellMouseEnter += dgvEjercicios_CellMouseEnter;
-
-            // Evento para seleccionar ejercicio al hacer clic
             this.dgvEjercicios.CellClick += new DataGridViewCellEventHandler(this.dgvEjercicios_CellClick);
 
-
-            // UserControl
+            // ==================== USER CONTROL ====================
             this.Controls.AddRange(new Control[] {
-                    lblTitulo, txtNombre, cmbMusculo, lblImagen, txtImagen, btnSeleccionarImagen,
-                    pictureBoxEjercicio, btnAgregar, btnEditar, btnEliminar, btnLimpiar,
-                    lblBuscar, txtBuscar, lblTipoBusqueda, cmbTipoBusqueda,
-                    lblEstado, cmbEstado, // 🔹 nuevos controles
+                    lblTitulo,
+                    panelFormulario,
+                    pictureBoxEjercicio,
+                    btnAgregar, btnEditar, btnEliminar, btnLimpiar,
+                    panelBusqueda,
                     dgvEjercicios
                 });
 
-            this.Size = new Size(800, 600);
+            // Agregar controles al panel formulario
+            this.panelFormulario.Controls.AddRange(new Control[] {
+                    txtNombre, cmbMusculo, lblImagen, txtImagen, btnSeleccionarImagen
+                });
+
+            // Agregar controles al panel búsqueda
+            this.panelBusqueda.Controls.AddRange(new Control[] {
+                    lblTipoBusqueda, cmbTipoBusqueda, lblBuscar, txtBuscar, lblEstado, cmbEstado
+                });
+
+            this.Size = new Size(900, 630);
+            this.BackColor = Color.FromArgb(245, 247, 250);
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvEjercicios)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxEjercicio)).EndInit();
+            this.panelFormulario.ResumeLayout(false);
+            this.panelFormulario.PerformLayout();
+            this.panelBusqueda.ResumeLayout(false);
+            this.panelBusqueda.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
-
     }
 }
