@@ -38,38 +38,6 @@ namespace GymManager.Views
             };
 
             // ============================================================
-            // 💾 BOTÓN BACKUP
-            // ============================================================
-            btnBackup = new Button
-            {
-                Name = "btnBackup",
-                Text = "💾  Crear Backup",
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                Size = new Size(180, 44), 
-                BackColor = Color.FromArgb(54, 162, 235),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand,
-                Location = new Point(880, 16), 
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-            btnBackup.FlatAppearance.BorderSize = 0;
-            btnBackup.Click += new EventHandler(this.BtnBackup_Click);
-
-
-            //  LABEL “Último backup”
-            lblUltimoBackup = new Label
-            {
-                Name = "lblUltimoBackup",
-                Text = "Último backup: —",
-                Font = new Font("Segoe UI", 9, FontStyle.Regular),
-                ForeColor = Color.FromArgb(100, 100, 100),
-                AutoSize = true,
-                Location = new Point(880, 64),               // debajo del botón
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
-            };
-
-            // ============================================================
             // 🧍 CARD USUARIOS
             // ============================================================
             cardUsuarios = new Panel
@@ -183,8 +151,6 @@ namespace GymManager.Views
             this.Controls.Add(cardEjercicios);
             this.Controls.Add(chartUsuarios);
             this.Controls.Add(chartEjercicios);
-            this.Controls.Add(btnBackup); //  botón agregado al panel
-            this.Controls.Add(lblUltimoBackup); //  etiqueta agregada al panel
             this.Name = "UcReportes";
             this.Size = new Size(1100, 600);
             this.Load += new EventHandler(this.UcReportes_Load);

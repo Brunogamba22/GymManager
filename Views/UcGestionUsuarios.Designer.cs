@@ -81,7 +81,7 @@ namespace GymManager.Views
             this.panelFormulario.BackColor = Color.White;
             this.panelFormulario.BorderStyle = BorderStyle.FixedSingle;
             this.panelFormulario.Location = new Point(25, 65);
-            this.panelFormulario.Size = new Size(380, 180); // 🔹 ANCHO AUMENTADO
+            this.panelFormulario.Size = new Size(380, 190); // 🔹 ANCHO AUMENTADO
 
             // 🔹 AJUSTES DE POSICIÓN Y TAMAÑO PARA QUE ENTRE "CONTRASEÑA"
             this.lblNombre.Location = new Point(20, 20);
@@ -180,7 +180,7 @@ namespace GymManager.Views
 
             // ==================== DATA GRID VIEW ====================
             this.dgvUsuarios.Location = new Point(25, 320); // 🔹 POSICIÓN MÁS ARRIBA
-            this.dgvUsuarios.Size = new Size(860, 250); // 🔹 ALTURA REDUCIDA
+            this.dgvUsuarios.Size = new Size(860, 285); // 🔹 ALTURA REDUCIDA
             this.dgvUsuarios.ReadOnly = true;
             this.dgvUsuarios.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvUsuarios.RowTemplate.Height = 30; // 🔹 FILAS MÁS COMPACTAS

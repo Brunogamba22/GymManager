@@ -2,61 +2,77 @@
 using GymManager.Utils;
 using GymManager.Views;
 using System;
-using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace GymManager.Forms
 {
     public partial class FrmMain : Form
     {
-        // Instancias de los UserControls
+        // =========================================================
+        // 🔹 INSTANCIAS Y VARIABLES PRINCIPALES
+        // =========================================================
         private UcGenerarRutinas ucGenerarRutinas;
         private UcEditarRutina ucEditarRutina;
         private UcPlanillasRutinas ucPlanillasRutinas;
 
-        // --- AÑADIDO ---
-        // Panel para el Dashboard (Inicio)
+        // Botón global de Backup y su etiqueta informativa
+        private Button btnBackup;
+        private Label lblUltimoBackup;
+
+        // Panel de bienvenida (Dashboard principal)
         private Panel panelDashboard;
 
+        // =========================================================
+        // 🔹 CONSTRUCTOR
+        // =========================================================
         public FrmMain()
         {
             InitializeComponent();
-            // Inicializar los UserControls (PERO NO agregarlos aún)
-            // Se agregarán en el FrmMain_Load
-            InicializarUserControls();
+            InicializarUserControls(); // Instanciar los UserControls sin agregarlos todavía
         }
 
+        // =========================================================
+        // 🔹 CREACIÓN DE LOS USERCONTROLS Y DASHBOARD
+        // =========================================================
         private void InicializarUserControls()
         {
-            // Solo crear las instancias
             ucGenerarRutinas = new UcGenerarRutinas();
             ucEditarRutina = new UcEditarRutina();
             ucPlanillasRutinas = new UcPlanillasRutinas();
 
-            // --- AÑADIDO: Crear el panel de Dashboard ---
             panelDashboard = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White // O el color de fondo que prefieras
+                BackColor = Color.White
             };
         }
 
+        // =========================================================
+        // 🔹 EVENTO LOAD DEL FORM PRINCIPAL
+        // =========================================================
         private void FrmMain_Load(object sender, EventArgs e)
         {
+            // Validar sesión
             if (Sesion.Actual == null)
             {
                 MessageBox.Show("No hay sesión iniciada");
                 this.Close();
                 return;
             }
-            var globalColor = Color.FromArgb(45, 52, 70);
 
+            // Colores globales
+            var globalColor = Color.FromArgb(45, 52, 70);
             panelNavbar.BackColor = globalColor;
             panelHeader.BackColor = globalColor;
             panelFooter.BackColor = globalColor;
 
-            // (Tu código del título de la Navbar aquí...)
+            // --------------------------------------------------------
+            // 🏋️ TÍTULO DEL MENÚ LATERAL
+            // --------------------------------------------------------
             Label lblTitulo = new Label
             {
                 Text = "🏋️ GymManager",
@@ -68,9 +84,9 @@ namespace GymManager.Forms
             };
             panelNavbar.Controls.Add(lblTitulo);
 
-
-            // --- AÑADIDO: Llenar el panel de Dashboard ---
-            // (Lo hacemos aquí porque necesitamos Sesion.Actual.Nombre)
+            // --------------------------------------------------------
+            // 🏠 DASHBOARD DE INICIO (Mensaje + logo)
+            // --------------------------------------------------------
             Label lbl = new Label
             {
                 Text = $"Bienvenido {Sesion.Actual.Nombre}, seleccioná una opción del menú.",
@@ -80,61 +96,254 @@ namespace GymManager.Forms
                 TextAlign = ContentAlignment.MiddleCenter,
                 Height = 60
             };
+
             PictureBox logo = new PictureBox
             {
-                Image = Properties.Resources.Logo_gymM13, // Asegúrate que este recurso exista
+                Image = Properties.Resources.Logo_gymM13,
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Dock = DockStyle.Fill
             };
-            // Agregamos el logo y label AL panelDashboard
+
             panelDashboard.Controls.Add(logo);
             panelDashboard.Controls.Add(lbl);
 
-            // --- AÑADIDO: Agregar TODOS los paneles al panelContenido ---
-            // Los agregamos aquí, una sola vez.
+            // --------------------------------------------------------
+            // 📋 AGREGAR LOS PANELES AL CONTENEDOR CENTRAL
+            // --------------------------------------------------------
             ucGenerarRutinas.Dock = DockStyle.Fill;
             ucEditarRutina.Dock = DockStyle.Fill;
             ucPlanillasRutinas.Dock = DockStyle.Fill;
-            // panelDashboard ya tiene Dock.Fill de la inicialización
 
             panelContenido.Controls.Add(ucGenerarRutinas);
             panelContenido.Controls.Add(ucEditarRutina);
             panelContenido.Controls.Add(ucPlanillasRutinas);
-            panelContenido.Controls.Add(panelDashboard); // <-- Añadir el dashboard
-            // -----------------------------------------------------------
+            panelContenido.Controls.Add(panelDashboard);
 
+            // =========================================================
+            // 💾 BOTÓN GLOBAL DE BACKUP (solo si es ADMINISTRADOR)
+            // =========================================================
+            if (Sesion.Actual.Rol == Rol.Administrador)
+            {
+                ConfigurarBotonBackup();          // estilo + evento
+                CargarUltimoBackupDesdeCarpeta(); // muestra el último .bak
+                ColocarBackupArribaDerecha();     // posiciona correctamente
+                panelHeader.Resize += (s, ev) => ColocarBackupArribaDerecha();
+            }
+
+            // =========================================================
+            // ✅ CARGAR NAVEGACIÓN SEGÚN ROL Y MOSTRAR DASHBOARD
+            // =========================================================
             CargarNavbar(Sesion.Actual.Rol);
-            MostrarDashboard(Sesion.Actual.Rol); // <-- Muestra el dashboard al inicio
+            MostrarDashboard(Sesion.Actual.Rol);
         }
 
+        // =========================================================
+        // 🔹 CONFIGURAR BOTÓN BACKUP (estilo y tooltip)
+        // =========================================================
+        private void ConfigurarBotonBackup()
+        {
+            btnBackup = new Button
+            {
+                Text = "💾  Crear Backup",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                BackColor = Color.FromArgb(54, 162, 235),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Height = 32,
+                Width = 150,
+                Cursor = Cursors.Hand,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            btnBackup.FlatAppearance.BorderSize = 0;
+            btnBackup.Click += BtnBackup_Click;
+
+            lblUltimoBackup = new Label
+            {
+                Text = "Último backup: —",
+                Font = new Font("Segoe UI", 8.75f, FontStyle.Regular),
+                ForeColor = Color.WhiteSmoke,
+                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+
+            // Tooltip (mensaje al pasar el mouse)
+            var tt = new ToolTip { IsBalloon = false, InitialDelay = 200 };
+            tt.SetToolTip(btnBackup, "Crear respaldo de la base de datos (.bak)");
+
+            panelHeader.Controls.Add(btnBackup);
+            panelHeader.Controls.Add(lblUltimoBackup);
+        }
+
+        // =========================================================
+        // 🔸 EVENTO CLICK: HACER BACKUP DE LA BASE DE DATOS
+        // =========================================================
+        private void BtnBackup_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string defaultFolder = GetDefaultBackupFolder();
+                Directory.CreateDirectory(defaultFolder);
+
+                string defaultName = $"GymManagerDB_BACKUP_{DateTime.Now:yyyyMMdd_HHmm}.bak";
+
+                using (var dlg = new SaveFileDialog())
+                {
+                    dlg.InitialDirectory = defaultFolder;
+                    dlg.FileName = defaultName;
+                    dlg.Filter = "SQL Server Backup (*.bak)|*.bak";
+                    dlg.Title = "Guardar respaldo de la base de datos";
+
+                    if (dlg.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    // Realizar el backup
+                    HacerBackupFull(dlg.FileName);
+                    ActualizarUltimoBackup(DateTime.Now);
+
+                    MessageBox.Show($"✅ Backup completado con éxito.\nArchivo guardado en:\n{dlg.FileName}",
+                                    "Respaldo realizado",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("❌ Error al realizar el backup:\n" + ex.Message,
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // 🔸 MÉTODO: REALIZA EL BACKUP FULL
+        // =========================================================
+        private void HacerBackupFull(string rutaDestino)
+        {
+            string cadena = ObtenerCadenaConexionMaster();
+
+            using (var cn = new SqlConnection(cadena))
+            using (var cmd = cn.CreateCommand())
+            {
+                cn.Open();
+                cmd.CommandTimeout = 0;
+                cmd.CommandText = @"
+                    BACKUP DATABASE GymManagerDB
+                    TO DISK = @ruta
+                    WITH INIT, STATS = 10;";
+                cmd.Parameters.AddWithValue("@ruta", rutaDestino);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        // =========================================================
+        // 🔸 AUXILIARES DE BACKUP
+        // =========================================================
+        private string GetDefaultBackupFolder()
+        {
+            // 📂 Carpeta por defecto (ajustar si cambia el path)
+            return @"C:\Usuarios\Bruno\source\repos\Backups_GymManager\";
+        }
+
+        private void CargarUltimoBackupDesdeCarpeta()
+        {
+            try
+            {
+                var folder = GetDefaultBackupFolder();
+                if (!Directory.Exists(folder))
+                {
+                    lblUltimoBackup.Text = "Último backup: —";
+                    return;
+                }
+
+                var ultimoBak = new DirectoryInfo(folder)
+                    .GetFiles("*.bak")
+                    .OrderByDescending(f => f.LastWriteTime)
+                    .FirstOrDefault();
+
+                lblUltimoBackup.Text = ultimoBak != null
+                    ? $"Último backup: {ultimoBak.LastWriteTime:dd/MM/yyyy - HH:mm} hs"
+                    : "Último backup: —";
+            }
+            catch
+            {
+                lblUltimoBackup.Text = "Último backup: —";
+            }
+        }
+
+        private void ActualizarUltimoBackup(DateTime fecha)
+        {
+            lblUltimoBackup.Text = $"Último backup: {fecha:dd/MM/yyyy - HH:mm} hs";
+        }
+
+        private string ObtenerCadenaConexionMaster()
+        {
+            // 🔹 Adaptado para tus PCs (Bruno / Joni)
+            string cs = @"Server=DESKTOP-K765B76\SQLEXPRESS;Database=GymManagerDB;Trusted_Connection=True;";
+            // string cs = @"Server=localhost,1433;Database=GymManagerDB;Trusted_Connection=True;";
+
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(cs);
+                builder.InitialCatalog = "master";
+                return builder.ToString();
+            }
+            catch
+            {
+                return cs.Replace("Database=GymManagerDB", "Database=master")
+                         .Replace("Initial Catalog=GymManagerDB", "Initial Catalog=master");
+            }
+        }
+
+        private void ColocarBackupArribaDerecha()
+        {
+            if (btnBackup == null || lblUltimoBackup == null) return;
+
+            const int rightPadding = 30;
+            const int topPadding = 10;
+
+            // --- Botón ---
+            int x = panelHeader.ClientSize.Width - btnBackup.Width - rightPadding;
+            int y = topPadding;
+            btnBackup.Location = new Point(x, y);
+
+            // --- Label debajo, centrado respecto al botón ---
+            lblUltimoBackup.Location = new Point(
+                btnBackup.Left -24,           // 5px desplazado para que no empiece justo en el borde
+                btnBackup.Bottom + 1
+            );
+
+            lblUltimoBackup.BringToFront();
+        }
+
+
+        // =========================================================
+        // 🔹 NAVEGACIÓN / UTILIDADES EXISTENTES
+        // =========================================================
         private void CargarNavbar(Rol rol)
         {
             panelNavbar.Controls.Clear();
-
-            // Botón "Inicio"
             AgregarBotonNav("Inicio", () => MostrarDashboard(rol), DockStyle.Top);
 
-            // ---- Opciones según rol ----
             if (rol == Rol.Profesor)
             {
-                AgregarBotonNav("Generar Rutinas", () => MostrarGenerarRutinas(), DockStyle.Top);
-                AgregarBotonNav("Editar Rutina", () => MostrarEditarRutina(), DockStyle.Top);
-                AgregarBotonNav("Planillas", () => MostrarPlanillas(), DockStyle.Top);
+                AgregarBotonNav("Generar Rutinas", MostrarGenerarRutinas, DockStyle.Top);
+                AgregarBotonNav("Editar Rutina", MostrarEditarRutina, DockStyle.Top);
+                AgregarBotonNav("Planillas", MostrarPlanillas, DockStyle.Top);
             }
 
             if (rol == Rol.Administrador)
             {
-                AgregarBotonNav("Usuarios", () => CargarVista(new Views.UcGestionUsuarios()), DockStyle.Top);
-                AgregarBotonNav("Ejercicios", () => CargarVista(new Views.UcGestionEjercicios()), DockStyle.Top);
-                AgregarBotonNav("Reportes", () => CargarVista(new Views.UcReportes()), DockStyle.Top);
+                AgregarBotonNav("Usuarios", () => CargarVista(new UcGestionUsuarios()), DockStyle.Top);
+                AgregarBotonNav("Ejercicios", () => CargarVista(new UcGestionEjercicios()), DockStyle.Top);
+                AgregarBotonNav("Reportes", () => CargarVista(new UcReportes()), DockStyle.Top);
             }
 
             if (rol == Rol.Recepcionista)
             {
-                AgregarBotonNav("Rutina", () => CargarVista(new Views.UcRecepcionistaDashboard()), DockStyle.Top);
+                AgregarBotonNav("Rutina", () => CargarVista(new UcRecepcionistaDashboard()), DockStyle.Top);
             }
 
-            // Botón "Cerrar sesión"
             AgregarBotonNav("Cerrar sesión", () =>
             {
                 Sesion.Cerrar();
@@ -142,26 +351,15 @@ namespace GymManager.Forms
             }, DockStyle.Bottom);
         }
 
-        // =========================================================
-        // 🔥 MÉTODOS DE NAVEGACIÓN CORREGIDOS (Usan BringToFront) 🔥
-        // =========================================================
-
-        private void MostrarGenerarRutinas()
-        {
-            ucGenerarRutinas.BringToFront();
-        }
+        private void MostrarGenerarRutinas() => ucGenerarRutinas.BringToFront();
 
         public void MostrarEditarRutina()
         {
-            // 1. Obtener las listas generadas (en memoria) desde ucGenerarRutinas
             var listaHombres = ucGenerarRutinas.rutinaHombres;
             var listaMujeres = ucGenerarRutinas.rutinaMujeres;
             var listaDeportistas = ucGenerarRutinas.rutinaDeportistas;
 
-            // 2. Pasarlas al panel de edición para que actualice sus botones
             ucEditarRutina.ActualizarYMostrarPanelSeleccion(listaHombres, listaMujeres, listaDeportistas);
-
-            // 3. Mostrar el panel de edición
             ucEditarRutina.BringToFront();
         }
 
@@ -171,9 +369,6 @@ namespace GymManager.Forms
             ucPlanillasRutinas.CargarDatos();
         }
 
-        // Este método para Admin/Recepcionista usa el patrón Clear/Add
-        // Esto romperá la navegación si vuelves a "Generar Rutina"
-        // (Considera crear UserControls únicos también para estas vistas)
         private void CargarVista(UserControl vista)
         {
             panelContenido.Controls.Clear();
@@ -196,7 +391,6 @@ namespace GymManager.Forms
 
             btn.FlatAppearance.BorderSize = 0;
             btn.Click += (s, e) => onClick();
-
             panelNavbar.Controls.Add(btn);
         }
 
@@ -207,8 +401,6 @@ namespace GymManager.Forms
 
         private void MostrarDashboard(Rol rol)
         {
-            // Ya no necesita Clear() ni Add()
-            // Solo trae el panel del dashboard al frente.
             panelDashboard.BringToFront();
         }
     }
