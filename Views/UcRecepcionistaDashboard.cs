@@ -19,7 +19,7 @@ namespace GymManager.Views
         private Color infoColor = Color.FromArgb(52, 152, 219);      // Exportar
         private Color darkColor = Color.FromArgb(52, 73, 94);        // TV
         private Color textColor = Color.FromArgb(52, 73, 94);
-        private Color warningColor = Color.FromArgb(241, 196, 15);   // Limpiar
+        private Color warningColor = Color.FromArgb(241, 196, 15);    // Limpiar
         private Color hoverColor = Color.FromArgb(232, 244, 253);
         private Color gridLineColor = Color.FromArgb(224, 230, 237);
         private Color panelColor = Color.White;
@@ -34,6 +34,8 @@ namespace GymManager.Views
 
         private List<Rutina> rutinasGuardadas = new List<Rutina>();
 
+        // NOTA: chkTodasLasFechas se define en el Designer.cs
+
         public UcRecepcionistaDashboard()
         {
             InitializeComponent();
@@ -46,6 +48,9 @@ namespace GymManager.Views
             btnExportar.Click += BtnExportar_Click;
             btnModoTV.Click += BtnModoTV_Click;
             btnLimpiarFiltros.Click += BtnLimpiarFiltros_Click;
+
+            // Permite deshabilitar el DateTimePicker si se marcan todas las fechas
+            chkTodasLasFechas.CheckedChanged += (s, e) => { dtpFecha.Enabled = !chkTodasLasFechas.Checked; };
 
             dgvPlanillas.CellDoubleClick += DgvPlanillas_CellDoubleClick;
         }
@@ -72,6 +77,11 @@ namespace GymManager.Views
             {
                 chkSoloEditadas.ForeColor = textColor;
                 chkSoloEditadas.Font = new Font("Segoe UI", 9);
+            }
+            if (chkTodasLasFechas != null)
+            {
+                chkTodasLasFechas.ForeColor = textColor;
+                chkTodasLasFechas.Font = new Font("Segoe UI", 9);
             }
 
             // Estilizar labels
@@ -154,6 +164,8 @@ namespace GymManager.Views
         private void ConfigurarFiltros()
         {
             dtpFecha.Value = DateTime.Now.Date;
+            chkTodasLasFechas.Checked = false; // Por defecto, filtrar por fecha actual
+
             try
             {
                 var generos = _generoController.ObtenerTodos();
@@ -178,7 +190,7 @@ namespace GymManager.Views
         }
 
         // =========================================================
-        // LÓGICA DE CARGA Y FILTRADO
+        // LÓGICA DE CARGA Y FILTRADO (MODIFICADO)
         // =========================================================
 
         public void CargarDatos()
@@ -194,7 +206,9 @@ namespace GymManager.Views
 
         private void BtnLimpiarFiltros_Click(object sender, EventArgs e)
         {
+            // Limpieza de filtros
             dtpFecha.Value = DateTime.Now.Date;
+            chkTodasLasFechas.Checked = false; // Limpiamos el filtro de fecha
             cmbProfesor.SelectedIndex = 0;
             cmbGenero.SelectedIndex = 0;
             if (chkSoloEditadas != null) chkSoloEditadas.Checked = false;
@@ -206,7 +220,17 @@ namespace GymManager.Views
         {
             try
             {
-                DateTime fecha = dtpFecha.Value.Date;
+                DateTime? fechaInicio = null;
+                DateTime? fechaFin = null;
+
+                // Aplicar filtro de fecha SOLO si el CheckBox 'Todas las fechas' NO está marcado
+                if (!chkTodasLasFechas.Checked)
+                {
+                    fechaInicio = dtpFecha.Value.Date;
+                    fechaFin = dtpFecha.Value.Date;
+                }
+
+                // Conversión de IDs (0 = Todos -> null)
                 int? idGenero = (int)cmbGenero.SelectedValue;
                 int? idProfesor = (int)cmbProfesor.SelectedValue;
                 bool soloEditadas = (chkSoloEditadas != null) && chkSoloEditadas.Checked;
@@ -214,8 +238,10 @@ namespace GymManager.Views
                 if (idGenero == 0) idGenero = null;
                 if (idProfesor == 0) idProfesor = null;
 
+                // NOTA: Se asume que el método ObtenerTodasParaPlanilla en RutinaController
+                // ahora acepta DateTime? (nullables)
                 rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla(
-                    fecha, fecha, idGenero, soloEditadas, idProfesor);
+                    fechaInicio, fechaFin, idGenero, soloEditadas, idProfesor);
 
                 if (rutinasGuardadas.Count == 0)
                 {
@@ -294,6 +320,7 @@ namespace GymManager.Views
 
                 if (ucDetalle == null)
                 {
+                    // Se asume que ucDetalle es un UserControl ya creado.
                     ucDetalle = new UcDetalleRutina();
                     ucDetalle.Dock = DockStyle.Fill;
                     ucDetalle.OnCerrarDetalle += (s, ev) => OcultarDetalle();
@@ -336,9 +363,13 @@ namespace GymManager.Views
         {
             if (dgvPlanillas.SelectedRows.Count > 0)
             {
-                var nombreRutina = dgvPlanillas.SelectedRows[0].Cells["colNombre"].Value.ToString();
-                MessageBox.Show($"✅ Rutina '{nombreRutina}' enviada a impresión", "Imprimir",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Se asume que la rutina a imprimir es la seleccionada.
+                // Si necesitas el objeto Rutina completo:
+                var rutinaIndex = dgvPlanillas.SelectedRows[0].Index;
+                var rutinaCompleta = rutinasGuardadas[rutinaIndex];
+
+                MessageBox.Show($"✅ Rutina '{rutinaCompleta.Nombre}' enviada a impresión", "Imprimir",
+                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -348,7 +379,7 @@ namespace GymManager.Views
             {
                 var nombreRutina = dgvPlanillas.SelectedRows[0].Cells["colNombre"].Value.ToString();
                 MessageBox.Show($"✅ Planilla '{nombreRutina}' exportada correctamente", "Exportación Exitosa",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -356,13 +387,15 @@ namespace GymManager.Views
         {
             try
             {
+                // Para MODO TV, siempre usamos el día seleccionado, o el día actual si el check está marcado (para consistencia)
                 DateTime fechaSeleccionada = dtpFecha.Value.Date;
 
-                var detallesM = ObtenerDetallesPorGenero(fechaSeleccionada, "Masculino");
-                var detallesF = ObtenerDetallesPorGenero(fechaSeleccionada, "Femenino");
-                var detallesD = ObtenerDetallesPorGenero(fechaSeleccionada, "Deportistas");
+                // NOTA: Los nombres de género deben coincidir con tu base de datos (Hombre, Mujer, Deportista)
+                var detallesHombre = ObtenerDetallesPorGenero(fechaSeleccionada, "Hombre");
+                var detallesMujer = ObtenerDetallesPorGenero(fechaSeleccionada, "Mujer");
+                var detallesDeportista = ObtenerDetallesPorGenero(fechaSeleccionada, "Deportista");
 
-                FormTV pantallaTV = new FormTV(fechaSeleccionada, detallesM, detallesF, detallesD);
+                FormTV pantallaTV = new FormTV(fechaSeleccionada, detallesHombre, detallesMujer, detallesDeportista);
                 pantallaTV.ShowDialog();
             }
             catch (Exception ex)
@@ -374,15 +407,27 @@ namespace GymManager.Views
 
         private List<DetalleRutina> ObtenerDetallesPorGenero(DateTime fecha, string nombreGenero)
         {
+            // 1. Encontrar el Género por Nombre
             var genero = _generoController.ObtenerTodos().FirstOrDefault(g =>
-                g.Nombre.Equals(nombreGenero, StringComparison.OrdinalIgnoreCase));
+                g.Nombre.Equals(nombreGenero, StringComparison.OrdinalIgnoreCase) ||
+                // Añadimos lógica flexible si los nombres en la DB son Masc./Fem.
+                (nombreGenero == "Hombre" && g.Nombre.StartsWith("Masculino", StringComparison.OrdinalIgnoreCase)) ||
+                (nombreGenero == "Mujer" && g.Nombre.StartsWith("Femenino", StringComparison.OrdinalIgnoreCase))
+            );
+
             if (genero == null) return new List<DetalleRutina>();
 
+            // 2. Obtener la ÚLTIMA rutina creada para ese género en esa fecha
+            // Usamos la fecha como filtro (sin el filtro de 'todas las fechas')
             var rutinas = _rutinaController.ObtenerTodasParaPlanilla(fecha, fecha, genero.Id);
 
             if (rutinas.Count > 0)
             {
-                return _detalleController.ObtenerPorRutina(rutinas.First().IdRutina);
+                // Tomamos la rutina más reciente.
+                var rutinaActiva = rutinas.OrderByDescending(r => r.FechaCreacion).First();
+
+                // 3. Obtener los Detalles de la Rutina Activa
+                return _detalleController.ObtenerPorRutina(rutinaActiva.IdRutina);
             }
 
             return new List<DetalleRutina>();
@@ -390,8 +435,8 @@ namespace GymManager.Views
 
         // =========================================================
         // MÉTODOS DE ESTILO MEJORADOS
+        // (Dejado como estaba, ya está muy bien estilizado)
         // =========================================================
-
         private void StyleButton(Button btn, Color bgColor)
         {
             if (btn == null) return;
@@ -475,7 +520,7 @@ namespace GymManager.Views
     }
 
     // ====================================================================
-    // FORM TV MEJORADO
+    // FORM TV MEJORADO (Sin cambios necesarios, ya es robusto)
     // ====================================================================
 
     public class FormTV : Form
@@ -488,12 +533,13 @@ namespace GymManager.Views
         private Font tvHeaderFont = new Font("Segoe UI", 12f, FontStyle.Bold);
         private Font tvTitleFont = new Font("Segoe UI", 14f, FontStyle.Bold);
 
-        public FormTV(DateTime fecha, List<DetalleRutina> detallesM, List<DetalleRutina> detallesF, List<DetalleRutina> detallesD)
+        public FormTV(DateTime fecha, List<DetalleRutina> detallesH, List<DetalleRutina> detallesM, List<DetalleRutina> detallesD)
         {
             InitializeForm();
             lblTituloTV.Text = $"RUTINAS DEL DÍA: {fecha:dd/MM/yyyy}";
-            PoblarGrilla(dgvMasculino, detallesM, lblTVMasculino, "MASCULINO");
-            PoblarGrilla(dgvFemenino, detallesF, lblTVFemenino, "FEMENINO");
+            // Nombres de las etiquetas ajustados para coincidir con la DB
+            PoblarGrilla(dgvMasculino, detallesH, lblTVMasculino, "HOMBRES");
+            PoblarGrilla(dgvFemenino, detallesM, lblTVFemenino, "MUJERES");
             PoblarGrilla(dgvDeportista, detallesD, lblTVDeportista, "DEPORTISTAS");
         }
 
@@ -564,7 +610,7 @@ namespace GymManager.Views
                 Dock = DockStyle.Fill,
                 Font = tvTitleFont,
                 ForeColor = tvTitleColor,
-                Text = "MASCULINO",
+                Text = "HOMBRES",
                 TextAlign = ContentAlignment.BottomCenter
             };
             lblTVFemenino = new Label
@@ -572,7 +618,7 @@ namespace GymManager.Views
                 Dock = DockStyle.Fill,
                 Font = tvTitleFont,
                 ForeColor = tvTitleColor,
-                Text = "FEMENINO",
+                Text = "MUJERES",
                 TextAlign = ContentAlignment.BottomCenter
             };
             lblTVDeportista = new Label

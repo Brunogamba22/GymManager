@@ -56,9 +56,9 @@ namespace GymManager.Controllers
             }
         }
 
-       
 
-       
+
+
         public List<Rutina> ObtenerTodasParaPlanilla(DateTime? fechaDesde = null, DateTime? fechaHasta = null, int? idGenero = null, bool? soloEditadas = null, int? idProfesor = null)
         {
             var lista = new List<Rutina>();
@@ -79,19 +79,32 @@ namespace GymManager.Controllers
 
                 var parameters = new List<SqlParameter>();
 
+                // =========================================================
+                // 🔥 CORRECCIÓN CRÍTICA DE FILTRO DE FECHA
+                // =========================================================
+
+                // Si se proporciona fechaDesde, filtramos desde el inicio de ese día.
                 if (fechaDesde.HasValue)
                 {
-                    query += " AND r.fecha >= @fechaDesde";
-                    // 🔥 CORRECCIÓN: No usar .Date, pasar el valor tal como viene
-                    parameters.Add(new SqlParameter("@fechaDesde", fechaDesde.Value));
+                    // Convertimos la fecha a la medianoche (00:00:00) del día seleccionado
+                    query += " AND r.fecha >= @fechaInicioDia";
+                    parameters.Add(new SqlParameter("@fechaInicioDia", fechaDesde.Value.Date));
                 }
 
+                // Si se proporciona fechaHasta, filtramos hasta el FINAL de ese día.
                 if (fechaHasta.HasValue)
                 {
-                    query += " AND r.fecha <= @fechaHasta";
-                    //CORRECCIÓN: No usar .Date, pasar el valor tal como viene
-                    parameters.Add(new SqlParameter("@fechaHasta", fechaHasta.Value));
+                    // Calculamos el final del día: el inicio del día siguiente (2025-11-06 00:00:00)
+                    DateTime fechaFinDia = fechaHasta.Value.Date.AddDays(1);
+                    query += " AND r.fecha < @fechaFinDia";
+                    parameters.Add(new SqlParameter("@fechaFinDia", fechaFinDia));
                 }
+                // Si ambos son null (por el checkbox 'Todas las fechas' en el UI),
+                // no se agrega ningún filtro de fecha, logrando el efecto 'TODOS'.
+
+                // =========================================================
+                // FIN CORRECCIÓN CRÍTICA
+                // =========================================================
 
                 if (idGenero.HasValue && idGenero.Value > 0)
                 {
@@ -99,7 +112,7 @@ namespace GymManager.Controllers
                     parameters.Add(new SqlParameter("@idGenero", idGenero.Value));
                 }
 
-                
+
                 if (soloEditadas.HasValue && soloEditadas.Value == true)
                 {
                     query += " AND r.esEditada = 1"; // Filtra en la BD
@@ -120,10 +133,9 @@ namespace GymManager.Controllers
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        // ... (Tu lógica de lectura del reader está perfecta, no la cambies) ...
+                        // ... (Tu lógica de lectura del reader está perfecta) ...
                         while (reader.Read())
                         {
-                            // ... (tu código para leer y convertir 'esEditada') ...
                             bool esEditada = false;
                             var valor = reader["esEditada"];
                             if (valor != DBNull.Value)
