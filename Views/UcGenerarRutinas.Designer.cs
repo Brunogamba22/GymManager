@@ -17,9 +17,16 @@ namespace GymManager.Views
         private DataGridView dgvHombres, dgvMujeres, dgvDeportistas;
         private Button btnGenerarHombres, btnGenerarMujeres, btnGenerarDeportistas;
         private Label lblTituloHombres, lblTituloMujeres, lblTituloDeportistas;
+        private Button btnLimpiarHombres, btnGuardarHombres;
+        private Button btnLimpiarMujeres, btnGuardarMujeres;
+        private Button btnLimpiarDeportistas, btnGuardarDeportistas;
 
-        // Controles para selección múltiple
+        // --- 🔥 VUELVEN LOS CHECKEDLISTBOX ---
         private CheckedListBox chkListHombres, chkListMujeres, chkListDeportistas;
+
+        // --- Controles de Objetivo ---
+        private ComboBox cmbObjetivoHombres, cmbObjetivoMujeres, cmbObjetivoDeportistas;
+        private Label lblObjetivoHombres, lblObjetivoMujeres, lblObjetivoDeportistas;
 
         protected override void Dispose(bool disposing)
         {
@@ -33,6 +40,17 @@ namespace GymManager.Views
             this.headerPanel = new Panel();
             this.tabsContainer = new Panel();
             this.contentPanel = new Panel();
+
+            this.cmbObjetivoHombres = new ComboBox();
+            this.cmbObjetivoMujeres = new ComboBox();
+            this.cmbObjetivoDeportistas = new ComboBox();
+            this.lblObjetivoHombres = new Label();
+            this.lblObjetivoMujeres = new Label();
+            this.lblObjetivoDeportistas = new Label();
+
+            this.chkListHombres = new CheckedListBox();
+            this.chkListMujeres = new CheckedListBox();
+            this.chkListDeportistas = new CheckedListBox();
 
             SetupMainPanels();
             SetupTabs();
@@ -92,18 +110,19 @@ namespace GymManager.Views
         private void SetupContentPanels()
         {
             this.panelHombres = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
-            SetupRutinaPanel(panelHombres, "RUTINA PARA HOMBRES", dgvHombres = new DataGridView(), btnGenerarHombres = new Button(), lblTituloHombres = new Label(), chkListHombres = new CheckedListBox());
+            SetupRutinaPanel(panelHombres, "RUTINA PARA HOMBRES", dgvHombres = new DataGridView(), btnGenerarHombres = new Button(), lblTituloHombres = new Label(), chkListHombres, cmbObjetivoHombres, lblObjetivoHombres);
 
             this.panelMujeres = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
-            SetupRutinaPanel(panelMujeres, "RUTINA PARA MUJERES", dgvMujeres = new DataGridView(), btnGenerarMujeres = new Button(), lblTituloMujeres = new Label(), chkListMujeres = new CheckedListBox());
+            SetupRutinaPanel(panelMujeres, "RUTINA PARA MUJERES", dgvMujeres = new DataGridView(), btnGenerarMujeres = new Button(), lblTituloMujeres = new Label(), chkListMujeres, cmbObjetivoMujeres, lblObjetivoMujeres);
 
             this.panelDeportistas = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
-            SetupRutinaPanel(panelDeportistas, "RUTINA PARA DEPORTISTAS", dgvDeportistas = new DataGridView(), btnGenerarDeportistas = new Button(), lblTituloDeportistas = new Label(), chkListDeportistas = new CheckedListBox());
+            SetupRutinaPanel(panelDeportistas, "RUTINA PARA DEPORTISTAS", dgvDeportistas = new DataGridView(), btnGenerarDeportistas = new Button(), lblTituloDeportistas = new Label(), chkListDeportistas, cmbObjetivoDeportistas, lblObjetivoDeportistas);
 
             this.contentPanel.Controls.AddRange(new Control[] { panelHombres, panelMujeres, panelDeportistas });
         }
 
-        private void SetupRutinaPanel(Panel panel, string titulo, DataGridView dgv, Button btnGenerar, Label lblTitulo, CheckedListBox chkListGrupos)
+        // --- 🔥 MODIFICADO: La firma vuelve a aceptar CheckedListBox ---
+        private void SetupRutinaPanel(Panel panel, string titulo, DataGridView dgv, Button btnGenerar, Label lblTitulo, CheckedListBox chkListGrupos, ComboBox cmbObjetivo, Label lblObjetivo)
         {
             lblTitulo.Text = titulo;
             lblTitulo.Dock = DockStyle.Top;
@@ -112,20 +131,58 @@ namespace GymManager.Views
             lblTitulo.ForeColor = textColor;
             lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
 
-            var panelSelector = new Panel { Dock = DockStyle.Top, Height = 130, Padding = new Padding(0, 5, 0, 10) };
+            var panelObjetivo = new Panel { Dock = DockStyle.Top, Height = 40, Padding = new Padding(0, 5, 0, 5) };
+
+            cmbObjetivo.Name = "cmbObjetivo" + panel.Name;
+            cmbObjetivo.Size = new Size(200, 25);
+            cmbObjetivo.Font = new Font("Segoe UI", 10);
+            cmbObjetivo.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbObjetivo.Dock = DockStyle.Left;
+
+            lblObjetivo.Text = "Seleccionar Objetivo:";
+            lblObjetivo.Font = new Font("Segoe UI", 10);
+            lblObjetivo.ForeColor = textColor;
+            lblObjetivo.Dock = DockStyle.Left;
+            lblObjetivo.TextAlign = ContentAlignment.MiddleLeft;
+            lblObjetivo.Padding = new Padding(0, 0, 5, 0);
+            lblObjetivo.AutoSize = true;
+
+            panelObjetivo.Controls.Add(cmbObjetivo);
+            panelObjetivo.Controls.Add(lblObjetivo);
+
+            var panelSelector = new Panel { Dock = DockStyle.Top, Height = 110, Padding = new Padding(0, 5, 0, 10) };
             var lblSelector = new Label { Text = "Seleccionar Grupos Musculares:", Dock = DockStyle.Top, Font = new Font("Segoe UI", 10), ForeColor = textColor, Height = 25 };
+
+            var pnlListContainer = new Panel();
+            pnlListContainer.Dock = DockStyle.Fill;
+            pnlListContainer.Padding = new Padding(1);
+            pnlListContainer.BackColor = Color.FromArgb(248, 249, 250);
+            pnlListContainer.BorderStyle = BorderStyle.FixedSingle;
 
             chkListGrupos.Dock = DockStyle.Fill;
             chkListGrupos.Font = new Font("Segoe UI", 10);
             chkListGrupos.CheckOnClick = true;
-            chkListGrupos.BorderStyle = BorderStyle.FixedSingle;
-            // chkListGrupos.SelectionMode = SelectionMode.None; // <-- REMOVÉ ESTA LÍNEA O COMENTALA
+            chkListGrupos.BorderStyle = BorderStyle.None;
+            chkListGrupos.BackColor = Color.White;
+            chkListGrupos.HorizontalScrollbar = false;
+            chkListGrupos.SelectedIndexChanged += (sender, e) => {
+                chkListGrupos.ClearSelected();
+            };
             chkListGrupos.ItemCheck += (sender, e) => OnGrupoMuscular_ItemCheck(chkListGrupos, btnGenerar);
-            chkListGrupos.SelectedIndexChanged += (sender, e) => { chkListGrupos.ClearSelected(); }; // <-- ¡AGREGÁ ESTA LÍNEA MÁGICA!
-            panelSelector.Controls.AddRange(new Control[] { chkListGrupos, lblSelector });
+
+            pnlListContainer.Controls.Add(chkListGrupos);
+
+            // --- 🔥 CORRECCIÓN DE ORDEN AQUÍ 🔥 ---
+            // 1. Añadir el panel (Fill) primero.
+            panelSelector.Controls.Add(pnlListContainer);
+            // 2. Añadir el label (Top) después.
+            panelSelector.Controls.Add(lblSelector);
+            // 3. ¡LA LÍNEA "BringToFront()" FUE ELIMINADA!
+            // --- FIN CORRECCIÓN ---
 
             var lblEstadoVacio = new Label { Text = "Marcá los grupos musculares que querés entrenar y hacé clic en 'Generar Rutina'.", Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10), ForeColor = Color.LightGray };
 
+            // ... (El resto de tu código para dgv, panelBotones, etc. no cambia) ...
             dgv.Visible = false;
             dgv.Dock = DockStyle.Fill;
             dgv.BackgroundColor = Color.White;
@@ -139,7 +196,7 @@ namespace GymManager.Views
             dgv.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.FromArgb(248, 249, 250), ForeColor = textColor, Font = new Font("Segoe UI", 9, FontStyle.Bold), Alignment = DataGridViewContentAlignment.MiddleLeft, Padding = new Padding(10, 0, 10, 0) };
             dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
             dgv.ColumnHeadersHeight = 40;
-            dgv.DefaultCellStyle = new DataGridViewCellStyle { SelectionBackColor = Color.White, SelectionForeColor = textColor, Font = new Font("Segoe UI", 9)};
+            dgv.DefaultCellStyle = new DataGridViewCellStyle { SelectionBackColor = Color.White, SelectionForeColor = textColor, Font = new Font("Segoe UI", 9) };
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 249, 250);
             dgv.EnableHeadersVisualStyles = false;
             dgv.Columns.Add("Ejercicio", "EJERCICIO");
@@ -162,17 +219,14 @@ namespace GymManager.Views
             btnGenerar.Enabled = false;
 
             var panelAccionesDerecha = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight, WrapContents = false, AutoSize = true };
-            
             var btnGuardar = new Button { Text = "💾 GUARDAR", Enabled = false, Size = new Size(120, 45) };
             var btnLimpiar = new Button { Text = "🗑️ LIMPIAR", Enabled = false, Size = new Size(110, 45) };
 
             if (panel == panelHombres)
             {
                 btnGenerar.Click += btnGenerarHombres_Click;
-               
                 btnGuardar.Click += btnGuardarHombres_Click;
                 btnLimpiar.Click += btnLimpiarHombres_Click;
-                
                 btnGuardarHombres = btnGuardar;
                 btnLimpiarHombres = btnLimpiar;
                 StyleButton(btnGenerar, primaryColor);
@@ -180,10 +234,8 @@ namespace GymManager.Views
             else if (panel == panelMujeres)
             {
                 btnGenerar.Click += btnGenerarMujeres_Click;
-                
                 btnGuardar.Click += btnGuardarMujeres_Click;
                 btnLimpiar.Click += btnLimpiarMujeres_Click;
-               
                 btnGuardarMujeres = btnGuardar;
                 btnLimpiarMujeres = btnLimpiar;
                 StyleButton(btnGenerar, secondaryColor);
@@ -191,16 +243,13 @@ namespace GymManager.Views
             else
             {
                 btnGenerar.Click += btnGenerarDeportistas_Click;
-                
                 btnGuardar.Click += btnGuardarDeportistas_Click;
                 btnLimpiar.Click += btnLimpiarDeportistas_Click;
-                
                 btnGuardarDeportistas = btnGuardar;
                 btnLimpiarDeportistas = btnLimpiar;
                 StyleButton(btnGenerar, successColor);
             }
 
-           
             StyleButton(btnGuardar, successColor);
             StyleButton(btnLimpiar, dangerColor);
 
@@ -212,6 +261,7 @@ namespace GymManager.Views
             panel.Controls.Add(lblEstadoVacio);
             panel.Controls.Add(panelBotones);
             panel.Controls.Add(panelSelector);
+            panel.Controls.Add(panelObjetivo);
             panel.Controls.Add(lblTitulo);
 
             dgv.BringToFront();
