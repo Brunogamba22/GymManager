@@ -1,17 +1,14 @@
 ﻿using GymManager.Controllers;
 using GymManager.Models;
 using GymManager.Utils;
-using OfficeOpenXml;// Asegúrate de tener EPPlus instalado
-using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;// Necesario para gráficos
-using System.Drawing.Printing;// Necesario para impresión
-using System.IO;// Necesario para manejo de archivos
-using System.Linq;// Necesario para LINQ
-using System.Windows.Forms;// Necesario para controles de Windows Forms
-
+using System.Drawing.Drawing2D;
+using System.Drawing.Printing;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 
 namespace GymManager.Views
@@ -425,16 +422,14 @@ namespace GymManager.Views
             }
         }
 
-        //---------------------------------------------------------------------
-
+        // ============================================================
+        // 🔹 ExportarRutina (versión PDF completamente funcional)
+        // ============================================================
         private void ExportarRutina(Rutina rutina)
         {
             try
             {
-                // 1) Traemos los detalles de la rutina que se exportará
                 var detalles = _detalleController.ObtenerPorRutina(rutina.IdRutina);
-
-                // Si no hay datos, avisamos y salimos
                 if (detalles == null || detalles.Count == 0)
                 {
                     MessageBox.Show("Esta rutina no tiene ejercicios cargados para exportar.",
@@ -442,103 +437,81 @@ namespace GymManager.Views
                     return;
                 }
 
-                // 2) Construimos nombre y ruta segura del archivo en el Escritorio
                 string ruta = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    $"Rutina_{SanearNombre(rutina.Nombre)}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
+                    $"Rutina_{SanearNombre(rutina.Nombre)}_{DateTime.Now:yyyyMMdd_HHmm}.pdf"
                 );
 
-                // 3) Creamos el archivo Excel en memoria
-                using (var pkg = new ExcelPackage())
+                // 👉 Usamos nombres completos para evitar ambigüedad
+                iTextSharp.text.Document doc = new iTextSharp.text.Document(iTextSharp.text.PageSize.A4, 50, 50, 80, 50);
+                iTextSharp.text.pdf.PdfWriter writer = iTextSharp.text.pdf.PdfWriter.GetInstance(doc, new FileStream(ruta, FileMode.Create));
+                doc.Open();
+
+                // Estilos PDF
+                var azulGym = new iTextSharp.text.BaseColor(41, 128, 185);
+                var fTitulo = new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 16, iTextSharp.text.Font.BOLD, azulGym);
+                var fSub = new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 10, iTextSharp.text.Font.BOLD);
+                var fNormal = new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 10);
+                var fPie = new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 8, iTextSharp.text.Font.ITALIC, iTextSharp.text.BaseColor.GRAY);
+
+                // Cabecera
+                var titulo = new iTextSharp.text.Paragraph("G Y M   M A N A G E R\nRUTINA DE ENTRENAMIENTO", fTitulo)
+                { Alignment = iTextSharp.text.Element.ALIGN_CENTER };
+                doc.Add(titulo);
+                doc.Add(new iTextSharp.text.Paragraph("\n"));
+
+                doc.Add(new iTextSharp.text.Paragraph($"Rutina: {rutina.Nombre}", fSub));
+                doc.Add(new iTextSharp.text.Paragraph($"Profesor: {rutina.NombreProfesor}", fNormal));
+                doc.Add(new iTextSharp.text.Paragraph($"Género: {rutina.NombreGenero}", fNormal));
+                doc.Add(new iTextSharp.text.Paragraph($"Fecha de creación: {rutina.FechaCreacion:dd/MM/yyyy}", fNormal));
+                doc.Add(new iTextSharp.text.Paragraph("\n"));
+
+                // Tabla de ejercicios
+                var tabla = new iTextSharp.text.pdf.PdfPTable(4)
                 {
-                    // Creamos una hoja
-                    var ws = pkg.Workbook.Worksheets.Add("Rutina");
+                    WidthPercentage = 100
+                };
+                tabla.SetWidths(new float[] { 3f, 1f, 1f, 1f });
 
-                    // 3.1) Encabezado superior con datos de la rutina
-                    ws.Cells["A1"].Value = "RUTINA:"; ws.Cells["B1"].Value = rutina.Nombre;
-                    ws.Cells["A2"].Value = "PROFESOR:"; ws.Cells["B2"].Value = rutina.NombreProfesor;
-                    ws.Cells["A3"].Value = "GÉNERO:"; ws.Cells["B3"].Value = rutina.NombreGenero;
-                    ws.Cells["A4"].Value = "FECHA CREACIÓN:"; ws.Cells["B4"].Value = rutina.FechaCreacion.ToString("dd/MM/yyyy");
-
-                    // 3.2) Títulos de la tabla
-                    ws.Cells["A6"].Value = "EJERCICIO";
-                    ws.Cells["B6"].Value = "SERIES";
-                    ws.Cells["C6"].Value = "REPS";
-                    ws.Cells["D6"].Value = "CARGA %";
-
-                    // Estilo de los títulos
-                    using (var rng = ws.Cells["A6:D6"])
+                string[] headers = { "EJERCICIO", "SERIES", "REPS", "CARGA %" };
+                foreach (var h in headers)
+                {
+                    var cell = new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(h, fSub))
                     {
-                        rng.Style.Font.Bold = true;
-                        rng.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        rng.Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
-                        rng.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    }
-
-                    // =========================
-                    // OPCIONALES DE FORMATO
-                    // (Dejá comentado si no querés usarlos todavía)
-                    // =========================
-
-                    // // Congelar fila de títulos (la 6) para que quede fija al hacer scroll
-                    // ws.View.FreezePanes(7, 1); // fila 7 = debajo del header
-
-                    // // Alinear en el centro los números y formatear la columna de CARGA %
-                    // ws.Cells["B7:D1048576"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    // ws.Cells["D7:D1048576"].Style.Numberformat.Format = "0.##";
-
-                    // 3.3) Volcado de filas
-                    int fila = 7; // primera fila de datos
-                    foreach (var d in detalles)
-                    {
-                        ws.Cells[fila, 1].Value = d.EjercicioNombre;
-                        ws.Cells[fila, 2].Value = d.Series;
-                        ws.Cells[fila, 3].Value = d.Repeticiones;
-                        ws.Cells[fila, 4].Value = d.Carga.HasValue ? (object)d.Carga.Value : "";
-                        fila++;
-                    }
-
-                    // // Bordes sutiles a la tabla (opcional)
-                    // using (var body = ws.Cells[$"A6:D{fila - 1}"])
-                    // {
-                    //     body.Style.Border.Top.Style = ExcelBorderStyle.Hair;
-                    //     body.Style.Border.Left.Style = ExcelBorderStyle.Hair;
-                    //     body.Style.Border.Right.Style = ExcelBorderStyle.Hair;
-                    //     body.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
-                    // }
-
-                    // Autoajuste de columnas según contenido
-                    ws.Cells[ws.Dimension.Address].AutoFitColumns();
-
-                    // 3.4) Guardamos el archivo físico
-                    pkg.SaveAs(new FileInfo(ruta));
+                        BackgroundColor = new iTextSharp.text.BaseColor(235, 242, 250),
+                        HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER,
+                        Padding = 6
+                    };
+                    tabla.AddCell(cell);
                 }
 
-                // =========================
-                // OPCIONAL: Abrir el archivo automáticamente después de exportar
-                // (Descomentá estas 2 líneas si querés abrir el Excel enseguida)
-                // var psi = new System.Diagnostics.ProcessStartInfo(ruta) { UseShellExecute = true };
-                // System.Diagnostics.Process.Start(psi);
+                foreach (var d in detalles)
+                {
+                    tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.EjercicioNombre, fNormal)) { Padding = 5 });
+                    tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.Series.ToString(), fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
+                    tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.Repeticiones.ToString(), fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
+                    tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.Carga.HasValue ? d.Carga.ToString() : "-", fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
+                }
 
-                // 4) Confirmación al usuario
-                MessageBox.Show($"📂 Rutina exportada correctamente a:\n{ruta}",
+                doc.Add(tabla);
+
+                // Pie
+                doc.Add(new iTextSharp.text.Paragraph("\nGenerado el " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"), fPie));
+
+                doc.Close();
+
+                MessageBox.Show($"📄 Rutina exportada correctamente en:\n{ruta}",
                                 "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ruta) { UseShellExecute = true });
             }
-            // =========================
-            // OPCIONAL: Capturar archivo en uso y dar mensaje específico
-            // (Dejá este bloque comentado o movelo encima del catch general)
-            // catch (IOException ioEx)
-            // {
-            //     MessageBox.Show("El archivo está en uso. Cerralo e intentá de nuevo.\n\n" + ioEx.Message,
-            //                     "Archivo en uso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            // }
-            // =========================
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al exportar rutina: {ex.Message}",
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
 
         //---------------------------------------------------------------------
