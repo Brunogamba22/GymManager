@@ -1,12 +1,18 @@
 ﻿using GymManager.Controllers;
 using GymManager.Models;
 using GymManager.Utils;
+using OfficeOpenXml;// Asegúrate de tener EPPlus instalado
+using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Windows.Forms;
-using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;// Necesario para gráficos
+using System.Drawing.Printing;// Necesario para impresión
+using System.IO;// Necesario para manejo de archivos
+using System.Linq;// Necesario para LINQ
+using System.Windows.Forms;// Necesario para controles de Windows Forms
+
+
 
 namespace GymManager.Views
 {
@@ -361,27 +367,318 @@ namespace GymManager.Views
 
         private void BtnImprimir_Click(object sender, EventArgs e)
         {
-            if (dgvPlanillas.SelectedRows.Count > 0)
+            try
             {
-                // Se asume que la rutina a imprimir es la seleccionada.
-                // Si necesitas el objeto Rutina completo:
-                var rutinaIndex = dgvPlanillas.SelectedRows[0].Index;
-                var rutinaCompleta = rutinasGuardadas[rutinaIndex];
+                if (dgvPlanillas.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("⚠️ Debe seleccionar una rutina antes de imprimir.",
+                                    "Impresión no disponible",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-                MessageBox.Show($"✅ Rutina '{rutinaCompleta.Nombre}' enviada a impresión", "Imprimir",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+                int index = dgvPlanillas.SelectedRows[0].Index;
+                if (index < 0 || index >= rutinasGuardadas.Count)
+                {
+                    MessageBox.Show("No se pudo identificar la rutina seleccionada.",
+                                    "Error de selección", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var rutina = rutinasGuardadas[index];
+                ImprimirRutina(rutina);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al intentar imprimir: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void BtnExportar_Click(object sender, EventArgs e)
         {
-            if (dgvPlanillas.SelectedRows.Count > 0)
+            try
             {
-                var nombreRutina = dgvPlanillas.SelectedRows[0].Cells["colNombre"].Value.ToString();
-                MessageBox.Show($"✅ Planilla '{nombreRutina}' exportada correctamente", "Exportación Exitosa",
-                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (dgvPlanillas.SelectedRows.Count == 0)
+                {
+                    MessageBox.Show("⚠️ Debe seleccionar una rutina antes de exportar.",
+                                    "Exportación no disponible",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                int index = dgvPlanillas.SelectedRows[0].Index;
+                if (index < 0 || index >= rutinasGuardadas.Count)
+                {
+                    MessageBox.Show("No se pudo identificar la rutina seleccionada.",
+                                    "Error de selección", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var rutina = rutinasGuardadas[index];
+                ExportarRutina(rutina);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al intentar exportar: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        //---------------------------------------------------------------------
+
+        private void ExportarRutina(Rutina rutina)
+        {
+            try
+            {
+                // 1) Traemos los detalles de la rutina que se exportará
+                var detalles = _detalleController.ObtenerPorRutina(rutina.IdRutina);
+
+                // Si no hay datos, avisamos y salimos
+                if (detalles == null || detalles.Count == 0)
+                {
+                    MessageBox.Show("Esta rutina no tiene ejercicios cargados para exportar.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // 2) Construimos nombre y ruta segura del archivo en el Escritorio
+                string ruta = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    $"Rutina_{SanearNombre(rutina.Nombre)}_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
+                );
+
+                // 3) Creamos el archivo Excel en memoria
+                using (var pkg = new ExcelPackage())
+                {
+                    // Creamos una hoja
+                    var ws = pkg.Workbook.Worksheets.Add("Rutina");
+
+                    // 3.1) Encabezado superior con datos de la rutina
+                    ws.Cells["A1"].Value = "RUTINA:"; ws.Cells["B1"].Value = rutina.Nombre;
+                    ws.Cells["A2"].Value = "PROFESOR:"; ws.Cells["B2"].Value = rutina.NombreProfesor;
+                    ws.Cells["A3"].Value = "GÉNERO:"; ws.Cells["B3"].Value = rutina.NombreGenero;
+                    ws.Cells["A4"].Value = "FECHA CREACIÓN:"; ws.Cells["B4"].Value = rutina.FechaCreacion.ToString("dd/MM/yyyy");
+
+                    // 3.2) Títulos de la tabla
+                    ws.Cells["A6"].Value = "EJERCICIO";
+                    ws.Cells["B6"].Value = "SERIES";
+                    ws.Cells["C6"].Value = "REPS";
+                    ws.Cells["D6"].Value = "CARGA %";
+
+                    // Estilo de los títulos
+                    using (var rng = ws.Cells["A6:D6"])
+                    {
+                        rng.Style.Font.Bold = true;
+                        rng.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        rng.Style.Fill.BackgroundColor.SetColor(Color.LightBlue);
+                        rng.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    }
+
+                    // =========================
+                    // OPCIONALES DE FORMATO
+                    // (Dejá comentado si no querés usarlos todavía)
+                    // =========================
+
+                    // // Congelar fila de títulos (la 6) para que quede fija al hacer scroll
+                    // ws.View.FreezePanes(7, 1); // fila 7 = debajo del header
+
+                    // // Alinear en el centro los números y formatear la columna de CARGA %
+                    // ws.Cells["B7:D1048576"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    // ws.Cells["D7:D1048576"].Style.Numberformat.Format = "0.##";
+
+                    // 3.3) Volcado de filas
+                    int fila = 7; // primera fila de datos
+                    foreach (var d in detalles)
+                    {
+                        ws.Cells[fila, 1].Value = d.EjercicioNombre;
+                        ws.Cells[fila, 2].Value = d.Series;
+                        ws.Cells[fila, 3].Value = d.Repeticiones;
+                        ws.Cells[fila, 4].Value = d.Carga.HasValue ? (object)d.Carga.Value : "";
+                        fila++;
+                    }
+
+                    // // Bordes sutiles a la tabla (opcional)
+                    // using (var body = ws.Cells[$"A6:D{fila - 1}"])
+                    // {
+                    //     body.Style.Border.Top.Style = ExcelBorderStyle.Hair;
+                    //     body.Style.Border.Left.Style = ExcelBorderStyle.Hair;
+                    //     body.Style.Border.Right.Style = ExcelBorderStyle.Hair;
+                    //     body.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+                    // }
+
+                    // Autoajuste de columnas según contenido
+                    ws.Cells[ws.Dimension.Address].AutoFitColumns();
+
+                    // 3.4) Guardamos el archivo físico
+                    pkg.SaveAs(new FileInfo(ruta));
+                }
+
+                // =========================
+                // OPCIONAL: Abrir el archivo automáticamente después de exportar
+                // (Descomentá estas 2 líneas si querés abrir el Excel enseguida)
+                // var psi = new System.Diagnostics.ProcessStartInfo(ruta) { UseShellExecute = true };
+                // System.Diagnostics.Process.Start(psi);
+
+                // 4) Confirmación al usuario
+                MessageBox.Show($"📂 Rutina exportada correctamente a:\n{ruta}",
+                                "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            // =========================
+            // OPCIONAL: Capturar archivo en uso y dar mensaje específico
+            // (Dejá este bloque comentado o movelo encima del catch general)
+            // catch (IOException ioEx)
+            // {
+            //     MessageBox.Show("El archivo está en uso. Cerralo e intentá de nuevo.\n\n" + ioEx.Message,
+            //                     "Archivo en uso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            // }
+            // =========================
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al exportar rutina: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+        //---------------------------------------------------------------------
+        // Reemplaza caracteres inválidos para nombres de archivo por '_'
+        private string SanearNombre(string nombre)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+                nombre = nombre.Replace(c, '_');
+            return nombre;
+        }
+
+        // 🔢 Contador de páginas (a nivel de clase)
+        private int _pageNumber = 0;
+
+        private void ImprimirRutina(Rutina rutina)
+        {
+            try
+            {
+                var detalles = _detalleController.ObtenerPorRutina(rutina.IdRutina);
+                if (detalles == null || detalles.Count == 0)
+                {
+                    MessageBox.Show("Esta rutina no tiene ejercicios cargados.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                PrintDocument printDoc = new PrintDocument();
+
+                // 📄 Márgenes / orientación
+                printDoc.DefaultPageSettings.Margins = new Margins(60, 60, 80, 60);
+                printDoc.DefaultPageSettings.Landscape = false;
+
+                // ✅ Reiniciar contador al iniciar impresión/preview
+                printDoc.BeginPrint += (s, e) => { _pageNumber = 0; };
+
+                // 🎨 Estilos / fuentes
+                Color colorPrimario = Color.FromArgb(41, 128, 185);
+                Color colorTexto = Color.FromArgb(33, 33, 33);
+                Color colorLinea = Color.FromArgb(200, 200, 200);
+
+                Font fTitulo = new Font("Segoe UI", 16, FontStyle.Bold);
+                Font fSubtitulo = new Font("Segoe UI", 10, FontStyle.Bold);
+                Font fTexto = new Font("Segoe UI", 10);
+                Font fPie = new Font("Segoe UI", 8, FontStyle.Italic);
+
+                int salto = 26;
+
+                printDoc.PrintPage += (s, e) =>
+                {
+                    // 🔢 Avanzamos el número de página real
+                    _pageNumber++;
+
+                    Graphics g = e.Graphics;
+                    int ancho = e.PageBounds.Width;
+                    int y;
+
+                    // ===== ENCABEZADO =====
+                    g.FillRectangle(new SolidBrush(colorPrimario), 0, 0, ancho, 70);
+                    g.DrawString("G Y M   M A N A G E R", new Font("Segoe UI", 12, FontStyle.Bold), Brushes.White,
+                        new RectangleF(0, 10, ancho, 30), new StringFormat { Alignment = StringAlignment.Center });
+                    g.DrawString("RUTINA DE ENTRENAMIENTO", fTitulo, Brushes.White,
+                        new RectangleF(0, 35, ancho, 40), new StringFormat { Alignment = StringAlignment.Center });
+
+                    // ===== DATOS PRINCIPALES =====
+                    y = 100;
+                    g.DrawString($"Rutina: {rutina.Nombre}", fSubtitulo, Brushes.Black, 80, y); y += salto;
+                    g.DrawString($"Profesor: {rutina.NombreProfesor}", fTexto, Brushes.Black, 80, y); y += salto;
+                    g.DrawString($"Género: {rutina.NombreGenero}", fTexto, Brushes.Black, 80, y); y += salto;
+                    g.DrawString($"Fecha de creación: {rutina.FechaCreacion:dd/MM/yyyy}", fTexto, Brushes.Black, 80, y);
+                    y += salto * 2;
+
+                    // ===== TABLA =====
+                    int xInicio = 80;
+                    int anchoTabla = ancho - 160;
+                    int filaAltura = 28;
+
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(235, 242, 250)), xInicio, y, anchoTabla, filaAltura);
+                    g.DrawRectangle(Pens.Gray, xInicio, y, anchoTabla, filaAltura);
+
+                    g.DrawString("EJERCICIO", fSubtitulo, Brushes.Black, xInicio + 10, y + 6);
+                    g.DrawString("SERIES", fSubtitulo, Brushes.Black, xInicio + 340, y + 6);
+                    g.DrawString("REPS", fSubtitulo, Brushes.Black, xInicio + 440, y + 6);
+                    g.DrawString("CARGA %", fSubtitulo, Brushes.Black, xInicio + 530, y + 6);
+                    y += filaAltura;
+
+                    // Filas (paginación básica)
+                    foreach (var d in detalles)
+                    {
+                        g.DrawString(d.EjercicioNombre, fTexto, new SolidBrush(colorTexto), xInicio + 10, y + 6);
+                        g.DrawString(d.Series.ToString(), fTexto, Brushes.Black, xInicio + 345, y + 6);
+                        g.DrawString(d.Repeticiones.ToString(), fTexto, Brushes.Black, xInicio + 445, y + 6);
+                        g.DrawString(d.Carga.HasValue ? $"{d.Carga}%" : "-", fTexto, Brushes.Black, xInicio + 540, y + 6);
+
+                        g.DrawLine(new Pen(colorLinea), xInicio, y + filaAltura, xInicio + anchoTabla, y + filaAltura);
+                        y += filaAltura;
+
+                        if (y > e.MarginBounds.Bottom - 60)
+                        {
+                            // Si tuvieras muchas filas y quisieras continuar,
+                            // podrías cortar aquí y setear HasMorePages = true, 
+                            // manejando un índice externo de fila. Para este caso
+                            // simple, imprimimos en una sola página.
+                            break;
+                        }
+                    }
+
+                    // ===== PIE =====
+                    y += 25;
+                    g.DrawLine(Pens.Gray, 60, y, ancho - 60, y);
+
+                    string textoPie = $"Generado el {DateTime.Now:dd/MM/yyyy HH:mm}";
+                    g.DrawString(textoPie, fPie, Brushes.Gray, 80, y + 10);
+
+                    //  Número de página correcto
+                    g.DrawString($"Página {_pageNumber}", fPie, Brushes.Gray, ancho - 180, y + 10);
+
+                    e.HasMorePages = false;
+                };
+
+                //  Vista previa
+                PrintPreviewDialog preview = new PrintPreviewDialog
+                {
+                    Document = printDoc,
+                    WindowState = FormWindowState.Maximized,
+                    ShowIcon = false,
+                    Text = "Vista previa - Rutina de Entrenamiento"
+                };
+                preview.PrintPreviewControl.Zoom = 1.0;
+                preview.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al imprimir rutina: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+        //---------------------------------------------------------------------
+
 
         private void BtnModoTV_Click(object sender, EventArgs e)
         {
@@ -434,8 +731,7 @@ namespace GymManager.Views
         }
 
         // =========================================================
-        // MÉTODOS DE ESTILO MEJORADOS
-        // (Dejado como estaba, ya está muy bien estilizado)
+        // MÉTODOS DE ESTILO MEJORADOS (Versión actualizada)
         // =========================================================
         private void StyleButton(Button btn, Color bgColor)
         {
@@ -451,22 +747,29 @@ namespace GymManager.Views
         {
             if (btn == null) return;
 
+            // --- Tamaño adaptable ---
+            btn.AutoSize = true;
+            btn.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            btn.MinimumSize = new Size(110, 35);
+            btn.UseCompatibleTextRendering = false;
+            btn.Padding = new Padding(16, 8, 16, 8);
+
+            // --- Colores base ---
             btn.BackColor = bgColor;
             btn.ForeColor = foreColor;
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
             btn.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
             btn.Cursor = Cursors.Hand;
-            btn.Padding = new Padding(15, 8, 15, 8);
 
-            // Efectos hover mejorados
+            // --- Efectos hover ---
             btn.FlatAppearance.MouseOverBackColor = ControlPaint.Dark(bgColor, 0.15f);
             btn.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(bgColor, 0.25f);
 
-            // Bordes redondeados
+            // --- Bordes redondeados seguros (1px dentro del contenedor) ---
             btn.Paint += (s, e) =>
             {
-                var rect = new Rectangle(0, 0, btn.Width, btn.Height);
+                var rect = new Rectangle(1, 1, btn.Width - 2, btn.Height - 2);
                 using (var path = new GraphicsPath())
                 {
                     int radius = 6;
@@ -480,7 +783,9 @@ namespace GymManager.Views
                 }
             };
 
-            btn.EnabledChanged += (s, e) => {
+            // --- Cambio de estilo al deshabilitar ---
+            btn.EnabledChanged += (s, e) =>
+            {
                 if (!btn.Enabled)
                 {
                     btn.BackColor = Color.FromArgb(220, 220, 220);
@@ -500,6 +805,9 @@ namespace GymManager.Views
             }
         }
 
+        // ============================================================
+        // EVENTOS VISUALES DEL DATAGRIDVIEW
+        // ============================================================
         private void dgvPlanillas_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
@@ -511,178 +819,184 @@ namespace GymManager.Views
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dgvPlanillas.Rows[e.RowIndex];
-                Color originalColor = (e.RowIndex % 2 == 0) ?
-                    dgvPlanillas.DefaultCellStyle.BackColor :
-                    dgvPlanillas.AlternatingRowsDefaultCellStyle.BackColor;
+                Color originalColor = (e.RowIndex % 2 == 0)
+                    ? dgvPlanillas.DefaultCellStyle.BackColor
+                    : dgvPlanillas.AlternatingRowsDefaultCellStyle.BackColor;
                 row.DefaultCellStyle.BackColor = originalColor;
             }
         }
     }
 
-    // ====================================================================
-    // FORM TV MEJORADO (Sin cambios necesarios, ya es robusto)
-    // ====================================================================
+        // ====================================================================
+        // FORM TV MEJORADO (Sin cambios necesarios, ya es robusto)
+        // ====================================================================
 
-    public class FormTV : Form
-    {
-        private Color tvBackColor = Color.FromArgb(33, 37, 41);
-        private Color tvGridColor = Color.FromArgb(52, 58, 64);
-        private Color tvHeaderColor = Color.FromArgb(41, 128, 185);
-        private Color tvTitleColor = Color.FromArgb(241, 196, 15);
-        private Font tvGridFont = new Font("Segoe UI", 11f);
-        private Font tvHeaderFont = new Font("Segoe UI", 12f, FontStyle.Bold);
-        private Font tvTitleFont = new Font("Segoe UI", 14f, FontStyle.Bold);
-
-        public FormTV(DateTime fecha, List<DetalleRutina> detallesH, List<DetalleRutina> detallesM, List<DetalleRutina> detallesD)
+        public class FormTV : Form
         {
-            InitializeForm();
-            lblTituloTV.Text = $"RUTINAS DEL DÍA: {fecha:dd/MM/yyyy}";
-            // Nombres de las etiquetas ajustados para coincidir con la DB
-            PoblarGrilla(dgvMasculino, detallesH, lblTVMasculino, "HOMBRES");
-            PoblarGrilla(dgvFemenino, detallesM, lblTVFemenino, "MUJERES");
-            PoblarGrilla(dgvDeportista, detallesD, lblTVDeportista, "DEPORTISTAS");
-        }
+            private Color tvBackColor = Color.FromArgb(33, 37, 41);
+            private Color tvGridColor = Color.FromArgb(52, 58, 64);
+            private Color tvHeaderColor = Color.FromArgb(41, 128, 185);
+            private Color tvTitleColor = Color.FromArgb(241, 196, 15);
+            private Font tvGridFont = new Font("Segoe UI", 11f);
+            private Font tvHeaderFont = new Font("Segoe UI", 12f, FontStyle.Bold);
+            private Font tvTitleFont = new Font("Segoe UI", 14f, FontStyle.Bold);
 
-        private DataGridView dgvMasculino, dgvFemenino, dgvDeportista;
-        private Label lblTituloTV, lblTVMasculino, lblTVFemenino, lblTVDeportista;
-
-        private void PoblarGrilla(DataGridView dgv, List<DetalleRutina> detalles, Label lbl, string titulo)
-        {
-            lbl.Text = titulo;
-            dgv.Rows.Clear();
-
-            if (detalles.Count == 0)
+            public FormTV(DateTime fecha, List<DetalleRutina> detallesH, List<DetalleRutina> detallesM, List<DetalleRutina> detallesD)
             {
-                lbl.Text += " (NO DISPONIBLE)";
-                lbl.ForeColor = Color.Gray;
-                return;
+                InitializeForm();
+                lblTituloTV.Text = $"RUTINAS DEL DÍA: {fecha:dd/MM/yyyy}";
+                // Nombres de las etiquetas ajustados para coincidir con la DB
+                PoblarGrilla(dgvMasculino, detallesH, lblTVMasculino, "HOMBRES");
+                PoblarGrilla(dgvFemenino, detallesM, lblTVFemenino, "MUJERES");
+                PoblarGrilla(dgvDeportista, detallesD, lblTVDeportista, "DEPORTISTAS");
             }
 
-            lbl.ForeColor = tvTitleColor;
-            foreach (var d in detalles)
+            private DataGridView dgvMasculino, dgvFemenino, dgvDeportista;
+            private Label lblTituloTV, lblTVMasculino, lblTVFemenino, lblTVDeportista;
+
+            private void PoblarGrilla(DataGridView dgv, List<DetalleRutina> detalles, Label lbl, string titulo)
             {
-                dgv.Rows.Add(d.EjercicioNombre, d.Series, d.Repeticiones, d.Carga?.ToString() ?? "");
+                lbl.Text = titulo;
+                dgv.Rows.Clear();
+
+                if (detalles.Count == 0)
+                {
+                    lbl.Text += " (NO DISPONIBLE)";
+                    lbl.ForeColor = Color.Gray;
+                    return;
+                }
+
+                lbl.ForeColor = tvTitleColor;
+                foreach (var d in detalles)
+                {
+                    dgv.Rows.Add(d.EjercicioNombre, d.Series, d.Repeticiones, d.Carga?.ToString() ?? "");
+                }
+            }
+
+            private void InitializeForm()
+            {
+                this.Text = "Modo TV - Presione ESC para salir";
+                this.WindowState = FormWindowState.Maximized;
+                this.BackColor = tvBackColor;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.KeyPreview = true;
+                this.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) this.Close(); };
+
+                TableLayoutPanel tlpMain = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    Padding = new Padding(15),
+                    BackColor = tvBackColor,
+                    RowCount = 3,
+                    ColumnCount = 3
+                };
+                this.Controls.Add(tlpMain);
+
+                tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 70));
+                tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+                tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+                tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+                tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+                tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+
+                // Título Principal
+                lblTituloTV = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Font = new Font("Segoe UI", 26, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    Text = "RUTINAS DEL DÍA",
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+                tlpMain.Controls.Add(lblTituloTV, 0, 0);
+                tlpMain.SetColumnSpan(lblTituloTV, 3);
+
+                // Títulos de Género
+                lblTVMasculino = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Font = tvTitleFont,
+                    ForeColor = tvTitleColor,
+                    Text = "HOMBRES",
+                    TextAlign = ContentAlignment.BottomCenter
+                };
+                lblTVFemenino = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Font = tvTitleFont,
+                    ForeColor = tvTitleColor,
+                    Text = "MUJERES",
+                    TextAlign = ContentAlignment.BottomCenter
+                };
+                lblTVDeportista = new Label
+                {
+                    Dock = DockStyle.Fill,
+                    Font = tvTitleFont,
+                    ForeColor = tvTitleColor,
+                    Text = "DEPORTISTAS",
+                    TextAlign = ContentAlignment.BottomCenter
+                };
+
+                tlpMain.Controls.Add(lblTVMasculino, 0, 1);
+                tlpMain.Controls.Add(lblTVFemenino, 1, 1);
+                tlpMain.Controls.Add(lblTVDeportista, 2, 1);
+
+                // Grillas
+                dgvMasculino = CrearGrillaTV();
+                dgvFemenino = CrearGrillaTV();
+                dgvDeportista = CrearGrillaTV();
+
+                tlpMain.Controls.Add(dgvMasculino, 0, 2);
+                tlpMain.Controls.Add(dgvFemenino, 1, 2);
+                tlpMain.Controls.Add(dgvDeportista, 2, 2);
+            }
+
+            private DataGridView CrearGrillaTV()
+            {
+                DataGridView dgv = new DataGridView
+                {
+                    Dock = DockStyle.Fill,
+                    BackgroundColor = tvBackColor,
+                    BorderStyle = BorderStyle.None,
+                    GridColor = tvGridColor,
+                    CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
+                    EnableHeadersVisualStyles = false,
+                    AllowUserToAddRows = false,
+                    ReadOnly = true,
+                    RowHeadersVisible = false,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                    RowTemplate = { Height = 50 },
+                    AllowUserToResizeRows = false,
+                    ColumnHeadersHeight = 45
+                };
+
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor;
+                dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+                dgv.ColumnHeadersDefaultCellStyle.Font = tvHeaderFont;
+                dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+                dgv.DefaultCellStyle.Font = tvGridFont;
+                dgv.DefaultCellStyle.BackColor = tvBackColor;
+                dgv.DefaultCellStyle.ForeColor = Color.White;
+                dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+                dgv.DefaultCellStyle.Padding = new Padding(8);
+                dgv.DefaultCellStyle.SelectionBackColor = tvBackColor;
+                dgv.DefaultCellStyle.SelectionForeColor = Color.White;
+                dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
+
+                dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "EJERCICIO", FillWeight = 40 });
+                dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SERIES", FillWeight = 15 });
+                dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "REPS", FillWeight = 15 });
+                dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "CARGA %", FillWeight = 15 });
+
+                return dgv;
             }
         }
 
-        private void InitializeForm()
-        {
-            this.Text = "Modo TV - Presione ESC para salir";
-            this.WindowState = FormWindowState.Maximized;
-            this.BackColor = tvBackColor;
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.KeyPreview = true;
-            this.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) this.Close(); };
 
-            TableLayoutPanel tlpMain = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                Padding = new Padding(15),
-                BackColor = tvBackColor,
-                RowCount = 3,
-                ColumnCount = 3
-            };
-            this.Controls.Add(tlpMain);
-
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 70));
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-
-            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-
-            // Título Principal
-            lblTituloTV = new Label
-            {
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 26, FontStyle.Bold),
-                ForeColor = Color.White,
-                Text = "RUTINAS DEL DÍA",
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            tlpMain.Controls.Add(lblTituloTV, 0, 0);
-            tlpMain.SetColumnSpan(lblTituloTV, 3);
-
-            // Títulos de Género
-            lblTVMasculino = new Label
-            {
-                Dock = DockStyle.Fill,
-                Font = tvTitleFont,
-                ForeColor = tvTitleColor,
-                Text = "HOMBRES",
-                TextAlign = ContentAlignment.BottomCenter
-            };
-            lblTVFemenino = new Label
-            {
-                Dock = DockStyle.Fill,
-                Font = tvTitleFont,
-                ForeColor = tvTitleColor,
-                Text = "MUJERES",
-                TextAlign = ContentAlignment.BottomCenter
-            };
-            lblTVDeportista = new Label
-            {
-                Dock = DockStyle.Fill,
-                Font = tvTitleFont,
-                ForeColor = tvTitleColor,
-                Text = "DEPORTISTAS",
-                TextAlign = ContentAlignment.BottomCenter
-            };
-
-            tlpMain.Controls.Add(lblTVMasculino, 0, 1);
-            tlpMain.Controls.Add(lblTVFemenino, 1, 1);
-            tlpMain.Controls.Add(lblTVDeportista, 2, 1);
-
-            // Grillas
-            dgvMasculino = CrearGrillaTV();
-            dgvFemenino = CrearGrillaTV();
-            dgvDeportista = CrearGrillaTV();
-
-            tlpMain.Controls.Add(dgvMasculino, 0, 2);
-            tlpMain.Controls.Add(dgvFemenino, 1, 2);
-            tlpMain.Controls.Add(dgvDeportista, 2, 2);
-        }
-
-        private DataGridView CrearGrillaTV()
-        {
-            DataGridView dgv = new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                BackgroundColor = tvBackColor,
-                BorderStyle = BorderStyle.None,
-                GridColor = tvGridColor,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                EnableHeadersVisualStyles = false,
-                AllowUserToAddRows = false,
-                ReadOnly = true,
-                RowHeadersVisible = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                RowTemplate = { Height = 50 },
-                AllowUserToResizeRows = false,
-                ColumnHeadersHeight = 45
-            };
-
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor;
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Font = tvHeaderFont;
-            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            dgv.DefaultCellStyle.Font = tvGridFont;
-            dgv.DefaultCellStyle.BackColor = tvBackColor;
-            dgv.DefaultCellStyle.ForeColor = Color.White;
-            dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.DefaultCellStyle.Padding = new Padding(8);
-            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor;
-            dgv.DefaultCellStyle.SelectionForeColor = Color.White;
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
-
-            dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "EJERCICIO", FillWeight = 40 });
-            dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SERIES", FillWeight = 15 });
-            dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "REPS", FillWeight = 15 });
-            dgv.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "CARGA %", FillWeight = 15 });
-
-            return dgv;
-        }
     }
-}
+
+
+
+
