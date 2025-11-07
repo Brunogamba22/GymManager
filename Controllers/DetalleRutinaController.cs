@@ -50,9 +50,7 @@ namespace GymManager.Controllers
                                     EjercicioNombre = reader.GetString(reader.GetOrdinal("EjercicioNombre")),
                                     Series = reader.GetInt32(reader.GetOrdinal("Series")),
                                     Repeticiones = reader.GetInt32(reader.GetOrdinal("Repeticiones")),
-                                    Carga = reader.IsDBNull(reader.GetOrdinal("Carga"))
-                                            ? (double?)null
-                                            : Convert.ToDouble(reader["Carga"])
+                                    Carga = reader.IsDBNull(reader.GetOrdinal("Carga")) ? "" : reader.GetString(reader.GetOrdinal("Carga"))
                                 };
                                 detalles.Add(detalle);
                             }

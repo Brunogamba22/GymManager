@@ -13,6 +13,8 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <LangVersion>8.0</LangVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -47,7 +49,13 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.OracleClient" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Security" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -58,6 +66,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\DetalleRutinaController.cs" />
@@ -103,6 +112,8 @@
     <Compile Include="Models\Eventos\RutinaGeneradaEventArgs.cs" />
     <Compile Include="Models\Genero.cs" />
     <Compile Include="Models\GrupoMuscular.cs" />
+    <Compile Include="Models\ReporteActividadItem.cs" />
+    <Compile Include="Models\ReporteProfesor.cs" />
     <Compile Include="Models\Rutina.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Program.cs" />
@@ -160,11 +171,29 @@
     <Compile Include="Views\UcAdminDashboard.Designer.cs">
       <DependentUpon>UcAdminDashboard.cs</DependentUpon>
     </Compile>
+    <Compile Include="Views\UcReporteActividad.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcReporteActividad.Designer.cs">
+      <DependentUpon>UcReporteActividad.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\UcReportes.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Views\UcReportes.Designer.cs">
       <DependentUpon>UcReportes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\UcReporteProfe.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcReporteProfe.Designer.cs">
+      <DependentUpon>UcReporteProfe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\UcReportesDashboard.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Views\UcReportesDashboard.Designer.cs">
+      <DependentUpon>UcReportesDashboard.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="Forms\FrmLogin.resx">
       <DependentUpon>FrmLogin.cs</DependentUpon>
@@ -223,16 +252,6 @@
     <Folder Include="bin\Debug\" />
     <Folder Include="bin\Release\" />
     <Folder Include="obj\Debug\TempPE\" />
-    <Folder Include="Resources\Ejercicios\Abdominales\" />
-    <Folder Include="Resources\Ejercicios\Biceps\" />
-    <Folder Include="Resources\Ejercicios\Cardio\" />
-    <Folder Include="Resources\Ejercicios\Espalda\" />
-    <Folder Include="Resources\Ejercicios\Gluteos\" />
-    <Folder Include="Resources\Ejercicios\Hombros\" />
-    <Folder Include="Resources\Ejercicios\Pantorrillas\" />
-    <Folder Include="Resources\Ejercicios\Pecho\" />
-    <Folder Include="Resources\Ejercicios\Trapecio\" />
-    <Folder Include="Resources\Ejercicios\Triceps\" />
     <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
@@ -240,7 +259,163 @@
     <Content Include="Resources\1026713.png" />
     <Content Include="Resources\11438089.png" />
     <Content Include="Resources\ChatGPT Image 8 sept 2025, 18_03_32.png" />
+    <Content Include="Resources\Ejercicios\Abdominales\Aduccion_de_cadera_en_plancha_lateral.gif" />
+    <Content Include="Resources\Ejercicios\Abdominales\Bandera_del_dragon.gif" />
+    <Content Include="Resources\Ejercicios\Abdominales\Maquina_de_abdominales_Coaster.gif" />
+    <Content Include="Resources\Ejercicios\Abdominales\Plancha_alta.gif" />
+    <Content Include="Resources\Ejercicios\Abdominales\Plancha_inclinada.png" />
+    <Content Include="Resources\Ejercicios\Abdominales\Vacio_estomacal_de_pie.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl-con-barra.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl-con-mancuernas-de-dos-brazos.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl-con-mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl-de-camarero.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl_concentrado_con_barra_de_pie.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl_de_martillo_con_un_solo_brazo_con_cable.gif" />
+    <Content Include="Resources\Ejercicios\Biceps\Curl_Zottman_sentado.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Abdominales.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Aduccion_de_cadera_en_plancha_lateral.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Bandera_del_dragon.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Crunch_con_cable_de_pie.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Crunch_cruzado.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Elevacion_de_piernas.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\El_gateo_del_oso.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Escalador_de_montaña.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Flexion_de_piernas_en_banco_sentado.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Lanzamiento_rotatorio_con_balon_medicinal.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Patada_de_tijera_acostada.gif" />
+    <Content Include="Resources\Ejercicios\Cardio\Plancha_de_sierra_corporal.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Dominadas.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Jalon_con_brazo_recto_y_cable.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Jalon_lateral.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Jalon_lateral_inverso.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Polea_hacia_abajo_con_cable.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Remo_con_barra_en_T_con_palanca.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Remo_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Remo_con_mancuernas_inclinado.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Remo_con_polea_sentado.gif" />
+    <Content Include="Resources\Ejercicios\Espalda\Remo_inclinado_con_barra.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Aduccion_de_cadera_en_plancha_lateral.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Empujes_de_cadera_con_barra.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Empuje_de_cadera_con_mancuernas_a_una_pierna.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Estocada_de_reverencia.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Sentadilla_en_maquina_Smith.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Sentadilla_plie_con_peso_corporal.gif" />
+    <Content Include="Resources\Ejercicios\Gluteos\Tablon_de_sierra_para_carroceria.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Elevacion_lateral_con_cable.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Elevacion_lateral_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Press_de_empuje_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Press_de_hombros_con_barra_sentado.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Press_de_hombros_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Press_de_hombros_con_mancuernas_de_pie.gif" />
+    <Content Include="Resources\Ejercicios\Hombros\Remo_con_mancuernas_en_inclinación_de_45_grados.gif" />
+    <Content Include="Resources\Ejercicios\Pantorrillas\Elevacion_de_pantorrillas_con_banda_de_resistencia.gif" />
+    <Content Include="Resources\Ejercicios\Pantorrillas\Elevacion_de_pantorrillas_con_prensa_de_piernas.gif" />
+    <Content Include="Resources\Ejercicios\Pantorrillas\Elevacion_de_pantorrillas_con_sentadilla_Hack.gif" />
+    <Content Include="Resources\Ejercicios\Pantorrillas\Elevacion_de_pantorrillas_de_pie_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Pantorrillas\Elevacion_de_pantorrillas_de_pie_con_peso_corporal.gif" />
+    <Content Include="Resources\Ejercicios\Pantorrillas\Elevacion_de_pantorrillas_sentado_con_barra.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Cruces_de_poleas_parte_superior - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Cruces_de_poleas_parte_superior.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Cruce_de_poleas_de_un_solo_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\cruce_poleas_alta - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\cruce_poleas_alta.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\cruce_poleas_baja - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\cruce_poleas_baja.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Cruce_poleas_media - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Cruce_poleas_media.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Estiramiento_de_espalda_y_pectorales - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Estiramiento_de_espalda_y_pectorales.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Estiramiento_de_pecho_por_encima_de_la_cabeza - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Estiramiento_de_pecho_por_encima_de_la_cabeza.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Estiramiento_de_pecho_sentado - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Estiramiento_de_pecho_sentado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_con_balon_medicinal_con_un_solo_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_con_barras_de_flexiones.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_con_peso.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_con_un_brazo_con_apoyo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_de_brazos_declinadas_con_pelota_de_estabilidad.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_de_pared_con_agarre_estrecho.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexiones_Plus.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_con_palmadas - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_con_palmadas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_con_un_solo_brazo - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_con_un_solo_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_de_antebrazos - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_de_antebrazos.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_de_rodillas_en_diamante - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_de_rodillas_en_diamante.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexion_inversa.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexión_con_caída - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexión_con_caída.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexión_de_rodillas - Copia.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexión_de_rodillas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Flexión_inclinada.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Fondos_de_pecho.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Fondos_en_barras_paralelas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Lanzamiento_de_pelota_de_reacción.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Maquina_de_apertura_de_ pecho_inclinada.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Maquina_de_prensa_de_pecho_acostado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Maquina_de_prensa_de_pecho_declinada.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Maquina_de_prensa_de_pecho_inclinada.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Maquina_de_prensa_de_pecho_interior.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Mariposa_de_maquina.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Mariposa_de_polea_tumbado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Pec_Deck_Fly.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Prensa_de_minas_terrestres_de_rodillas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Prensa_Svend.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_banca_con_barra.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_banca_con_barra_inclinado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_banca_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_con_mancuernas_con_agarre_cerrado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_con_una_sola_mancuerna_y_agarre_cerrado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_declinado_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_banca_con_barra_declinado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_banca_con_mancuernas_alterno.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_banca_con_mancuernas_con_agarre_invertido.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_banca_con_maquina_Smith.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_banca_declinado_en_maquina_Smith.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_banca_inclinado_con_maquina_Smith.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_mancuernas_inclinado_con_agarre_cerrado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_mancuernas_inclinado_con_agarre_inverso.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_pecho_con_martillo_inclinado_con_palanca.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_pecho_con_palanca.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_pecho_con_pesas_rusas_en_el_suelo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_pecho_con_Trx.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_de_pecho_de_pie_con_banda.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_inclinado_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_martillo_con_mancuernas_inclinado.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Press_pecho_con_polea _a_un_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Rodillo_de_espuma_para_la_parte_delantera_del_hombro_y_el_pecho.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Vuelos_en_polea_en_declive.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Vuelo_ascendente_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Vuelo_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Vuelo_con_mancuernas_en_declive.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Vuelo_con_polea_declinada_con_un_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Pecho\Vuelo_inclinado_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Buenos_dias_con_mancuernas.gif" />
     <Content Include="Resources\Ejercicios\Piernas\camilla_trasera.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Curl_Jefferson_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Estocada_caminando_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Estocada_de_reverencia.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\estocada_pendulo.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Peso_muerto_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Peso_muerto_sumo_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Sentadilla_con_barra.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Sentadilla_con_copa_con_elevacion_del_talon.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Sentadilla_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Piernas\Sentadilla_cosaca_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Trapecio\Encogimiento_de_hombros_con_barra.gif" />
+    <Content Include="Resources\Ejercicios\Trapecio\Encogimiento_de_hombros_con_barra_detras_de_la_espalda.gif" />
+    <Content Include="Resources\Ejercicios\Trapecio\Encogimiento_de_hombros_con_cable.gif" />
+    <Content Include="Resources\Ejercicios\Trapecio\Encogimiento_de_hombros_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Trapecio\Encogimiento_de_hombros_inclinado_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Trapecio\Gittleson_encogiendose_de_hombros.gif" />
+    <Content Include="Resources\Ejercicios\Triceps\Empuje_hacia_abajo.gif" />
+    <Content Include="Resources\Ejercicios\Triceps\Flexion_de_triceps_con_un_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Triceps\Flexion_hacia_abajo_inversa_con_un_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Triceps\Fondos_en_banco_con_una_sola_pierna_y_un_brazo.gif" />
+    <Content Include="Resources\Ejercicios\Triceps\Patada_hacia_atras_con_mancuernas.gif" />
+    <Content Include="Resources\Ejercicios\Triceps\Press_JM_con_barra.gif" />
     <None Include="Resources\Logo-gymM13.png" />
     <None Include="Resources\Logo-gymM12.png" />
     <None Include="Resources\Logo-gymM10.png" />
