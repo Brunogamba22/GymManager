@@ -1,5 +1,6 @@
 ﻿using System.Windows.Forms;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace GymManager.Views
 {
@@ -28,8 +29,8 @@ namespace GymManager.Views
 
         private DataGridViewTextBoxColumn colNombre;
         private DataGridViewTextBoxColumn colProfesor;
-        private DataGridViewTextBoxColumn colFecha;
         private DataGridViewTextBoxColumn colGenero;
+        private DataGridViewTextBoxColumn colFecha;
 
         protected override void Dispose(bool disposing)
         {
@@ -63,8 +64,8 @@ namespace GymManager.Views
 
             this.colNombre = new DataGridViewTextBoxColumn();
             this.colProfesor = new DataGridViewTextBoxColumn();
-            this.colFecha = new DataGridViewTextBoxColumn();
             this.colGenero = new DataGridViewTextBoxColumn();
+            this.colFecha = new DataGridViewTextBoxColumn();
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvPlanillas)).BeginInit();
             this.mainPanel.SuspendLayout();
@@ -72,29 +73,32 @@ namespace GymManager.Views
             this.SuspendLayout();
 
             // =========================================================
-            // PANEL DE CONTROLES
+            // 🔹 PANEL DE CONTROLES (CARD CON SOMBRA)
             // =========================================================
             this.pnlControles.Dock = DockStyle.Top;
-            this.pnlControles.Height = 120;
+            this.pnlControles.Height = 130;
             this.pnlControles.Padding = new Padding(20, 10, 20, 10);
             this.pnlControles.BackColor = Color.White;
             this.pnlControles.Font = new Font("Segoe UI", 9f);
+            this.pnlControles.Paint += PnlControles_Paint; // sombra visual
 
             int spacing = 15;
-            int topRowY = 12;
-            int bottomRowY = 60;
+            int topRowY = 15;
+            int bottomRowY = 65;
             int currentLeft;
             int buttonHeight = 35;
 
-            // --- Fila 1: Género + Solo Editadas ---
-            currentLeft = 20;
+            // =========================================================
+            // 🔸 FILA 1: Género + Check Solo Editadas
+            // =========================================================
+            currentLeft = 25;
             this.lblFiltroGenero.Text = "Género:";
             this.lblFiltroGenero.AutoSize = true;
             this.lblFiltroGenero.Location = new Point(currentLeft, topRowY + 3);
             currentLeft = lblFiltroGenero.Right + 6;
 
             this.cmbGenero.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbGenero.Size = new Size(110, 23);
+            this.cmbGenero.Size = new Size(130, 23);
             this.cmbGenero.Location = new Point(currentLeft, topRowY);
             currentLeft = cmbGenero.Right + spacing;
 
@@ -103,7 +107,7 @@ namespace GymManager.Views
             this.chkSoloEditadas.Location = new Point(currentLeft, topRowY + 3);
 
             // =========================================================
-            // CONTENEDOR DERECHA: BOTONES ACCIÓN
+            // 🔸 BOTONES DERECHA (IMPRIMIR, EXPORTAR, MODO TV)
             // =========================================================
             this.flpAcciones.AutoSize = true;
             this.flpAcciones.AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -112,22 +116,21 @@ namespace GymManager.Views
             this.flpAcciones.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.flpAcciones.Location = new Point(this.pnlControles.ClientSize.Width - 20, 8);
             this.flpAcciones.Margin = new Padding(0);
-            this.flpAcciones.Padding = new Padding(0);
 
-            // Botones
-            this.btnModoTV.Text = "MODO TV";
+            // Botones acción
+            this.btnModoTV.Text = "🖥️  MODO TV";
             this.btnModoTV.AutoSize = true;
-            this.btnModoTV.MinimumSize = new Size(110, buttonHeight);
+            this.btnModoTV.MinimumSize = new Size(120, buttonHeight);
             this.btnModoTV.Margin = new Padding(8, 0, 0, 0);
 
-            this.btnExportar.Text = "EXPORTAR";
+            this.btnExportar.Text = "📄  EXPORTAR";
             this.btnExportar.AutoSize = true;
-            this.btnExportar.MinimumSize = new Size(110, buttonHeight);
+            this.btnExportar.MinimumSize = new Size(120, buttonHeight);
             this.btnExportar.Margin = new Padding(8, 0, 0, 0);
 
-            this.btnImprimir.Text = "IMPRIMIR";
+            this.btnImprimir.Text = "🖨️  IMPRIMIR";
             this.btnImprimir.AutoSize = true;
-            this.btnImprimir.MinimumSize = new Size(110, buttonHeight);
+            this.btnImprimir.MinimumSize = new Size(120, buttonHeight);
             this.btnImprimir.Margin = new Padding(8, 0, 0, 0);
 
             this.flpAcciones.Controls.Add(this.btnModoTV);
@@ -137,15 +140,15 @@ namespace GymManager.Views
             this.pnlControles.Resize += (s, e) =>
             {
                 this.flpAcciones.Location = new Point(
-                    this.pnlControles.ClientSize.Width - this.flpAcciones.Width - 20,
-                    8
+                    this.pnlControles.ClientSize.Width - this.flpAcciones.Width - 30,
+                    10
                 );
             };
 
             // =========================================================
-            // Fila 2: Día, Profesor, Botones Filtrar y Limpiar
+            // 🔸 FILA 2: Día, Profesor, Botones Filtrar / Limpiar
             // =========================================================
-            currentLeft = 20;
+            currentLeft = 25;
             this.lblFiltroFecha.Text = "Día:";
             this.lblFiltroFecha.AutoSize = true;
             this.lblFiltroFecha.Location = new Point(currentLeft, bottomRowY + 3);
@@ -167,21 +170,21 @@ namespace GymManager.Views
             currentLeft = lblFiltroProfesor.Right + 6;
 
             this.cmbProfesor.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbProfesor.Size = new Size(170, 23);
+            this.cmbProfesor.Size = new Size(180, 23);
             this.cmbProfesor.Location = new Point(currentLeft, bottomRowY);
             currentLeft = cmbProfesor.Right + spacing * 2;
 
-            this.btnFiltrar.Text = "FILTRAR";
-            this.btnFiltrar.Size = new Size(110, buttonHeight);
+            this.btnFiltrar.Text = "🔍  FILTRAR";
+            this.btnFiltrar.Size = new Size(115, buttonHeight);
             this.btnFiltrar.Location = new Point(currentLeft, bottomRowY - 3);
             currentLeft = btnFiltrar.Right + 8;
 
-            this.btnLimpiarFiltros.Text = "LIMPIAR";
-            this.btnLimpiarFiltros.Size = new Size(110, buttonHeight);
+            this.btnLimpiarFiltros.Text = "🧹  LIMPIAR";
+            this.btnLimpiarFiltros.Size = new Size(115, buttonHeight);
             this.btnLimpiarFiltros.Location = new Point(currentLeft, bottomRowY - 3);
 
             // =========================================================
-            // Agregar controles al panel
+            // 🔹 AGREGAR CONTROLES AL PANEL DE FILTROS
             // =========================================================
             this.pnlControles.Controls.AddRange(new Control[] {
                 lblFiltroGenero, cmbGenero, chkSoloEditadas,
@@ -192,10 +195,11 @@ namespace GymManager.Views
             });
 
             // =========================================================
-            // DATAGRIDVIEW
+            // 📋 DATAGRIDVIEW
             // =========================================================
             this.dgvPlanillas.Dock = DockStyle.Fill;
             this.dgvPlanillas.Margin = new Padding(0);
+            this.dgvPlanillas.AllowUserToAddRows = false;
 
             this.colNombre.HeaderText = "NOMBRE DE LA RUTINA";
             this.colProfesor.HeaderText = "PROFESOR";
@@ -207,7 +211,7 @@ namespace GymManager.Views
             });
 
             // =========================================================
-            // ENSAMBLADO FINAL
+            // 🧱 ENSAMBLADO FINAL
             // =========================================================
             this.BackColor = Color.FromArgb(245, 247, 250);
             this.mainPanel.Dock = DockStyle.Fill;
@@ -220,6 +224,21 @@ namespace GymManager.Views
             this.pnlControles.ResumeLayout(false);
             this.pnlControles.PerformLayout();
             this.ResumeLayout(false);
+        }
+
+        // =========================================================
+        // 💡 SOMBRA VISUAL PARA EL PANEL DE FILTROS
+        // =========================================================
+        private void PnlControles_Paint(object sender, PaintEventArgs e)
+        {
+            using (LinearGradientBrush brush = new LinearGradientBrush(
+                new Rectangle(0, pnlControles.Height - 5, pnlControles.Width, 5),
+                Color.FromArgb(120, 0, 0, 0),
+                Color.Transparent,
+                LinearGradientMode.Vertical))
+            {
+                e.Graphics.FillRectangle(brush, 0, pnlControles.Height - 5, pnlControles.Width, 5);
+            }
         }
     }
 }

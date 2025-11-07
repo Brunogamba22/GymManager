@@ -17,6 +17,7 @@ namespace GymManager.Views
 
         // Evento para cuando se cierra el detalle
         public event EventHandler OnCerrarDetalle;
+        public Rutina RutinaActual { get; private set; }
 
         public UcDetalleRutina()
         {
@@ -75,29 +76,39 @@ namespace GymManager.Views
         /// <summary>
         /// Carga los datos de una rutina real desde la base de datos.
         /// </summary>
-        public void CargarRutina(string nombreRutina, string tipoRutina, string profesor,
-                                     DateTime fecha, List<DetalleRutina> ejercicios) // <-- CAMBIO DE TIPO
+        public void CargarRutina(int idRutina, string nombreRutina, string tipoRutina, string profesor,
+                         DateTime fecha, List<DetalleRutina> ejercicios)
         {
+            // Guardar la rutina actual con su ID real
+            RutinaActual = new Rutina
+            {
+                IdRutina = idRutina,
+                Nombre = nombreRutina,
+                NombreGenero = tipoRutina,
+                NombreProfesor = profesor,
+                FechaCreacion = fecha
+            };
+
             // 🔹 Título principal
             lblTitulo.Text = nombreRutina;
 
-            // 🔹 Subtítulo con tipo, profesor y fecha
+            // 🔹 Subtítulo con detalles
             lblDetalles.Text = $"🏷️ {tipoRutina.ToUpper()} | 👤 {profesor} | 📅 {fecha:dd/MM/yyyy HH:mm}";
 
             // 🔹 Contador total de ejercicios
             lblContador.Text = $"📊 Total de ejercicios: {ejercicios.Count}";
 
-            // 🔹 Limpiar cualquier contenido previo de la grilla
+            // 🔹 Limpiar contenido previo
             dgvEjercicios.Rows.Clear();
 
-            // 🔹 Agregar cada ejercicio como fila en el DataGridView
+            // 🔹 Cargar filas
             foreach (var ejercicio in ejercicios)
             {
                 dgvEjercicios.Rows.Add(
-                    ejercicio.EjercicioNombre,        // Nombre del ejercicio (del JOIN)
-                    ejercicio.Series,               // Cantidad de series
-                    ejercicio.Repeticiones,         // Cantidad de repeticiones
-                    ejercicio.Carga?.ToString() ?? "" // Carga (o vacío si es null)
+                    ejercicio.EjercicioNombre,
+                    ejercicio.Series,
+                    ejercicio.Repeticiones,
+                    ejercicio.Carga?.ToString() ?? ""
                 );
             }
         }
@@ -125,14 +136,46 @@ namespace GymManager.Views
 
         private void btnImprimir_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("✅ Función de impresión habilitada", "Imprimir",
-                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                if (RutinaActual == null)
+                {
+                    MessageBox.Show("No hay una rutina cargada para imprimir.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Crear instancia del Dashboard temporalmente solo para usar su método de impresión
+                var dash = new UcRecepcionistaDashboard();
+                dash.ImprimirRutina(RutinaActual);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al imprimir rutina: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnExportar_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("✅ Función de exportación habilitada", "Exportar",
-                          MessageBoxButtons.OK, MessageBoxIcon.Information);
+            try
+            {
+                if (RutinaActual == null)
+                {
+                    MessageBox.Show("No hay una rutina cargada para exportar.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // Crear instancia del Dashboard temporalmente solo para usar su método de exportación
+                var dash = new UcRecepcionistaDashboard();
+                dash.ExportarRutina(RutinaActual);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al exportar rutina: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

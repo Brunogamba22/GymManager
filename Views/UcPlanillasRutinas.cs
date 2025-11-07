@@ -36,6 +36,7 @@ namespace GymManager.Views
             ApplyModernStyles();
             ConfigurarGrid();
             ConfigurarFiltros();
+            ReajustarLayout();
 
             // Asignar eventos a los botones de filtro
             btnFiltrar.Click += BtnFiltrar_Click;
@@ -230,10 +231,8 @@ namespace GymManager.Views
 
         private void MostrarDetalleRutina(Rutina rutinaHeader)
         {
-            
             try
             {
-
                 mainPanel.Visible = false;
 
                 // Crear o mostrar el control de detalle
@@ -244,11 +243,21 @@ namespace GymManager.Views
                     ucDetalle.OnCerrarDetalle += (s, e) => OcultarDetalle();
                     this.Controls.Add(ucDetalle);
                 }
-                // 1. Buscamos los detalles
+
+                // 🔹 1. Obtener los ejercicios asociados a la rutina seleccionada
                 List<DetalleRutina> detallesDeRutina = _detalleController.ObtenerPorRutina(rutinaHeader.IdRutina);
 
-                // Si llegamos aquí sin error, cargamos el detalle
+                if (detallesDeRutina == null || detallesDeRutina.Count == 0)
+                {
+                    MessageBox.Show("Esta rutina no tiene ejercicios cargados para mostrar.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    OcultarDetalle();
+                    return;
+                }
+
+                // 🔹 2. Llamar correctamente al método con 6 parámetros
                 ucDetalle.CargarRutina(
+                    rutinaHeader.IdRutina,          // ✅ Este parámetro era el que faltaba
                     rutinaHeader.Nombre,
                     rutinaHeader.NombreGenero,
                     rutinaHeader.NombreProfesor,
@@ -261,11 +270,8 @@ namespace GymManager.Views
             }
             catch (Exception ex)
             {
-                // Si ObtenerPorRutina lanza una excepción, la mostramos
                 MessageBox.Show($"No se pudieron cargar los detalles para '{rutinaHeader.Nombre}':\n{ex.Message}",
                                 "Error al Cargar Detalles", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                // Volvemos a la lista de planillas
                 OcultarDetalle();
             }
         }
@@ -274,11 +280,35 @@ namespace GymManager.Views
         private void OcultarDetalle()
         {
             if (ucDetalle != null)
-            {
                 ucDetalle.Visible = false;
-            }
+
             mainPanel.Visible = true;
+            mainPanel.BringToFront();
+
+            ReajustarLayout(); // ✅ corrige el layout y elimina la franja gris
         }
+
+        private void ReajustarLayout()
+        {
+            this.SuspendLayout();
+
+            // 🔹 Forzamos que el panel principal ocupe todo el espacio disponible
+            if (mainPanel != null)
+            {
+                mainPanel.Dock = DockStyle.Fill;
+                mainPanel.Padding = new Padding(0);
+                mainPanel.Margin = new Padding(0);
+            }
+
+            // 🔹 Reforzamos que no quede un espacio sin pintar (gris)
+            this.BackColor = backgroundColor;
+            mainPanel.BackColor = backgroundColor;
+
+            this.ResumeLayout();
+            this.Refresh();
+        }
+
+
 
         // Sobrecarga para botones con colores claros (como amarillo)
         private void StyleButton(Button btn, Color bgColor)

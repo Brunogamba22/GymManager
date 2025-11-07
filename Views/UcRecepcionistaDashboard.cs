@@ -15,17 +15,21 @@ namespace GymManager.Views
 {
     public partial class UcRecepcionistaDashboard : UserControl
     {
-        // Colores modernos actualizados
         private Color primaryColor = Color.FromArgb(41, 128, 185);
         private Color backgroundColor = Color.FromArgb(245, 247, 250);
         private Color successColor = Color.FromArgb(46, 204, 113);    // Imprimir
         private Color infoColor = Color.FromArgb(52, 152, 219);      // Exportar
-        private Color darkColor = Color.FromArgb(52, 73, 94);        // TV
+        private Color darkColor = Color.FromArgb(52, 73, 94);        // Modo TV
+        private Color warningColor = Color.FromArgb(241, 196, 15);   // Limpiar
         private Color textColor = Color.FromArgb(52, 73, 94);
-        private Color warningColor = Color.FromArgb(241, 196, 15);    // Limpiar
         private Color hoverColor = Color.FromArgb(232, 244, 253);
         private Color gridLineColor = Color.FromArgb(224, 230, 237);
         private Color panelColor = Color.White;
+        // Selección (más oscuro)
+        private readonly Color selectedRowColor = Color.FromArgb(45, 92, 130); // azul oscuro
+        private readonly Color selectedRowText = Color.White;
+        private readonly Color oddRowColor = Color.FromArgb(250, 250, 250);
+        private readonly Color evenRowColor = Color.White;
 
         private UcDetalleRutina ucDetalle = null;
 
@@ -37,11 +41,28 @@ namespace GymManager.Views
 
         private List<Rutina> rutinasGuardadas = new List<Rutina>();
 
+        private Panel pnlHeader;
+
         // NOTA: chkTodasLasFechas se define en el Designer.cs
 
+        // 🔹 Notificación visual
+        private Label lblNotificacion;
         public UcRecepcionistaDashboard()
         {
             InitializeComponent();
+
+            //  Agregar encabezado superior
+            AgregarEncabezadoSuperior();
+
+            //  Ajustar layout general (corrección de hueco)
+            ReajustarLayoutRecepcionista();
+
+            //  Ajustar el margen superior del panel principal para no quedar oculto
+            mainPanel.Dock = DockStyle.Fill;
+            mainPanel.Padding = new Padding(0, pnlHeader.Height, 0, 0);
+
+            // Crear la etiqueta flotante de notificación
+            CrearEtiquetaNotificacion();
             ApplyModernStyles();
             ConfigurarGrid();
             ConfigurarFiltros();
@@ -51,44 +72,118 @@ namespace GymManager.Views
             btnExportar.Click += BtnExportar_Click;
             btnModoTV.Click += BtnModoTV_Click;
             btnLimpiarFiltros.Click += BtnLimpiarFiltros_Click;
-
-            // Permite deshabilitar el DateTimePicker si se marcan todas las fechas
             chkTodasLasFechas.CheckedChanged += (s, e) => { dtpFecha.Enabled = !chkTodasLasFechas.Checked; };
-
             dgvPlanillas.CellDoubleClick += DgvPlanillas_CellDoubleClick;
         }
 
+
+
+        // =========================================================
+        // 🧱 UI MODERNA
+        // =========================================================
         private void ApplyModernStyles()
         {
             this.BackColor = backgroundColor;
             this.Font = new Font("Segoe UI", 9);
 
-            // Aplicar estilos modernos a todos los botones
+            // Botones con estilo
             StyleButton(btnFiltrar, primaryColor);
             StyleButton(btnImprimir, successColor);
             StyleButton(btnExportar, infoColor);
             StyleButton(btnModoTV, darkColor);
             StyleButton(btnLimpiarFiltros, warningColor);
 
-            // Estilizar combobox y datetimepicker
+            // Hover animado (sin tocar el estilo base)
+            foreach (var btn in new[] { btnFiltrar, btnImprimir, btnExportar, btnModoTV, btnLimpiarFiltros })
+            {
+                btn.MouseEnter += (s, e) => btn.BackColor = ControlPaint.Light(btn.BackColor, 0.2f);
+                btn.MouseLeave += (s, e) => ApplyModernStyles(); // restaura color base
+            }
+
+            // Comboboxes y DateTimePicker
             EstilizarCombobox(cmbProfesor);
             EstilizarCombobox(cmbGenero);
             EstilizarDateTimePicker(dtpFecha);
 
-            // Estilizar checkbox
-            if (chkSoloEditadas != null)
-            {
-                chkSoloEditadas.ForeColor = textColor;
-                chkSoloEditadas.Font = new Font("Segoe UI", 9);
-            }
-            if (chkTodasLasFechas != null)
-            {
-                chkTodasLasFechas.ForeColor = textColor;
-                chkTodasLasFechas.Font = new Font("Segoe UI", 9);
-            }
-
-            // Estilizar labels
+            // Labels y CheckBox
+            if (chkSoloEditadas != null) chkSoloEditadas.ForeColor = textColor;
+            if (chkTodasLasFechas != null) chkTodasLasFechas.ForeColor = textColor;
             EstilizarLabels();
+        }
+
+        // 🔹 Agrega título superior fijo
+        private void AgregarEncabezadoSuperior()
+        {
+            if (pnlHeader != null && !pnlHeader.IsDisposed) return;
+
+            pnlHeader = new Panel
+            {
+                Name = "pnlHeader",
+                Dock = DockStyle.Top,
+                Height = 48,
+                BackColor = primaryColor
+            };
+
+            var lblTitulo = new Label
+            {
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                ForeColor = Color.White,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Text = "🏋️‍♂️  Panel del Recepcionista – Gestión de Rutinas"
+            };
+
+            pnlHeader.Controls.Add(lblTitulo);
+
+            // 👉 Lo agregamos antes que mainPanel para que no lo pise
+            this.Controls.Add(pnlHeader);
+            this.Controls.SetChildIndex(pnlHeader, 0);
+            this.Controls.SetChildIndex(mainPanel, 1); // mainPanel queda debajo y se ajusta solo
+        }
+
+        // 🔹 Notificación visual inferior (desaparece con Timer)
+        private void CrearEtiquetaNotificacion()
+        {
+            if (lblNotificacion != null && !lblNotificacion.IsDisposed) return;
+
+            lblNotificacion = new Label
+            {
+                AutoSize = true,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(52, 152, 219),
+                Padding = new Padding(10, 5, 10, 5),
+                Visible = false,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+            };
+
+            this.Controls.Add(lblNotificacion);
+            lblNotificacion.BringToFront();
+
+            // Reposicionar en cada resize
+            this.Resize += (s, e) => ReposicionarNotificacion();
+            ReposicionarNotificacion();
+        }
+
+        private void ReposicionarNotificacion()
+        {
+            if (lblNotificacion == null) return;
+            lblNotificacion.Location = new Point(
+                this.ClientSize.Width - lblNotificacion.Width - 16,
+                this.ClientSize.Height - lblNotificacion.Height - 12
+            );
+        }
+
+        private void MostrarNotificacion(string mensaje, Color color)
+        {
+            lblNotificacion.Text = mensaje;
+            lblNotificacion.BackColor = color;
+            lblNotificacion.Visible = true;
+            ReposicionarNotificacion();
+
+            var t = new Timer { Interval = 2000 };
+            t.Tick += (s, e) => { lblNotificacion.Visible = false; t.Stop(); t.Dispose(); };
+            t.Start();
         }
 
         private void EstilizarLabels()
@@ -131,37 +226,48 @@ namespace GymManager.Views
             dgvPlanillas.GridColor = gridLineColor;
             dgvPlanillas.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             dgvPlanillas.EnableHeadersVisualStyles = false;
-            dgvPlanillas.AllowUserToAddRows = false;
-            dgvPlanillas.AllowUserToDeleteRows = false;
             dgvPlanillas.ReadOnly = true;
             dgvPlanillas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvPlanillas.RowHeadersVisible = false;
             dgvPlanillas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvPlanillas.RowTemplate.Height = 50;
-            dgvPlanillas.AllowUserToResizeColumns = false;
-            dgvPlanillas.AllowUserToResizeRows = false;
-            dgvPlanillas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
 
-            // Encabezados modernos
+            // Encabezados
             dgvPlanillas.ColumnHeadersDefaultCellStyle.BackColor = primaryColor;
             dgvPlanillas.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgvPlanillas.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+            dgvPlanillas.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvPlanillas.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvPlanillas.ColumnHeadersHeight = 45;
 
-            // Celdas
-            dgvPlanillas.DefaultCellStyle.Font = new Font("Segoe UI", 10f);
+            // Filas
+            dgvPlanillas.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            dgvPlanillas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvPlanillas.DefaultCellStyle.BackColor = Color.White;
             dgvPlanillas.DefaultCellStyle.ForeColor = textColor;
-            dgvPlanillas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvPlanillas.DefaultCellStyle.Padding = new Padding(8);
-            dgvPlanillas.DefaultCellStyle.SelectionBackColor = Color.FromArgb(232, 244, 253);
-            dgvPlanillas.DefaultCellStyle.SelectionForeColor = textColor;
+
             dgvPlanillas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
 
-            dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
-            dgvPlanillas.CellMouseEnter += dgvPlanillas_CellMouseEnter;
-            dgvPlanillas.CellMouseLeave += dgvPlanillas_CellMouseLeave;
+            // Selección oscura consistente
+            dgvPlanillas.DefaultCellStyle.SelectionBackColor = selectedRowColor;
+            dgvPlanillas.DefaultCellStyle.SelectionForeColor = selectedRowText;
+            dgvPlanillas.AlternatingRowsDefaultCellStyle.SelectionBackColor = selectedRowColor;
+            dgvPlanillas.AlternatingRowsDefaultCellStyle.SelectionForeColor = selectedRowText;
+
+
+            // Animación hover
+            dgvPlanillas.CellMouseEnter += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                    dgvPlanillas.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(232, 244, 253);
+            };
+            dgvPlanillas.CellMouseLeave += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                {
+                    var color = e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(250, 250, 250);
+                    dgvPlanillas.Rows[e.RowIndex].DefaultCellStyle.BackColor = color;
+                }
+            };
         }
 
         private void ConfigurarFiltros()
@@ -191,6 +297,42 @@ namespace GymManager.Views
             }
             catch (Exception ex) { MessageBox.Show("Error al cargar profesores: " + ex.Message); }
         }
+        private void ReajustarLayoutRecepcionista()
+        {
+            this.SuspendLayout();
+
+            // 🔹 Aseguramos que el encabezado azul esté bien anclado arriba
+            if (pnlHeader != null)
+            {
+                pnlHeader.Dock = DockStyle.Top;
+                pnlHeader.Height = 48;
+                pnlHeader.BackColor = primaryColor;
+            }
+
+            // 🔹 Aseguramos que el panel principal ocupe todo el resto
+            if (mainPanel != null)
+            {
+                mainPanel.Dock = DockStyle.Fill;
+                mainPanel.Padding = new Padding(0);
+                mainPanel.Margin = new Padding(0);
+                mainPanel.BackColor = backgroundColor;
+            }
+
+            // 🔹 Ajustamos los colores base para evitar fondo gris del contenedor
+            this.BackColor = backgroundColor;
+
+            // 🔹 Nos aseguramos del orden correcto de los controles
+            if (pnlHeader != null)
+            {
+                this.Controls.SetChildIndex(pnlHeader, 0);
+                if (mainPanel != null)
+                    this.Controls.SetChildIndex(mainPanel, 1);
+            }
+
+            this.ResumeLayout();
+            this.Refresh();
+        }
+
 
         // =========================================================
         // LÓGICA DE CARGA Y FILTRADO (MODIFICADO)
@@ -202,21 +344,25 @@ namespace GymManager.Views
             OcultarDetalle();
         }
 
+        // =========================================================
+        // 🧭 FILTROS Y CARGA DE DATOS (idéntico, solo feedback visual)
+        // =========================================================
         private void BtnFiltrar_Click(object sender, EventArgs e)
         {
             CargarGrillaConFiltros();
+            MostrarNotificacion("✅ Filtro aplicado", Color.FromArgb(52, 152, 219));
         }
 
         private void BtnLimpiarFiltros_Click(object sender, EventArgs e)
         {
-            // Limpieza de filtros
             dtpFecha.Value = DateTime.Now.Date;
-            chkTodasLasFechas.Checked = false; // Limpiamos el filtro de fecha
+            chkTodasLasFechas.Checked = false;
             cmbProfesor.SelectedIndex = 0;
             cmbGenero.SelectedIndex = 0;
             if (chkSoloEditadas != null) chkSoloEditadas.Checked = false;
 
             CargarGrillaConFiltros();
+            MostrarNotificacion("🧹 Filtros limpiados", Color.FromArgb(241, 196, 15));
         }
 
         private void CargarGrillaConFiltros()
@@ -292,6 +438,7 @@ namespace GymManager.Views
             {
                 dgvPlanillas.ClearSelection();
             }
+            AplicarEstilosFilas();
         }
 
         // =========================================================
@@ -301,6 +448,24 @@ namespace GymManager.Views
         private void DgvPlanillas_SelectionChanged(object sender, EventArgs e)
         {
             HabilitarBotonesDeAccion(dgvPlanillas.SelectedRows.Count > 0);
+            AplicarEstilosFilas();
+        }
+
+        private void AplicarEstilosFilas()
+        {
+            foreach (DataGridViewRow row in dgvPlanillas.Rows)
+            {
+                if (row.Selected)
+                {
+                    row.DefaultCellStyle.BackColor = selectedRowColor;
+                    row.DefaultCellStyle.ForeColor = selectedRowText;
+                }
+                else
+                {
+                    row.DefaultCellStyle.BackColor = (row.Index % 2 == 0) ? evenRowColor : oddRowColor;
+                    row.DefaultCellStyle.ForeColor = textColor;
+                }
+            }
         }
 
         private void DgvPlanillas_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -323,21 +488,31 @@ namespace GymManager.Views
 
                 if (ucDetalle == null)
                 {
-                    // Se asume que ucDetalle es un UserControl ya creado.
                     ucDetalle = new UcDetalleRutina();
                     ucDetalle.Dock = DockStyle.Fill;
                     ucDetalle.OnCerrarDetalle += (s, ev) => OcultarDetalle();
                     this.Controls.Add(ucDetalle);
                 }
 
+                // 🔹 Obtener los detalles de la rutina seleccionada
                 List<DetalleRutina> detallesDeRutina = _detalleController.ObtenerPorRutina(rutinaHeader.IdRutina);
 
+                if (detallesDeRutina == null || detallesDeRutina.Count == 0)
+                {
+                    MessageBox.Show("Esta rutina no tiene ejercicios cargados para mostrar.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    OcultarDetalle();
+                    return;
+                }
+
+                // 🔹 Cargar los datos completos en el control de detalle (ahora incluye el ID)
                 ucDetalle.CargarRutina(
-                    rutinaHeader.Nombre,
-                    rutinaHeader.NombreGenero,
-                    rutinaHeader.NombreProfesor,
-                    rutinaHeader.FechaCreacion,
-                    detallesDeRutina
+                    rutinaHeader.IdRutina,              // ✅ ID real de la rutina
+                    rutinaHeader.Nombre,                // Nombre de la rutina
+                    rutinaHeader.NombreGenero,          // Tipo o género
+                    rutinaHeader.NombreProfesor,        // Profesor
+                    rutinaHeader.FechaCreacion,         // Fecha
+                    detallesDeRutina                    // Lista de ejercicios
                 );
 
                 ucDetalle.Visible = true;
@@ -425,7 +600,7 @@ namespace GymManager.Views
         // ============================================================
         // 🔹 ExportarRutina (versión PDF completamente funcional)
         // ============================================================
-        private void ExportarRutina(Rutina rutina)
+        public void ExportarRutina(Rutina rutina)
         {
             try
             {
@@ -526,7 +701,7 @@ namespace GymManager.Views
         // 🔢 Contador de páginas (a nivel de clase)
         private int _pageNumber = 0;
 
-        private void ImprimirRutina(Rutina rutina)
+        public void ImprimirRutina(Rutina rutina)
         {
             try
             {
@@ -714,6 +889,8 @@ namespace GymManager.Views
                     return;
                 }
 
+
+
                 // 🔹 Crear y mostrar una nueva ventana FormTV (independiente)
                 FormTV pantallaTV = new FormTV(
                     rutinaSeleccionada.NombreProfesor,
@@ -813,18 +990,21 @@ namespace GymManager.Views
         private void dgvPlanillas_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
-                dgvPlanillas.Rows[e.RowIndex].DefaultCellStyle.BackColor = hoverColor;
+            {
+                var row = dgvPlanillas.Rows[e.RowIndex];
+                if (!row.Selected) row.DefaultCellStyle.BackColor = hoverColor;
+            }
         }
 
         private void dgvPlanillas_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
-                DataGridViewRow row = dgvPlanillas.Rows[e.RowIndex];
-                Color originalColor = (e.RowIndex % 2 == 0)
-                    ? dgvPlanillas.DefaultCellStyle.BackColor
-                    : dgvPlanillas.AlternatingRowsDefaultCellStyle.BackColor;
-                row.DefaultCellStyle.BackColor = originalColor;
+                var row = dgvPlanillas.Rows[e.RowIndex];
+                if (!row.Selected)
+                {
+                    row.DefaultCellStyle.BackColor = (e.RowIndex % 2 == 0) ? evenRowColor : oddRowColor;
+                }
             }
         }
     }
@@ -838,84 +1018,77 @@ namespace GymManager.Views
 
     public class FormTV : Form
     {
-        // 🎨 Colores y fuentes base para el modo TV
+        // 🎨 Colores y fuentes base
         private Color tvBackColor = Color.FromArgb(33, 37, 41);
         private Color tvGridColor = Color.FromArgb(52, 58, 64);
         private Color tvHeaderColor = Color.FromArgb(41, 128, 185);
         private Color tvTitleColor = Color.FromArgb(241, 196, 15);
-        private Font tvGridFont = new Font("Segoe UI", 11f);
-        private Font tvHeaderFont = new Font("Segoe UI", 12f, FontStyle.Bold);
-        private Font tvTitleFont = new Font("Segoe UI", 28f, FontStyle.Bold);
 
-        // 🔹 Controles principales
+        // 🔹 Fuentes "base" (se escalan dinámicamente)
+        private float baseTitleSize = 28f;   // título
+        private float baseHeaderSize = 12f;  // encabezado de columnas
+        private float baseGridSize = 11f;    // filas
+        private int baseRowHeight = 60;    // alto de fila
+        private int baseHeaderHeight = 56; // alto encabezado
+
         private Label lblTituloTV;
         private DataGridView dgvRutina;
+        private TableLayoutPanel tlpMain;
 
-        // ========================================================================
-        // 🔹 CONSTRUCTOR PRINCIPAL
-        // ========================================================================
         public FormTV(string nombreProfesor, string nombreRutina, List<DetalleRutina> detalles)
         {
-            // Inicializa la estructura visual del formulario
             InitializeForm();
 
-            // 🔹 Título de la ventana (arriba en la barra de título)
             this.Text = $"Modo TV - {nombreProfesor}";
-
-            // 🔹 Texto visible grande dentro de la pantalla
             lblTituloTV.Text = $"RUTINA DEL PROFESOR: {nombreProfesor.ToUpper()}";
 
-            // 🔹 Llenar la grilla con los ejercicios de la rutina
             CargarRutina(detalles, nombreRutina);
+
+            // 🔸 aplicar escala inicial y volver a aplicar ante cambios de tamaño
+            ApplyResponsiveScale();
+            this.Resize += (s, e) => ApplyResponsiveScale();
         }
 
-        // ========================================================================
-        // 🔹 CONFIGURACIÓN VISUAL DEL FORMULARIO
-        // ========================================================================
         private void InitializeForm()
         {
-            // --- Configuración general del formulario ---
             this.BackColor = tvBackColor;
-            this.WindowState = FormWindowState.Maximized;  // Abre en pantalla completa
-            this.FormBorderStyle = FormBorderStyle.Sizable; // Permite minimizar / mover
+            this.WindowState = FormWindowState.Maximized;
+            this.FormBorderStyle = FormBorderStyle.Sizable;
             this.MinimizeBox = true;
             this.MaximizeBox = true;
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.KeyPreview = true;  // Permite detectar teclas (como ESC)
+            this.KeyPreview = true;
             this.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) this.Close(); };
 
-            // --- Diseño general con TableLayoutPanel (2 filas) ---
-            TableLayoutPanel tlpMain = new TableLayoutPanel
+            tlpMain = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(20),
+                Padding = new Padding(30),
                 BackColor = tvBackColor,
                 RowCount = 2,
                 ColumnCount = 1
             };
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 100));  // fila título
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));   // fila tabla
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // título se ajusta al contenido
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // la grilla ocupa el resto
             this.Controls.Add(tlpMain);
 
-            // --- Título principal (grande arriba) ---
             lblTituloTV = new Label
             {
-                Dock = DockStyle.Fill,
-                Font = tvTitleFont,
+                Dock = DockStyle.Top,
+                AutoSize = false,
                 ForeColor = tvTitleColor,
                 Text = "RUTINA DEL PROFESOR",
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = ContentAlignment.MiddleCenter,
+                Height = 110, // se re-calcula en ApplyResponsiveScale()
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             tlpMain.Controls.Add(lblTituloTV, 0, 0);
 
-            // --- DataGridView donde se muestran los ejercicios ---
             dgvRutina = CrearGrillaTV();
+            dgvRutina.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tlpMain.Controls.Add(dgvRutina, 0, 1);
         }
 
-        // ========================================================================
-        // 🔹 CONFIGURACIÓN DE LA GRILLA DE EJERCICIOS
-        // ========================================================================
         private DataGridView CrearGrillaTV()
         {
             var dgv = new DataGridView
@@ -930,50 +1103,69 @@ namespace GymManager.Views
                 ReadOnly = true,
                 RowHeadersVisible = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                RowTemplate = { Height = 60 },
-                AllowUserToResizeRows = false,
-                ColumnHeadersHeight = 50
+                ColumnHeadersHeight = baseHeaderHeight,
+                RowTemplate = { Height = baseRowHeight },
+                AllowUserToResizeRows = false
             };
 
-            // --- Estilo de encabezado ---
+            // Encabezado
             dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Font = tvHeaderFont;
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            // --- Estilo de filas ---
-            dgv.DefaultCellStyle.Font = tvGridFont;
+            // Filas
             dgv.DefaultCellStyle.BackColor = tvBackColor;
             dgv.DefaultCellStyle.ForeColor = Color.White;
             dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor;
+            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor; // sin resaltado molesto
             dgv.DefaultCellStyle.SelectionForeColor = Color.White;
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
 
-            // --- Columnas ---
-            dgv.Columns.Add("EJERCICIO", "EJERCICIO");
-            dgv.Columns.Add("SERIES", "SERIES");
-            dgv.Columns.Add("REPS", "REPS");
-            dgv.Columns.Add("CARGA", "CARGA %");
+            // Columnas (EJERCICIO con más espacio)
+            var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 52 };
+            var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 16 };
+            var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 16 };
+            var colCa = new DataGridViewTextBoxColumn { Name = "CARGA", HeaderText = "CARGA %", FillWeight = 16 };
+            dgv.Columns.AddRange(colEj, colSe, colRe, colCa);
 
             return dgv;
         }
 
-        // ========================================================================
-        // 🔹 CARGA DE DATOS EN LA GRILLA
-        // ========================================================================
+        // 📐 Escalado responsivo según ancho de ventana (base 1366px)
+        private void ApplyResponsiveScale()
+        {
+            // factor entre 1.00 y 1.70 aprox (ajustable)
+            float factor = Math.Max(1.0f, Math.Min(1.7f, this.ClientSize.Width / 1366f));
+
+            // Fuentes recalculadas
+            lblTituloTV.Font = new Font("Segoe UI", baseTitleSize * factor, FontStyle.Bold);
+            dgvRutina.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", baseHeaderSize * factor, FontStyle.Bold);
+            dgvRutina.DefaultCellStyle.Font = new Font("Segoe UI", baseGridSize * factor, FontStyle.Regular);
+
+            // Alturas recalculadas
+            dgvRutina.ColumnHeadersHeight = (int)Math.Round(baseHeaderHeight * factor);
+            dgvRutina.RowTemplate.Height = (int)Math.Round(baseRowHeight * factor);
+
+            // Altura del bloque de título
+            lblTituloTV.Height = (int)Math.Round(90 * factor);
+
+            // Padding agradable
+            dgvRutina.DefaultCellStyle.Padding = new Padding((int)(8 * factor), (int)(6 * factor), (int)(8 * factor), (int)(6 * factor));
+
+            // Re-ajusta columnas
+            dgvRutina.AutoResizeColumns();
+        }
+
         private void CargarRutina(List<DetalleRutina> detalles, string nombreRutina)
         {
             dgvRutina.Rows.Clear();
 
-            // Mostrar mensaje si la rutina no tiene ejercicios
             if (detalles == null || detalles.Count == 0)
             {
                 dgvRutina.Rows.Add("Sin ejercicios disponibles", "", "", "");
                 return;
             }
 
-            // Agregar cada ejercicio como una fila en la grilla
             foreach (var d in detalles)
             {
                 dgvRutina.Rows.Add(
@@ -983,8 +1175,6 @@ namespace GymManager.Views
                     d.Carga?.ToString() ?? "-"
                 );
             }
-
-            // Ajustar el tamaño de las columnas automáticamente
             dgvRutina.AutoResizeColumns();
         }
     }
