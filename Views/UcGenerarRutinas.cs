@@ -32,6 +32,7 @@ namespace GymManager.Views
 
         // Controladores
         private List<Genero> _listaDeGeneros = new List<Genero>();
+        private List<GrupoMuscular> _listaGruposMusculares = new List<GrupoMuscular>();
         private readonly EjercicioController _ejercicioController = new EjercicioController();
         private readonly RutinaController _rutinaController = new RutinaController();
         private readonly GrupoMuscularController _grupoMuscularController = new GrupoMuscularController();
@@ -53,8 +54,10 @@ namespace GymManager.Views
 
             try
             {
-                var gruposMusculares = _grupoMuscularController.ObtenerTodos();
-                var nombresGrupos = gruposMusculares.Select(g => g.Nombre).ToArray();
+                
+                _listaGruposMusculares = _grupoMuscularController.ObtenerTodos();
+                var nombresGrupos = _listaGruposMusculares.Select(g => g.Nombre).ToArray();
+
                 chkListHombres.Items.AddRange(nombresGrupos);
                 chkListMujeres.Items.AddRange(nombresGrupos);
                 chkListDeportistas.Items.AddRange(nombresGrupos);
@@ -69,7 +72,14 @@ namespace GymManager.Views
 
         private void ConfigurarObjetivos()
         {
-            var objetivos = new[] { "Hipertrofia", "Fuerza", "Resistencia" };
+            var objetivos = new[] {
+                "Hipertrofia",
+                "Fuerza",
+                "Resistencia",
+                "Carga Ascendente (Fuerza)",
+                "Carga Invertida (Hipertrofia)"
+            };
+
             if (cmbObjetivoHombres != null) { cmbObjetivoHombres.Items.AddRange(objetivos); cmbObjetivoHombres.SelectedIndex = 0; }
             if (cmbObjetivoMujeres != null) { cmbObjetivoMujeres.Items.AddRange(objetivos); cmbObjetivoMujeres.SelectedIndex = 0; }
             if (cmbObjetivoDeportistas != null) { cmbObjetivoDeportistas.Items.AddRange(objetivos); cmbObjetivoDeportistas.SelectedIndex = 0; }
@@ -143,23 +153,17 @@ namespace GymManager.Views
         //LÓGICA DE GENERACIÓN "INTELIGENTE" 
         private void GenerarRutinaReal(string tipo, DataGridView grilla, List<DetalleRutina> listaRutina, CheckedListBox chkList, ComboBox cmbObjetivo)
         {
+            // 1. LEER OBJETIVO Y GRUPOS
             var gruposSeleccionados = chkList.CheckedItems.Cast<string>().ToList();
             if (gruposSeleccionados.Count == 0) { MessageBox.Show("Seleccione al menos un grupo.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-            string objetivo = cmbObjetivo?.SelectedItem?.ToString() ?? "Hipertrofia";
-
-            int series; int repeticiones;
-            switch (objetivo)
-            {
-                case "Fuerza": series = 5; repeticiones = 5; break;
-                case "Resistencia": series = 3; repeticiones = 15; break;
-                case "Hipertrofia": default: series = 4; repeticiones = 10; break;
-            }
+            string objetivo = cmbObjetivo?.SelectedItem?.ToString() ?? "Hipertrofia (4x10)";
 
             try
             {
                 listaRutina.Clear();
                 var ejerciciosParaRutina = new List<Ejercicio>();
 
+                // 2. SELECCIONAR EJERCICIOS (No aleatorio)
                 foreach (string grupo in gruposSeleccionados)
                 {
                     List<Ejercicio> disponibles = _ejercicioController.ObtenerPorGrupoMuscular(grupo)
@@ -168,24 +172,71 @@ namespace GymManager.Views
                     if (disponibles.Count == 0) { MessageBox.Show($"No se encontraron ejercicios para '{grupo}'.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
                     ejerciciosParaRutina.AddRange(disponibles);
                 }
-
                 ejerciciosParaRutina = ejerciciosParaRutina.GroupBy(ej => ej.Id).Select(g => g.First()).ToList();
                 if (ejerciciosParaRutina.Count == 0) { MessageBox.Show("No se encontraron ejercicios.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
 
+                // 3. ASIGNAR REGLAS (LÓGICA HÍBRIDA)
                 foreach (var ejercicio in ejerciciosParaRutina)
                 {
+                    // Averiguar a qué grupo pertenece este ejercicio
+                    var grupoDelEjercicio = _listaGruposMusculares.FirstOrDefault(g => g.Id == ejercicio.GrupoMuscularId);
+                    string nombreGrupo = grupoDelEjercicio?.Nombre.ToLower() ?? "";
+
+                    // Decidir si este ejercicio debe llevar % de carga
+                    bool usaCarga = !(nombreGrupo == "abdomen" || nombreGrupo == "core" || nombreGrupo == "cardio");
+
+                    // Variables para el nuevo modelo
+                    int totalSets = 0;
+                    int repeticiones = 0;
+                    string cargaString = "";
+
+                    switch (objetivo)
+                    {
+                        case "Fuerza":
+                            totalSets = 5;
+                            repeticiones = 5;
+                            cargaString = usaCarga ? "85%" : "";
+                            break;
+                        case "Resistencia":
+                            totalSets = 3;
+                            repeticiones = 15;
+                            cargaString = usaCarga ? "60%" : "";
+                            break;
+
+                        case "Carga Ascendente (Fuerza)":
+                            totalSets = 5; // 5 sets en total
+                            repeticiones = 3; // El usuario puede editar esto, pero ponemos un default
+                            cargaString = usaCarga ? "50%-60%-70%-80%-90%" : "";
+                            break;
+
+                        case "Carga Invertida (Hipertrofia)":
+                            totalSets = 3;
+                            repeticiones = 10;
+                            cargaString = usaCarga ? "80%-75%-70%" : "";
+                            break;
+
+                        case "Hipertrofia":
+                        default:
+                            totalSets = 4;
+                            repeticiones = 10;
+                            cargaString = usaCarga ? "75%" : "";
+                            break;
+                    }
+
+                    // Añadimos UNA SOLA FILA por ejercicio
                     listaRutina.Add(new DetalleRutina
                     {
                         EjercicioNombre = ejercicio.Nombre,
                         IdEjercicio = ejercicio.Id,
-                        Series = series,
-                        Repeticiones = repeticiones,
-                        Carga = null
+                        Series = totalSets,       // ej: 4
+                        Repeticiones = repeticiones, // ej: 10
+                        Carga = cargaString         // ej: "75%" o "50-60-70-80"
                     });
                 }
 
                 MostrarRutinaEnGrid(grilla, listaRutina);
 
+                // 4. Habilitar botones
                 if (tipo == "Hombres") HabilitarAccionesHombres(true);
                 if (tipo == "Mujeres") HabilitarAccionesMujeres(true);
                 if (tipo == "Deportistas") HabilitarAccionesDeportistas(true);

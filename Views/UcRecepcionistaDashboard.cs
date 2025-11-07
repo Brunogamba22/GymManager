@@ -665,7 +665,8 @@ namespace GymManager.Views
                     tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.EjercicioNombre, fNormal)) { Padding = 5 });
                     tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.Series.ToString(), fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
                     tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.Repeticiones.ToString(), fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
-                    tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(d.Carga.HasValue ? d.Carga.ToString() : "-", fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
+                    string cargaTextoPdf = string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga;
+                    tabla.AddCell(new iTextSharp.text.pdf.PdfPCell(new iTextSharp.text.Phrase(cargaTextoPdf, fNormal)) { HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER });
                 }
 
                 doc.Add(tabla);
@@ -778,7 +779,9 @@ namespace GymManager.Views
                         g.DrawString(d.EjercicioNombre, fTexto, new SolidBrush(colorTexto), xInicio + 10, y + 6);
                         g.DrawString(d.Series.ToString(), fTexto, Brushes.Black, xInicio + 345, y + 6);
                         g.DrawString(d.Repeticiones.ToString(), fTexto, Brushes.Black, xInicio + 445, y + 6);
-                        g.DrawString(d.Carga.HasValue ? $"{d.Carga}%" : "-", fTexto, Brushes.Black, xInicio + 540, y + 6);
+                        //'Carga' es un string. Comprobamos si está vacío.
+                        string cargaTexto = string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga;
+                        g.DrawString(cargaTexto, fTexto, Brushes.Black, xInicio + 540, y + 6);
 
                         g.DrawLine(new Pen(colorLinea), xInicio, y + filaAltura, xInicio + anchoTabla, y + filaAltura);
                         y += filaAltura;

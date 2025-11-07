@@ -21,6 +21,7 @@ namespace GymManager.Views
         private Color dangerColor = Color.FromArgb(220, 53, 69);
         private Color textColor = Color.FromArgb(33, 37, 41);
         private Color lightGrayColor = Color.FromArgb(220, 220, 220);
+        private Color hoverColor = Color.FromArgb(232, 243, 252);
 
         // --- Rutinas disponibles (Encabezados) ---
         private List<DetalleRutina> _rutinaHombreGenerada;
@@ -221,35 +222,41 @@ namespace GymManager.Views
                     var row = dgvRutinas.Rows[i];
                     string nombreEjercicio = row.Cells["Ejercicio"].Value?.ToString();
                     if (string.IsNullOrEmpty(nombreEjercicio)) continue;
+
                     var ejercicioDb = _ejercicioController.ObtenerPorNombre(nombreEjercicio);
                     int idEjercicioReal = ejercicioDb?.Id ?? 0;
-                    if (idEjercicioReal == 0) { /* ... */ return; }
+                    if (idEjercicioReal == 0) { /*...*/ return; }
 
-                    double? carga = null;
-                    var cargaValue = row.Cells["Carga"].Value; // Lee de la celda 'Carga'
+                    // --- 🔥 CORRECCIÓN: Leer int, int, string de la grilla ---
 
-                    if (cargaValue != null && !string.IsNullOrWhiteSpace(cargaValue.ToString()))
+                    // Validar 'Series' (que debe ser int)
+                    if (!int.TryParse(row.Cells["Series"].Value?.ToString(), out int totalSeries) || totalSeries <= 0)
                     {
-                        if (double.TryParse(cargaValue.ToString(), out double parsedCarga))
-                        {
-                            carga = parsedCarga;
-                        }
-                        else
-                        {
-                            // La validación de CellValidating ya previno esto,
-                            // pero es bueno tener una segunda capa.
-                            MessageBox.Show($"Valor de Carga inválido para '{nombreEjercicio}'. Se guardará como Nulo.", "Dato Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        }
+                        MessageBox.Show($"El valor de 'Series' para '{nombreEjercicio}' debe ser un número positivo.", "Dato Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
                     }
+
+                    // Validar 'Repeticiones' (que debe ser int)
+                    if (!int.TryParse(row.Cells["Repeticiones"].Value?.ToString(), out int totalRepes) || totalRepes <= 0)
+                    {
+                        MessageBox.Show($"El valor de 'Repeticiones' para '{nombreEjercicio}' debe ser un número positivo.", "Dato Inválido", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // Leer 'Carga' (que es un string y puede estar vacío)
+                    string cargaString = row.Cells["Carga"].Value?.ToString() ?? "";
+
+                    
 
                     rutinaModificada.Add(new DetalleRutina
                     {
                         IdEjercicio = idEjercicioReal,
                         EjercicioNombre = nombreEjercicio,
-                        Series = Convert.ToInt32(row.Cells["Series"].Value),
-                        Repeticiones = Convert.ToInt32(row.Cells["Repeticiones"].Value),
-                        Carga = carga
+                        Series = totalSeries,
+                        Repeticiones = totalRepes,
+                        Carga = cargaString
                     });
+                    // --- FIN CORRECCIÓN ---
                 }
                 if (rutinaModificada.Count == 0) { /* ... */ return; }
 
@@ -337,6 +344,8 @@ namespace GymManager.Views
             dgvRutinas.DefaultCellStyle.Font = new Font("Segoe UI", 9);
             dgvRutinas.DefaultCellStyle.SelectionBackColor = Color.White;
             dgvRutinas.DefaultCellStyle.SelectionForeColor = textColor;
+            dgvRutinas.CellMouseEnter += dgvRutinas_CellMouseEnter;
+            dgvRutinas.CellMouseLeave += dgvRutinas_CellMouseLeave;
             dgvRutinas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRutinas.DefaultCellStyle.Padding = new Padding(5);
             dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
@@ -498,5 +507,42 @@ namespace GymManager.Views
                 }
             }
         }
+
+        // --- 🔥 AÑADE ESTOS DOS MÉTODOS COMPLETOS a UcEditarRutina.cs ---
+
+private void dgvRutinas_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+{
+    // Asegurarse de que no sea la fila de encabezado (índice -1)
+    if (e.RowIndex >= 0)
+    {
+        // Resaltar TODA la fila donde entró el mouse
+        dgvRutinas.Rows[e.RowIndex].DefaultCellStyle.BackColor = hoverColor;
+    }
+}
+
+private void dgvRutinas_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+{
+    // Asegurarse de que no sea la fila de encabezado
+    if (e.RowIndex >= 0)
+    {
+        // Obtener la fila de la que salió el mouse
+        DataGridViewRow row = dgvRutinas.Rows[e.RowIndex];
+
+        // Determinar el color original (blanco o gris alternado)
+        Color originalColor;
+        if (e.RowIndex % 2 == 0) // Fila par
+        {
+            originalColor = dgvRutinas.DefaultCellStyle.BackColor; // Blanco
+        }
+        else // Fila impar
+        {
+            originalColor = dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor; // El gris alternado
+        }
+
+        // Devolver la fila a su color original
+        row.DefaultCellStyle.BackColor = originalColor;
+    }
+}
+// --- FIN DE MÉTODOS AÑADIDOS ---
     }
 }

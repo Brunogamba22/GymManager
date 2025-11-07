@@ -18,6 +18,7 @@ namespace GymManager.Forms
         private UcGenerarRutinas ucGenerarRutinas;
         private UcEditarRutina ucEditarRutina;
         private UcPlanillasRutinas ucPlanillasRutinas;
+        private UcReportesDashboard ucReportesDashboard;
 
         // Botón global de Backup y su etiqueta informativa
         private Button btnBackup;
@@ -43,6 +44,7 @@ namespace GymManager.Forms
             ucGenerarRutinas = new UcGenerarRutinas();
             ucEditarRutina = new UcEditarRutina();
             ucPlanillasRutinas = new UcPlanillasRutinas();
+            ucReportesDashboard = new UcReportesDashboard();
 
             panelDashboard = new Panel
             {
@@ -113,6 +115,10 @@ namespace GymManager.Forms
             ucGenerarRutinas.Dock = DockStyle.Fill;
             ucEditarRutina.Dock = DockStyle.Fill;
             ucPlanillasRutinas.Dock = DockStyle.Fill;
+
+            ucReportesDashboard.Dock = DockStyle.Fill;
+            panelContenido.Controls.Add(ucReportesDashboard);
+
 
             panelContenido.Controls.Add(ucGenerarRutinas);
             panelContenido.Controls.Add(ucEditarRutina);
@@ -330,6 +336,7 @@ namespace GymManager.Forms
                 AgregarBotonNav("Generar Rutinas", MostrarGenerarRutinas, DockStyle.Top);
                 AgregarBotonNav("Editar Rutina", MostrarEditarRutina, DockStyle.Top);
                 AgregarBotonNav("Planillas", MostrarPlanillas, DockStyle.Top);
+                AgregarBotonNav("Reportes", MostrarReportes, DockStyle.Top);
             }
 
             if (rol == Rol.Administrador)
@@ -367,6 +374,12 @@ namespace GymManager.Forms
         {
             ucPlanillasRutinas.BringToFront();
             ucPlanillasRutinas.CargarDatos();
+        }
+
+        private void MostrarReportes() // O como lo llames
+        {
+            ucReportesDashboard.BringToFront();
+            // (No necesita 'CargarDatos' porque se carga al presionar el botón Generar)
         }
 
         private void CargarVista(UserControl vista)
