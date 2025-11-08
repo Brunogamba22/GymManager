@@ -322,11 +322,11 @@ namespace GymManager.Views
 
         private void ApplyModernStyles() { this.BackColor = backgroundColor; this.Font = new Font("Segoe UI", 9); }
         private void ConfigurarGrid()
-        { /* ... Tu código de ConfigurarGrid ... */
+        {
             dgvRutinas.BackgroundColor = Color.White;
             dgvRutinas.BorderStyle = BorderStyle.None;
             dgvRutinas.EnableHeadersVisualStyles = false;
-            dgvRutinas.AllowUserToAddRows = true;
+            dgvRutinas.AllowUserToAddRows = false;
             dgvRutinas.AllowUserToDeleteRows = true;
             dgvRutinas.ReadOnly = false;
             dgvRutinas.AllowUserToResizeColumns = false;
@@ -336,24 +336,38 @@ namespace GymManager.Views
             dgvRutinas.RowHeadersVisible = false;
             dgvRutinas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvRutinas.RowTemplate.Height = 35;
+
             dgvRutinas.ColumnHeadersDefaultCellStyle.BackColor = primaryColor;
             dgvRutinas.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvRutinas.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvRutinas.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRutinas.ColumnHeadersHeight = 40;
+
             dgvRutinas.DefaultCellStyle.Font = new Font("Segoe UI", 9);
-            dgvRutinas.DefaultCellStyle.SelectionBackColor = Color.White;
-            dgvRutinas.DefaultCellStyle.SelectionForeColor = textColor;
-            dgvRutinas.CellMouseEnter += dgvRutinas_CellMouseEnter;
-            dgvRutinas.CellMouseLeave += dgvRutinas_CellMouseLeave;
             dgvRutinas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvRutinas.DefaultCellStyle.Padding = new Padding(5);
-            dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
+
+            // 🔥 COLORES ACTUALIZADOS
+            dgvRutinas.DefaultCellStyle.BackColor = Color.White;
+            dgvRutinas.DefaultCellStyle.ForeColor = textColor;
+
+            // 💡 Color de selección visible y suave
+            dgvRutinas.DefaultCellStyle.SelectionBackColor = Color.FromArgb(208, 236, 255);  // Azul muy claro
+            dgvRutinas.DefaultCellStyle.SelectionForeColor = Color.Black;
+
+            // 🔹 Fila alternada más visible
+            dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 247, 250);
+
+            // Hover (mantiene tu estilo actual)
+            dgvRutinas.CellMouseEnter += dgvRutinas_CellMouseEnter;
+            dgvRutinas.CellMouseLeave += dgvRutinas_CellMouseLeave;
+
             dgvRutinas.Columns["Ejercicio"].ReadOnly = true;
             dgvRutinas.Columns["Series"].ReadOnly = false;
             dgvRutinas.Columns["Repeticiones"].ReadOnly = false;
             dgvRutinas.Columns["Carga"].ReadOnly = false;
         }
+
         private void ConfigurarMenuContextual()
         { /* ... Tu código de ConfigurarMenuContextual ... */
             menuEjercicios = new ContextMenuStrip { BackColor = Color.White, Font = new Font("Segoe UI", 9), ShowImageMargin = false, AutoSize = true };
@@ -490,59 +504,66 @@ namespace GymManager.Views
             ToolStripMenuItem itemClickeado = sender as ToolStripMenuItem;
             if (itemClickeado?.Tag is Ejercicio ejercicioSeleccionado)
             {
+                // Buscar grupo muscular del ejercicio
+                var grupo = _listaGruposBD.FirstOrDefault(g => g.Id == ejercicioSeleccionado.GrupoMuscularId);
+                string nombreGrupo = grupo?.Nombre.ToLower() ?? "";
+
+                // Determinar si usa carga
+                bool usaCarga = !(nombreGrupo.Contains("abdomen") ||
+                                  nombreGrupo.Contains("core") ||
+                                  nombreGrupo.Contains("cardio"));
+
+                // Asignar carga por defecto
+                string cargaString = usaCarga ? "75%" : "";
+
                 // Añadir a la grilla con valores por defecto
                 dgvRutinas.Rows.Add(
-                    ejercicioSeleccionado.Nombre, // Nombre del ejercicio
-                    "3",                            // Series por defecto
-                    "10",                           // Repeticiones por defecto
-                    ""                              // Carga nula
+                    ejercicioSeleccionado.Nombre,
+                    "3",        // Series por defecto
+                    "10",       // Repeticiones por defecto
+                    cargaString // ✅ Ahora incluye la carga
                 );
 
-                // Opcional: enfocar la fila nueva
+                // Seleccionar automáticamente la nueva fila
                 if (dgvRutinas.Rows.Count > 0)
                 {
-                    int lastRow = dgvRutinas.Rows.Count - (dgvRutinas.AllowUserToAddRows ? 2 : 1);
-                    dgvRutinas.CurrentCell = dgvRutinas.Rows[lastRow].Cells["Series"];
-                    dgvRutinas.BeginEdit(true);
+                    int lastRow = dgvRutinas.Rows.Count - 1;
+                    dgvRutinas.ClearSelection();
+                    dgvRutinas.Rows[lastRow].Selected = true;
+                    dgvRutinas.FirstDisplayedScrollingRowIndex = lastRow;
                 }
             }
         }
 
+
         // --- 🔥 AÑADE ESTOS DOS MÉTODOS COMPLETOS a UcEditarRutina.cs ---
 
-private void dgvRutinas_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
-{
-    // Asegurarse de que no sea la fila de encabezado (índice -1)
-    if (e.RowIndex >= 0)
-    {
-        // Resaltar TODA la fila donde entró el mouse
-        dgvRutinas.Rows[e.RowIndex].DefaultCellStyle.BackColor = hoverColor;
-    }
-}
-
-private void dgvRutinas_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-{
-    // Asegurarse de que no sea la fila de encabezado
-    if (e.RowIndex >= 0)
-    {
-        // Obtener la fila de la que salió el mouse
-        DataGridViewRow row = dgvRutinas.Rows[e.RowIndex];
-
-        // Determinar el color original (blanco o gris alternado)
-        Color originalColor;
-        if (e.RowIndex % 2 == 0) // Fila par
+        private void dgvRutinas_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
-            originalColor = dgvRutinas.DefaultCellStyle.BackColor; // Blanco
-        }
-        else // Fila impar
-        {
-            originalColor = dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor; // El gris alternado
+            // Asegurarse de que no sea la fila de encabezado (índice -1)
+            if (e.RowIndex >= 0)
+            {
+                var row = dgvRutinas.Rows[e.RowIndex];
+                // No sobrescribas el color si ya está seleccionada
+                if (!row.Selected)
+                    row.DefaultCellStyle.BackColor = hoverColor;
+            }
         }
 
-        // Devolver la fila a su color original
-        row.DefaultCellStyle.BackColor = originalColor;
-    }
-}
-// --- FIN DE MÉTODOS AÑADIDOS ---
+        private void dgvRutinas_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            // Asegurarse de que no sea la fila de encabezado
+            if (e.RowIndex >= 0)
+            {
+                var row = dgvRutinas.Rows[e.RowIndex];
+                if (!row.Selected)
+                {
+                    // Restaurar color base (par/impar)
+                    row.DefaultCellStyle.BackColor = e.RowIndex % 2 == 0
+                        ? dgvRutinas.DefaultCellStyle.BackColor
+                        : dgvRutinas.AlternatingRowsDefaultCellStyle.BackColor;
+                }
+            }
+        }
     }
 }

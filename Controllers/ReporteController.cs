@@ -72,25 +72,24 @@ namespace GymManager.Controllers
 
         public ReporteActividadItem ObtenerReporteActividad(int idProfesor, DateTime fechaDesde, DateTime fechaHasta)
         {
-            // 1. Inicializa el reporte con ceros
             var reporte = new ReporteActividadItem();
 
             using (var conn = new SqlConnection(Conexion.Cadena))
             {
                 conn.Open();
-                string query = @"
-            SELECT 
-                esEditada,
-                COUNT(*) AS Conteo
-            FROM Rutina
-            WHERE 
-                creadaPor = @idProfesor
-                AND CONVERT(date, fecha) BETWEEN @fechaDesde AND @fechaHasta
-            GROUP BY 
-                esEditada;
-        ";
 
-                using (var cmd = new SqlCommand(query, conn))
+                // 1️⃣ Conteo de nuevas / editadas
+                string queryBase = @"
+                    SELECT 
+                        esEditada,
+                        COUNT(*) AS Conteo
+                    FROM Rutina
+                    WHERE 
+                        creadaPor = @idProfesor
+                        AND CONVERT(date, fecha) BETWEEN @fechaDesde AND @fechaHasta
+                    GROUP BY esEditada;";
+
+                using (var cmd = new SqlCommand(queryBase, conn))
                 {
                     cmd.Parameters.AddWithValue("@idProfesor", idProfesor);
                     cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde.Date);
@@ -98,20 +97,14 @@ namespace GymManager.Controllers
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        // 2. Lee los resultados (puede devolver 0, 1 o 2 filas)
                         while (reader.Read())
                         {
-                            // Lee el valor 'bit' (booleano) de la BD
                             bool esEditada = false;
                             var valor = reader["esEditada"];
-                            if (valor != DBNull.Value && (valor is bool b && b == true || valor is int i && i == 1))
-                            {
+                            if (valor != DBNull.Value && (valor is bool b && b || valor is int i && i == 1))
                                 esEditada = true;
-                            }
 
                             int conteo = reader.GetInt32(reader.GetOrdinal("Conteo"));
-
-                            // 3. Asigna el conteo a la propiedad correcta
                             if (esEditada)
                                 reporte.RutinasEditadas = conteo;
                             else
@@ -119,11 +112,95 @@ namespace GymManager.Controllers
                         }
                     }
                 }
+
+                // 2️⃣ Conteo por género
+                string queryGeneros = @"
+                SELECT g.nombre AS Genero, COUNT(*) AS Conteo
+                FROM Rutina r
+                INNER JOIN Genero g ON r.id_genero = g.id_genero
+                WHERE 
+                    r.creadaPor = @idProfesor
+                    AND CONVERT(date, r.fecha) BETWEEN @fechaDesde AND @fechaHasta
+                GROUP BY g.nombre;";
+
+                using (var cmd = new SqlCommand(queryGeneros, conn))
+                {
+                    cmd.Parameters.AddWithValue("@idProfesor", idProfesor);
+                    cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde.Date);
+                    cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta.Date);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string genero = reader["Genero"].ToString().ToLower();
+                            int conteo = reader.GetInt32(reader.GetOrdinal("Conteo"));
+
+                            if (genero.Contains("masculino") || genero.Contains("hombre"))
+                                reporte.RutinasHombres = conteo;
+                            else if (genero.Contains("femenino") || genero.Contains("mujer"))
+                                reporte.RutinasMujeres = conteo;
+                            else if (genero.Contains("deport"))
+                                reporte.RutinasDeportistas = conteo;
+                        }
+                    }
+                }
             }
 
-            // 4. Calcula el total y devuelve el objeto
+            // 3️⃣ Total general
             reporte.TotalRutinas = reporte.RutinasNuevas + reporte.RutinasEditadas;
             return reporte;
+        }
+
+
+        // =========================================================
+        // 🔥 MÉTODO NUEVO: Para el Tooltip del Gráfico de Torta
+        // =========================================================
+        public List<ReportePopularidad> ObtenerTop5EjerciciosPorGrupo(int idProfesor, DateTime fechaDesde, DateTime fechaHasta, string nombreGrupo)
+        {
+            var lista = new List<ReportePopularidad>();
+            using (var conn = new SqlConnection(Conexion.Cadena))
+            {
+                conn.Open();
+                string query = @"
+            SELECT TOP 5 
+                e.nombre AS EjercicioNombre,
+                COUNT(dr.id_detalle) AS Conteo
+            FROM DetalleRutina dr
+            INNER JOIN Rutina r ON dr.id_rutina = r.id_rutina
+            INNER JOIN Ejercicios e ON dr.id_ejercicio = e.id_ejercicio
+            INNER JOIN Grupo_Muscular gm ON e.id_grupo_muscular = gm.id_grupo_muscular
+            WHERE
+                r.creadaPor = @idProfesor
+                AND CONVERT(date, r.fecha) BETWEEN @fechaDesde AND @fechaHasta
+                AND gm.nombre = @nombreGrupo  -- <-- El filtro clave por grupo
+            GROUP BY 
+                e.nombre
+            ORDER BY 
+                Conteo DESC;
+        ";
+
+                using (var cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@idProfesor", idProfesor);
+                    cmd.Parameters.AddWithValue("@fechaDesde", fechaDesde.Date);
+                    cmd.Parameters.AddWithValue("@fechaHasta", fechaHasta.Date);
+                    cmd.Parameters.AddWithValue("@nombreGrupo", nombreGrupo);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            lista.Add(new ReportePopularidad
+                            {
+                                EjercicioNombre = reader.GetString(reader.GetOrdinal("EjercicioNombre")),
+                                Conteo = reader.GetInt32(reader.GetOrdinal("Conteo"))
+                            });
+                        }
+                    }
+                }
+            }
+            return lista;
         }
     }
 }

@@ -13,23 +13,27 @@ namespace GymManager.Views
         private DateTimePicker dtpFechaHasta;
         private Button btnGenerarReporte;
 
-        // --- Paneles para los "Cards" ---
+        // --- Paneles para las "Cards" ---
         private TableLayoutPanel tlpCards;
         private Panel pnlCardTotal;
         private Panel pnlCardNuevas;
         private Panel pnlCardEditadas;
 
-        // --- Labels para los números ---
+        // --- Etiquetas para los números ---
         private Label lblTotalNumero;
         private Label lblTotalTexto;
         private Label lblNuevasNumero;
         private Label lblNuevasTexto;
         private Label lblEditadasNumero;
         private Label lblEditadasTexto;
+        private Label lblHombresNumero;
+        private Label lblMujeresNumero;
+        private Label lblDeportistasNumero;
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null)) components.Dispose();
+            if (disposing && (components != null))
+                components.Dispose();
             base.Dispose(disposing);
         }
 
@@ -54,7 +58,9 @@ namespace GymManager.Views
 
             this.SuspendLayout();
 
-            // Panel Filtros
+            // ================================
+            // PANEL DE FILTROS
+            // ================================
             this.pnlFiltros.Dock = DockStyle.Top;
             this.pnlFiltros.Height = 65;
             this.pnlFiltros.Padding = new Padding(20, 10, 20, 10);
@@ -62,19 +68,29 @@ namespace GymManager.Views
             this.pnlFiltros.Font = new Font("Segoe UI", 9.5f);
 
             int currentLeft = 10, spacing = 10, labelSpacing = 5, topRowY = 15;
-            this.lblFechaDesde.Text = "Desde:"; this.lblFechaDesde.AutoSize = true;
+
+            this.lblFechaDesde.Text = "Desde:";
+            this.lblFechaDesde.AutoSize = true;
             this.lblFechaDesde.Location = new Point(currentLeft, topRowY + 2);
             currentLeft = lblFechaDesde.Right + labelSpacing;
-            this.dtpFechaDesde.Format = DateTimePickerFormat.Short; this.dtpFechaDesde.Size = new Size(110, 25);
+
+            this.dtpFechaDesde.Format = DateTimePickerFormat.Short;
+            this.dtpFechaDesde.Size = new Size(110, 25);
             this.dtpFechaDesde.Location = new Point(currentLeft, topRowY);
             currentLeft = dtpFechaDesde.Right + spacing;
-            this.lblFechaHasta.Text = "Hasta:"; this.lblFechaHasta.AutoSize = true;
+
+            this.lblFechaHasta.Text = "Hasta:";
+            this.lblFechaHasta.AutoSize = true;
             this.lblFechaHasta.Location = new Point(currentLeft, topRowY + 2);
             currentLeft = lblFechaHasta.Right + labelSpacing;
-            this.dtpFechaHasta.Format = DateTimePickerFormat.Short; this.dtpFechaHasta.Size = new Size(110, 25);
+
+            this.dtpFechaHasta.Format = DateTimePickerFormat.Short;
+            this.dtpFechaHasta.Size = new Size(110, 25);
             this.dtpFechaHasta.Location = new Point(currentLeft, topRowY);
             currentLeft = dtpFechaHasta.Right + spacing;
-            this.btnGenerarReporte.Text = "GENERAR REPORTE"; this.btnGenerarReporte.Size = new Size(160, 35);
+
+            this.btnGenerarReporte.Text = "GENERAR INFORME";
+            this.btnGenerarReporte.Size = new Size(160, 35);
             this.btnGenerarReporte.Location = new Point(currentLeft, topRowY - 5);
 
             this.pnlFiltros.Controls.Add(lblFechaDesde);
@@ -83,60 +99,77 @@ namespace GymManager.Views
             this.pnlFiltros.Controls.Add(dtpFechaHasta);
             this.pnlFiltros.Controls.Add(btnGenerarReporte);
 
-            // TableLayoutPanel (para centrar los cards)
+            // ================================
+            // TABLA DE CARDS
+            // ================================
             this.tlpCards.Dock = DockStyle.Fill;
             this.tlpCards.Padding = new Padding(20);
             this.tlpCards.BackColor = Color.FromArgb(248, 249, 250);
             this.tlpCards.ColumnCount = 3;
-            this.tlpCards.RowCount = 1;
+            this.tlpCards.RowCount = 2;
             this.tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             this.tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             this.tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
-            // Card Total
-            this.pnlCardTotal.BackColor = Color.White; this.pnlCardTotal.Dock = DockStyle.Fill;
-            this.pnlCardTotal.Padding = new Padding(20); this.pnlCardTotal.Margin = new Padding(10);
-            this.lblTotalNumero.Text = "0"; this.lblTotalNumero.Dock = DockStyle.Fill;
-            this.lblTotalNumero.Font = new Font("Segoe UI", 36, FontStyle.Bold);
-            this.lblTotalNumero.ForeColor = Color.FromArgb(46, 134, 171); // primaryColor
-            this.lblTotalNumero.TextAlign = ContentAlignment.MiddleCenter;
-            this.lblTotalTexto.Text = "Rutinas Totales"; this.lblTotalTexto.Dock = DockStyle.Bottom;
-            this.lblTotalTexto.Font = new Font("Segoe UI", 12, FontStyle.Regular);
-            this.lblTotalTexto.TextAlign = ContentAlignment.MiddleCenter; this.lblTotalTexto.Height = 30;
-            this.pnlCardTotal.Controls.Add(lblTotalNumero); this.pnlCardTotal.Controls.Add(lblTotalTexto);
+            // --- Crear las tarjetas ---
+            Panel pnlCardHombres = CrearCard(out lblHombresNumero, "Rutinas Hombres", Color.FromArgb(46, 134, 171));
+            Panel pnlCardMujeres = CrearCard(out lblMujeresNumero, "Rutinas Mujeres", Color.FromArgb(162, 59, 114));
+            Panel pnlCardDeportistas = CrearCard(out lblDeportistasNumero, "Rutinas Deportistas", Color.FromArgb(28, 167, 69));
 
-            // Card Nuevas
-            this.pnlCardNuevas.BackColor = Color.White; this.pnlCardNuevas.Dock = DockStyle.Fill;
-            this.pnlCardNuevas.Padding = new Padding(20); this.pnlCardNuevas.Margin = new Padding(10);
-            this.lblNuevasNumero.Text = "0"; this.lblNuevasNumero.Dock = DockStyle.Fill;
-            this.lblNuevasNumero.Font = new Font("Segoe UI", 36, FontStyle.Bold);
-            this.lblNuevasNumero.ForeColor = Color.FromArgb(40, 167, 69); // successColor
-            this.lblNuevasNumero.TextAlign = ContentAlignment.MiddleCenter;
-            this.lblNuevasTexto.Text = "Rutinas Sin Edicion"; this.lblNuevasTexto.Dock = DockStyle.Bottom;
-            this.lblNuevasTexto.Font = new Font("Segoe UI", 12, FontStyle.Regular);
-            this.lblNuevasTexto.TextAlign = ContentAlignment.MiddleCenter; this.lblNuevasTexto.Height = 30;
-            this.pnlCardNuevas.Controls.Add(lblNuevasNumero); this.pnlCardNuevas.Controls.Add(lblNuevasTexto);
+            // --- Tarjeta Total ---
+            this.pnlCardTotal = CrearCard(out lblTotalNumero, "Rutinas Totales", Color.FromArgb(46, 134, 171));
+            // --- Tarjeta Nuevas ---
+            this.pnlCardNuevas = CrearCard(out lblNuevasNumero, "Rutinas Sin Edición", Color.FromArgb(40, 167, 69));
+            // --- Tarjeta Editadas ---
+            this.pnlCardEditadas = CrearCard(out lblEditadasNumero, "Rutinas Editadas", Color.FromArgb(255, 193, 7));
 
-            // Card Editadas
-            this.pnlCardEditadas.BackColor = Color.White; this.pnlCardEditadas.Dock = DockStyle.Fill;
-            this.pnlCardEditadas.Padding = new Padding(20); this.pnlCardEditadas.Margin = new Padding(10);
-            this.lblEditadasNumero.Text = "0"; this.lblEditadasNumero.Dock = DockStyle.Fill;
-            this.lblEditadasNumero.Font = new Font("Segoe UI", 36, FontStyle.Bold);
-            this.lblEditadasNumero.ForeColor = Color.FromArgb(255, 193, 7); // warningColor
-            this.lblEditadasNumero.TextAlign = ContentAlignment.MiddleCenter;
-            this.lblEditadasTexto.Text = "Rutinas Editadas"; this.lblEditadasTexto.Dock = DockStyle.Bottom;
-            this.lblEditadasTexto.Font = new Font("Segoe UI", 12, FontStyle.Regular);
-            this.lblEditadasTexto.TextAlign = ContentAlignment.MiddleCenter; this.lblEditadasTexto.Height = 30;
-            this.pnlCardEditadas.Controls.Add(lblEditadasNumero); this.pnlCardEditadas.Controls.Add(lblEditadasTexto);
-
+            // --- Agregar al diseño ---
             this.tlpCards.Controls.Add(pnlCardTotal, 0, 0);
             this.tlpCards.Controls.Add(pnlCardNuevas, 1, 0);
-            this.tlpCards.Controls.Add(pnlCardEditadas, 2, 0); 
+            this.tlpCards.Controls.Add(pnlCardEditadas, 2, 0);
+            this.tlpCards.Controls.Add(pnlCardHombres, 0, 1);
+            this.tlpCards.Controls.Add(pnlCardMujeres, 1, 1);
+            this.tlpCards.Controls.Add(pnlCardDeportistas, 2, 1);
 
-            // Ensamblado
+            // ================================
+            // ENSAMBLAR TODO
+            // ================================
             this.Controls.Add(this.tlpCards);
             this.Controls.Add(this.pnlFiltros);
             this.ResumeLayout(false);
+        }
+
+        private Panel CrearCard(out Label lblNumero, string texto, Color color)
+        {
+            Panel card = new Panel
+            {
+                BackColor = Color.White,
+                Dock = DockStyle.Fill,
+                Padding = new Padding(20),
+                Margin = new Padding(10)
+            };
+
+            lblNumero = new Label
+            {
+                Text = "0",
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 36, FontStyle.Bold),
+                ForeColor = color,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            Label lblTexto = new Label
+            {
+                Text = texto,
+                Dock = DockStyle.Bottom,
+                Font = new Font("Segoe UI", 12, FontStyle.Regular),
+                Height = 30,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            card.Controls.Add(lblNumero);
+            card.Controls.Add(lblTexto);
+            return card;
         }
     }
 }

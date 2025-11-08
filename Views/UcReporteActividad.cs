@@ -19,6 +19,7 @@ namespace GymManager.Views
         public UcReporteActividad()
         {
             InitializeComponent();
+
             ApplyModernStyles();
 
             btnGenerarReporte.Click += BtnGenerarReporte_Click;
@@ -41,29 +42,38 @@ namespace GymManager.Views
         {
             try
             {
-                if (Sesion.Actual == null) { /* ... */ return; }
+                if (Sesion.Actual == null)
+                {
+                    MessageBox.Show("No se ha iniciado sesión.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 int idProfesor = Sesion.Actual.IdUsuario;
                 DateTime fechaDesde = dtpFechaDesde.Value;
                 DateTime fechaHasta = dtpFechaHasta.Value;
 
-                // 1. Llamar al controlador
+                // Llamar al controlador
                 ReporteActividadItem datos = _reporteController.ObtenerReporteActividad(idProfesor, fechaDesde, fechaHasta);
 
-                // 2. Actualizar los labels
+                // Actualizar las etiquetas
                 lblTotalNumero.Text = datos.TotalRutinas.ToString();
                 lblNuevasNumero.Text = datos.RutinasNuevas.ToString();
                 lblEditadasNumero.Text = datos.RutinasEditadas.ToString();
+                lblHombresNumero.Text = datos.RutinasHombres.ToString();
+                lblMujeresNumero.Text = datos.RutinasMujeres.ToString();
+                lblDeportistasNumero.Text = datos.RutinasDeportistas.ToString();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al generar el reporte: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al generar el informe: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // (Tu método StyleButton)
         private void StyleButton(Button boton, Color colorFondo)
         {
             if (boton == null) return;
+
             boton.BackColor = colorFondo;
             boton.ForeColor = Color.White;
             boton.FlatStyle = FlatStyle.Flat;

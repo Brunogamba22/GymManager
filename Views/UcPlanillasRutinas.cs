@@ -100,6 +100,7 @@ namespace GymManager.Views
 
             dgvPlanillas.CellMouseEnter += dgvPlanillas_CellMouseEnter;
             dgvPlanillas.CellMouseLeave += dgvPlanillas_CellMouseLeave;
+            dgvPlanillas.CellClick += DgvPlanillas_CellClick;
         }
 
         // =========================================================
@@ -203,31 +204,36 @@ namespace GymManager.Views
                 );
             }
             dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
-            if (dgvPlanillas.Rows.Count == 0)
-            {
-                dgvPlanillas.ClearSelection();
-                // Podrías también ocultar el panel de detalles si estaba visible
-                // OcultarDetalle(); // Descomenta si quieres volver a la lista si no hay resultados
-            }
+            // 🔥 Evitar selección automática de la primera fila
+            dgvPlanillas.ClearSelection();
+
+            // 🔥 Refrescar manualmente para asegurar consistencia visual
+            dgvPlanillas.CurrentCell = null;
+            dgvPlanillas.Refresh();
         }
 
         private void DgvPlanillas_SelectionChanged(object sender, EventArgs e)
         {
-            // 🔥 CORREGIDO: Verificar que haya filas seleccionadas y que no sea la fila de encabezado
-            if (dgvPlanillas.SelectedRows.Count > 0 && dgvPlanillas.SelectedRows[0].Index >= 0)
-            {
-                int selectedIndex = dgvPlanillas.SelectedRows[0].Index;
+           
+            // Este evento solo mantiene sincronizada la selección
+            // pero ya no abre los detalles directamente
 
-                // 🔥 CORREGIDO: Verificar que el índice esté dentro del rango de rutinas guardadas
+        }
+
+        private void DgvPlanillas_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                int selectedIndex = e.RowIndex;
+
                 if (selectedIndex < rutinasGuardadas.Count)
                 {
                     var rutinaSeleccionada = rutinasGuardadas[selectedIndex];
-
-                    // 🔥 MOSTRAR DETALLES EN USERCONTROL SEPARADO
                     MostrarDetalleRutina(rutinaSeleccionada);
                 }
             }
         }
+
 
         private void MostrarDetalleRutina(Rutina rutinaHeader)
         {
@@ -286,6 +292,7 @@ namespace GymManager.Views
             mainPanel.BringToFront();
 
             ReajustarLayout(); // ✅ corrige el layout y elimina la franja gris
+            dgvPlanillas.ClearSelection();
         }
 
         private void ReajustarLayout()

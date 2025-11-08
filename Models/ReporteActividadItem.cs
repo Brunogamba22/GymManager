@@ -11,5 +11,9 @@ namespace GymManager.Models
         public int TotalRutinas { get; set; } = 0;
         public int RutinasNuevas { get; set; } = 0;
         public int RutinasEditadas { get; set; } = 0;
+
+        public int RutinasHombres { get; set; } = 0;
+        public int RutinasMujeres { get; set; } = 0;
+        public int RutinasDeportistas { get; set; } = 0;
     }
 }

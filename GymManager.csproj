@@ -113,6 +113,7 @@
     <Compile Include="Models\Genero.cs" />
     <Compile Include="Models\GrupoMuscular.cs" />
     <Compile Include="Models\ReporteActividadItem.cs" />
+    <Compile Include="Models\ReportePopularidad.cs" />
     <Compile Include="Models\ReporteProfesor.cs" />
     <Compile Include="Models\Rutina.cs" />
     <Compile Include="Models\Usuario.cs" />
