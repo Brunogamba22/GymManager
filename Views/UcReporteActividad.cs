@@ -4,6 +4,8 @@ using GymManager.Utils;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+// 💡 AÑADIR ESTE USING
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace GymManager.Views
 {
@@ -12,6 +14,12 @@ namespace GymManager.Views
         // Colores
         private Color primaryColor = Color.FromArgb(46, 134, 171);
         private Color backgroundColor = Color.FromArgb(248, 249, 250);
+
+        // 💡 Colores para el gráfico
+        private Color colorHombres = Color.FromArgb(46, 134, 171);
+        private Color colorMujeres = Color.FromArgb(162, 59, 114);
+        private Color colorDeportistas = Color.FromArgb(28, 167, 69);
+
 
         // Controladores
         private readonly ReporteController _reporteController = new ReporteController();
@@ -24,12 +32,62 @@ namespace GymManager.Views
 
             btnGenerarReporte.Click += BtnGenerarReporte_Click;
 
+            // 💡 Mover la carga de datos al evento Load
+            this.Load += UcReporteActividad_Load;
+
             // Configurar fechas por defecto
             dtpFechaDesde.Value = DateTime.Now.AddMonths(-1);
             dtpFechaHasta.Value = DateTime.Now;
 
-            // Cargar datos iniciales
+            // ❌ NO cargar datos aquí, el gráfico aún no está listo
+            // BtnGenerarReporte_Click(null, null);
+        }
+
+        // 💡 MÉTODO LOAD
+        private void UcReporteActividad_Load(object sender, EventArgs e)
+        {
+            // Configurar el estilo del gráfico una sola vez
+            ConfigurarGraficoGeneros();
+
+            // Cargar datos iniciales AHORA
             BtnGenerarReporte_Click(null, null);
+        }
+
+
+        // 💡 NUEVO: Configura el estilo del gráfico
+        private void ConfigurarGraficoGeneros()
+        {
+            chartGeneros.Series.Clear();
+            chartGeneros.ChartAreas.Clear();
+
+            ChartArea chartArea = new ChartArea("MainArea");
+            chartArea.BackColor = Color.Transparent; // Fondo transparente
+            chartArea.AxisX.MajorGrid.Enabled = false; // Sin líneas de cuadrícula X
+            chartArea.AxisX.MajorTickMark.Enabled = false; // Sin marcas
+            chartArea.AxisX.LabelStyle.Font = new Font("Segoe UI", 10f);
+
+            chartArea.AxisY.MajorGrid.LineColor = Color.Gainsboro; // Líneas Y suaves
+            chartArea.AxisY.MajorTickMark.Enabled = false;
+            chartArea.AxisY.LabelStyle.Enabled = false; // Ocultar etiquetas del eje Y (números)
+            chartArea.AxisY.LineColor = Color.Transparent; // Ocultar línea del eje Y
+
+            chartGeneros.ChartAreas.Add(chartArea);
+
+            Series series = new Series("Generos");
+            series.ChartType = SeriesChartType.Bar; // Gráfico de barras
+            series.IsValueShownAsLabel = true;     // Mostrar el número en la barra
+            series.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+            series.BackGradientStyle = GradientStyle.TopBottom;
+
+            chartGeneros.Series.Add(series);
+
+            chartGeneros.Legends.Clear(); // Sin leyenda
+
+            // Añadir título
+            Title title = new Title("Distribución por Audiencia", Docking.Top, new Font("Segoe UI", 14f, FontStyle.Bold), Color.Black);
+            title.Alignment = ContentAlignment.TopCenter;
+            
+            chartGeneros.Titles.Add(title);
         }
 
         private void ApplyModernStyles()
@@ -55,13 +113,13 @@ namespace GymManager.Views
                 // Llamar al controlador
                 ReporteActividadItem datos = _reporteController.ObtenerReporteActividad(idProfesor, fechaDesde, fechaHasta);
 
-                // Actualizar las etiquetas
+                // --- 1. Actualizar las TARJETAS ---
                 lblTotalNumero.Text = datos.TotalRutinas.ToString();
                 lblNuevasNumero.Text = datos.RutinasNuevas.ToString();
                 lblEditadasNumero.Text = datos.RutinasEditadas.ToString();
-                lblHombresNumero.Text = datos.RutinasHombres.ToString();
-                lblMujeresNumero.Text = datos.RutinasMujeres.ToString();
-                lblDeportistasNumero.Text = datos.RutinasDeportistas.ToString();
+
+                // --- 2. Poblar el GRÁFICO ---
+                PoblarGraficoGeneros(datos);
             }
             catch (Exception ex)
             {
@@ -70,6 +128,41 @@ namespace GymManager.Views
             }
         }
 
+        // 💡 NUEVO: Rellena el gráfico con datos
+        private void PoblarGraficoGeneros(ReporteActividadItem datos)
+        {
+            var series = chartGeneros.Series["Generos"];
+            series.Points.Clear();
+
+            // Añadir puntos de datos
+            DataPoint dpHombres = new DataPoint();
+            dpHombres.SetValueXY("Hombres", datos.RutinasHombres);
+            dpHombres.LabelForeColor = colorHombres;
+            dpHombres.Color = colorHombres;
+            series.Points.Add(dpHombres);
+
+            DataPoint dpMujeres = new DataPoint();
+            dpMujeres.SetValueXY("Mujeres", datos.RutinasMujeres);
+            dpMujeres.LabelForeColor = colorMujeres;
+            dpMujeres.Color = colorMujeres;
+            series.Points.Add(dpMujeres);
+
+            DataPoint dpDeportistas = new DataPoint();
+            dpDeportistas.SetValueXY("Deportistas", datos.RutinasDeportistas);
+            dpDeportistas.LabelForeColor = colorDeportistas;
+            dpDeportistas.Color = colorDeportistas;
+            series.Points.Add(dpDeportistas);
+
+            // Aplicar degradado
+            foreach (DataPoint pt in series.Points)
+            {
+                pt.Color = Color.FromArgb(220, pt.Color); // Un poco de transparencia
+                pt.BackSecondaryColor = Color.FromArgb(50, pt.Color);
+            }
+        }
+
+
+        // (Tu método StyleButton - Sin cambios)
         private void StyleButton(Button boton, Color colorFondo)
         {
             if (boton == null) return;

@@ -1,5 +1,7 @@
 ﻿using System.Windows.Forms;
 using System.Drawing;
+// 💡 AÑADIR ESTE USING
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace GymManager.Views
 {
@@ -14,21 +16,20 @@ namespace GymManager.Views
         private Button btnGenerarReporte;
 
         // --- Paneles para las "Cards" ---
-        private TableLayoutPanel tlpCards;
+        private TableLayoutPanel tlpCards; // Sigue siendo la fila de arriba
         private Panel pnlCardTotal;
         private Panel pnlCardNuevas;
         private Panel pnlCardEditadas;
 
-        // --- Etiquetas para los números ---
+        // --- Etiquetas para los números (SOLO LAS 3 DE ARRIBA) ---
         private Label lblTotalNumero;
-        private Label lblTotalTexto;
         private Label lblNuevasNumero;
-        private Label lblNuevasTexto;
         private Label lblEditadasNumero;
-        private Label lblEditadasTexto;
-        private Label lblHombresNumero;
-        private Label lblMujeresNumero;
-        private Label lblDeportistasNumero;
+
+        // --- 💡 NUEVO CONTROL DE GRÁFICO ---
+        private Chart chartGeneros;
+
+        // ❌ Ya no necesitamos los labels de Hombres, Mujeres, etc.
 
         protected override void Dispose(bool disposing)
         {
@@ -49,17 +50,15 @@ namespace GymManager.Views
             this.pnlCardTotal = new Panel();
             this.pnlCardNuevas = new Panel();
             this.pnlCardEditadas = new Panel();
-            this.lblTotalNumero = new Label();
-            this.lblTotalTexto = new Label();
-            this.lblNuevasNumero = new Label();
-            this.lblNuevasTexto = new Label();
-            this.lblEditadasNumero = new Label();
-            this.lblEditadasTexto = new Label();
+
+            // 💡 INICIALIZAR EL GRÁFICO
+            this.chartGeneros = new Chart();
+            ((System.ComponentModel.ISupportInitialize)(this.chartGeneros)).BeginInit();
 
             this.SuspendLayout();
 
             // ================================
-            // PANEL DE FILTROS
+            // PANEL DE FILTROS (Sin cambios)
             // ================================
             this.pnlFiltros.Dock = DockStyle.Top;
             this.pnlFiltros.Height = 65;
@@ -100,21 +99,18 @@ namespace GymManager.Views
             this.pnlFiltros.Controls.Add(btnGenerarReporte);
 
             // ================================
-            // TABLA DE CARDS
+            // TABLA DE CARDS (MODIFICADA)
             // ================================
-            this.tlpCards.Dock = DockStyle.Fill;
-            this.tlpCards.Padding = new Padding(20);
+            this.tlpCards.Dock = DockStyle.Top; // 💡 Cambiado
+            this.tlpCards.Height = 160;          // 💡 Altura fija para la fila de tarjetas
+            this.tlpCards.Padding = new Padding(20, 15, 20, 15);
             this.tlpCards.BackColor = Color.FromArgb(248, 249, 250);
             this.tlpCards.ColumnCount = 3;
-            this.tlpCards.RowCount = 2;
+            this.tlpCards.RowCount = 1;          // 💡 Solo 1 fila
             this.tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             this.tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             this.tlpCards.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
-
-            // --- Crear las tarjetas ---
-            Panel pnlCardHombres = CrearCard(out lblHombresNumero, "Rutinas Hombres", Color.FromArgb(46, 134, 171));
-            Panel pnlCardMujeres = CrearCard(out lblMujeresNumero, "Rutinas Mujeres", Color.FromArgb(162, 59, 114));
-            Panel pnlCardDeportistas = CrearCard(out lblDeportistasNumero, "Rutinas Deportistas", Color.FromArgb(28, 167, 69));
+            this.tlpCards.RowStyles.Add(new RowStyle(SizeType.Percent, 100f)); // 💡
 
             // --- Tarjeta Total ---
             this.pnlCardTotal = CrearCard(out lblTotalNumero, "Rutinas Totales", Color.FromArgb(46, 134, 171));
@@ -127,48 +123,86 @@ namespace GymManager.Views
             this.tlpCards.Controls.Add(pnlCardTotal, 0, 0);
             this.tlpCards.Controls.Add(pnlCardNuevas, 1, 0);
             this.tlpCards.Controls.Add(pnlCardEditadas, 2, 0);
-            this.tlpCards.Controls.Add(pnlCardHombres, 0, 1);
-            this.tlpCards.Controls.Add(pnlCardMujeres, 1, 1);
-            this.tlpCards.Controls.Add(pnlCardDeportistas, 2, 1);
+
+            // ❌ Ya no se agregan las tarjetas de Hombres, Mujeres, etc.
+
+            // ================================
+            // 💡 GRÁFICO DE GÉNEROS (NUEVO)
+            // ================================
+            this.chartGeneros.Dock = DockStyle.Fill;
+            this.chartGeneros.Location = new Point(0, 0);
+            this.chartGeneros.Name = "chartGeneros";
+            this.chartGeneros.BackColor = Color.FromArgb(248, 249, 250);
+            this.chartGeneros.BorderlineColor = Color.Transparent;
 
             // ================================
             // ENSAMBLAR TODO
             // ================================
-            this.Controls.Add(this.tlpCards);
-            this.Controls.Add(this.pnlFiltros);
+
+            // 💡 El orden de "Add" es importante para el Docking
+            this.Controls.Add(this.chartGeneros);  // 1. Ocupa todo el fondo
+            this.Controls.Add(this.tlpCards);      // 2. Se pone encima, arriba
+            this.Controls.Add(this.pnlFiltros);    // 3. Se pone encima de todo, arriba
+
+            ((System.ComponentModel.ISupportInitialize)(this.chartGeneros)).EndInit();
             this.ResumeLayout(false);
         }
 
+        // --- MÉTODO CrearCard (MODIFICADO) ---
+        // Hice el texto del número más grande y el título más pequeño
+        // para que coincida con el estilo profesional.
         private Panel CrearCard(out Label lblNumero, string texto, Color color)
         {
             Panel card = new Panel
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Fill,
-                Padding = new Padding(20),
+                Padding = new Padding(10),
                 Margin = new Padding(10)
+                // Aquí podrías añadir un borde, sombra, etc.
             };
 
+            // 1. Crear un TableLayoutPanel para alinear el contenido
+            TableLayoutPanel tlp = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                BackColor = Color.Transparent
+            };
+
+            // 2. Definir las filas: 70% para el número, 30% para el texto
+            tlp.RowStyles.Add(new RowStyle(SizeType.Percent, 70F));
+            tlp.RowStyles.Add(new RowStyle(SizeType.Percent, 30F));
+
+            // 3. Crear el Label del Número (ahora se centra en la Fila 1)
             lblNumero = new Label
             {
                 Text = "0",
                 Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 36, FontStyle.Bold),
+                Font = new Font("Segoe UI", 32, FontStyle.Bold),
                 ForeColor = color,
+                // Se centrará perfectamente en su celda (Fila 1)
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
+            // 4. Crear el Label del Texto (ahora se alinea arriba en la Fila 2)
             Label lblTexto = new Label
             {
                 Text = texto,
-                Dock = DockStyle.Bottom,
-                Font = new Font("Segoe UI", 12, FontStyle.Regular),
-                Height = 30,
-                TextAlign = ContentAlignment.MiddleCenter
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 11, FontStyle.Regular),
+                ForeColor = Color.DimGray,
+                // Lo alineamos arriba para que esté pegado al número
+                TextAlign = ContentAlignment.TopCenter
             };
 
-            card.Controls.Add(lblNumero);
-            card.Controls.Add(lblTexto);
+            // 5. Añadir los labels al TableLayoutPanel
+            tlp.Controls.Add(lblNumero, 0, 0);
+            tlp.Controls.Add(lblTexto, 0, 1);
+
+            // 6. Añadir el TableLayoutPanel a la tarjeta
+            card.Controls.Add(tlp);
             return card;
         }
     }
