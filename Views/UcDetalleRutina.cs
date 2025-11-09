@@ -13,6 +13,7 @@ namespace GymManager.Views
         private Color primaryColor = Color.FromArgb(46, 134, 171);
         private Color backgroundColor = Color.FromArgb(248, 249, 250);
         private Color successColor = Color.FromArgb(40, 167, 69);
+        private Color darkColor = Color.FromArgb(52, 73, 94);
         private Color textColor = Color.FromArgb(33, 37, 41);
 
         // Evento para cuando se cierra el detalle
@@ -62,24 +63,17 @@ namespace GymManager.Views
             dgvEjercicios.DefaultCellStyle.ForeColor = textColor;
             dgvEjercicios.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvEjercicios.DefaultCellStyle.Padding = new Padding(5);
-
-            dgvEjercicios.DefaultCellStyle.SelectionBackColor = Color.White; // Same as normal background
+            dgvEjercicios.DefaultCellStyle.SelectionBackColor = Color.White;
             dgvEjercicios.DefaultCellStyle.SelectionForeColor = textColor;
-
-            // Filas alternadas
             dgvEjercicios.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
         }
 
         // =========================================================
-        // MÉTODO ACTUALIZADO: Acepta el modelo real
+        // 📋 Cargar rutina completa desde base
         // =========================================================
-        /// <summary>
-        /// Carga los datos de una rutina real desde la base de datos.
-        /// </summary>
         public void CargarRutina(int idRutina, string nombreRutina, string tipoRutina, string profesor,
                          DateTime fecha, List<DetalleRutina> ejercicios)
         {
-            // Guardar la rutina actual con su ID real
             RutinaActual = new Rutina
             {
                 IdRutina = idRutina,
@@ -89,19 +83,11 @@ namespace GymManager.Views
                 FechaCreacion = fecha
             };
 
-            // 🔹 Título principal
             lblTitulo.Text = nombreRutina;
-
-            // 🔹 Subtítulo con detalles
             lblDetalles.Text = $"🏷️ {tipoRutina.ToUpper()} | 👤 {profesor} | 📅 {fecha:dd/MM/yyyy HH:mm}";
-
-            // 🔹 Contador total de ejercicios
             lblContador.Text = $"📊 Total de ejercicios: {ejercicios.Count}";
 
-            // 🔹 Limpiar contenido previo
             dgvEjercicios.Rows.Clear();
-
-            // 🔹 Cargar filas
             foreach (var ejercicio in ejercicios)
             {
                 dgvEjercicios.Rows.Add(
@@ -113,7 +99,9 @@ namespace GymManager.Views
             }
         }
 
-
+        // =========================================================
+        // 🎨 Estilo de botones
+        // =========================================================
         private void StyleButton(Button btn, Color bgColor)
         {
             btn.BackColor = bgColor;
@@ -123,17 +111,21 @@ namespace GymManager.Views
             btn.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btn.Cursor = Cursors.Hand;
             btn.Padding = new Padding(12, 6, 12, 6);
-
             btn.FlatAppearance.MouseOverBackColor = ControlPaint.Dark(bgColor, 0.1f);
             btn.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(bgColor, 0.2f);
         }
 
+        // =========================================================
+        // ❌ Cerrar
+        // =========================================================
         private void btnCerrar_Click(object sender, EventArgs e)
         {
-            //DISPARAR EVENTO PARA QUE EL PADRE SEPA QUE SE CERRÓ
             OnCerrarDetalle?.Invoke(this, EventArgs.Empty);
         }
 
+        // =========================================================
+        // 🖨️ Imprimir
+        // =========================================================
         private void btnImprimir_Click(object sender, EventArgs e)
         {
             try
@@ -145,7 +137,6 @@ namespace GymManager.Views
                     return;
                 }
 
-                // Crear instancia del Dashboard temporalmente solo para usar su método de impresión
                 var dash = new UcRecepcionistaDashboard();
                 dash.ImprimirRutina(RutinaActual);
             }
@@ -156,6 +147,9 @@ namespace GymManager.Views
             }
         }
 
+        // =========================================================
+        // 📤 Exportar
+        // =========================================================
         private void btnExportar_Click(object sender, EventArgs e)
         {
             try
@@ -167,13 +161,63 @@ namespace GymManager.Views
                     return;
                 }
 
-                // Crear instancia del Dashboard temporalmente solo para usar su método de exportación
                 var dash = new UcRecepcionistaDashboard();
                 dash.ExportarRutina(RutinaActual);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al exportar rutina: {ex.Message}",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        // 🖥️ Modo TV
+        // =========================================================
+        private void btnModoTV_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (RutinaActual == null)
+                {
+                    MessageBox.Show("No hay una rutina cargada para mostrar en modo TV.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (dgvEjercicios.Rows.Count == 0)
+                {
+                    MessageBox.Show("No hay ejercicios para mostrar.",
+                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                var detalles = new List<DetalleRutina>();
+                foreach (DataGridViewRow row in dgvEjercicios.Rows)
+                {
+                    if (row.Cells["colEjercicio"].Value == null) continue;
+                    detalles.Add(new DetalleRutina
+                    {
+                        EjercicioNombre = row.Cells["colEjercicio"].Value.ToString(),
+                        Series = Convert.ToInt32(row.Cells["colSeries"].Value ?? 0),
+                        Repeticiones = Convert.ToInt32(row.Cells["colRepeticiones"].Value ?? 0),
+                        Carga = row.Cells["colCarga"].Value?.ToString()
+                    });
+                }
+
+                FormTV pantallaTV = new FormTV(
+                    RutinaActual.NombreProfesor,
+                    RutinaActual.Nombre,
+                    RutinaActual.NombreGenero,
+                    detalles
+                );
+
+                pantallaTV.Text = $"Modo TV - {RutinaActual.NombreProfesor}";
+                pantallaTV.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al iniciar Modo TV: {ex.Message}",
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

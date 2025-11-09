@@ -8,11 +8,11 @@ namespace GymManager.Views
         private System.ComponentModel.IContainer components = null;
 
         // --- Controles Principales ---
-        private Panel mainPanel;        // Panel base
-        private Panel headerPanel;      // Título y Descripción
-        private Panel contentPanel;     // Contiene Filtros y Grid
-        private Panel pnlFiltros;       // Panel para los controles de filtro
-        private DataGridView dgvPlanillas; // Grilla de resultados
+        private Panel mainPanel;
+        private Panel headerPanel;
+        private Panel contentPanel;
+        private Panel pnlFiltros;
+        private DataGridView dgvPlanillas;
         private CheckBox chkSoloEditadas;
 
         // --- Controles de Header ---
@@ -27,18 +27,18 @@ namespace GymManager.Views
         private Label lblFiltroGenero;
         private ComboBox cmbGenero;
         private Button btnFiltrar;
-        private Button btnLimpiarFiltros; // Botón nuevo
+        private Button btnLimpiarFiltros;
 
-        // --- Controles de Footer (Botón Exportar) ---
-        private Panel footerPanel;      // Panel para el botón Exportar
+        // --- Controles de Footer ---
+        private Panel footerPanel;
         private Button btnExportar;
+        private Button btnModoTV;
 
         // --- Columnas del DataGridView ---
         private DataGridViewTextBoxColumn colNombre;
         private DataGridViewTextBoxColumn colProfesor;
+        private DataGridViewTextBoxColumn colGenero;
         private DataGridViewTextBoxColumn colFecha;
-        private DataGridViewTextBoxColumn colGenero; // Columna nueva
-
 
         protected override void Dispose(bool disposing)
         {
@@ -69,55 +69,56 @@ namespace GymManager.Views
             this.btnLimpiarFiltros = new Button();
 
             this.btnExportar = new Button();
+            this.btnModoTV = new Button();
 
             this.colNombre = new DataGridViewTextBoxColumn();
             this.colProfesor = new DataGridViewTextBoxColumn();
+            this.colGenero = new DataGridViewTextBoxColumn();
             this.colFecha = new DataGridViewTextBoxColumn();
-            this.colGenero = new DataGridViewTextBoxColumn(); // Nueva
 
             this.SuspendLayout();
 
-            // Main Panel
+            // MAIN PANEL
             this.mainPanel.Dock = DockStyle.Fill;
-            this.mainPanel.BackColor = Color.FromArgb(248, 249, 250); // backgroundColor
+            this.mainPanel.BackColor = Color.FromArgb(248, 249, 250);
             this.mainPanel.Padding = new Padding(20);
 
-            // Header Panel
+            // HEADER PANEL
             this.headerPanel.Dock = DockStyle.Top;
-            this.headerPanel.Height = 90; // Más compacto
+            this.headerPanel.Height = 90;
             this.headerPanel.BackColor = Color.White;
-            this.headerPanel.Padding = new Padding(25, 15, 25, 10); // Menos padding abajo
+            this.headerPanel.Padding = new Padding(25, 15, 25, 10);
 
-            // Título
+            // TÍTULO
             this.lblTitulo.Text = "📊 HISTORIAL DE PLANILLAS";
             this.lblTitulo.Dock = DockStyle.Top;
-            this.lblTitulo.Height = 35; // Ajustado
+            this.lblTitulo.Height = 35;
             this.lblTitulo.Font = new Font("Segoe UI", 16, FontStyle.Bold);
-            this.lblTitulo.ForeColor = Color.FromArgb(46, 134, 171); // primaryColor
+            this.lblTitulo.ForeColor = Color.FromArgb(46, 134, 171);
             this.lblTitulo.TextAlign = ContentAlignment.MiddleLeft;
 
-            // Descripción
+            // DESCRIPCIÓN
             this.lblDescripcion.Text = "Busca y selecciona una planilla para ver sus detalles.";
             this.lblDescripcion.Dock = DockStyle.Top;
-            this.lblDescripcion.Height = 25; // Ajustado
+            this.lblDescripcion.Height = 25;
             this.lblDescripcion.Font = new Font("Segoe UI", 9.5f);
             this.lblDescripcion.ForeColor = Color.FromArgb(100, 100, 100);
             this.lblDescripcion.TextAlign = ContentAlignment.MiddleLeft;
 
-            // Content Panel (Filtros + Grid)
+            // CONTENT PANEL
             this.contentPanel.Dock = DockStyle.Fill;
             this.contentPanel.BackColor = Color.Transparent;
 
-            // Panel Filtros
+            // PANEL FILTROS
             this.pnlFiltros.Dock = DockStyle.Top;
-            this.pnlFiltros.Height = 55; // Altura para los filtros
+            this.pnlFiltros.Height = 55;
             this.pnlFiltros.Padding = new Padding(0, 10, 0, 10);
-            this.pnlFiltros.BackColor = Color.White; // Fondo blanco para filtros
-                                                     // Controles de Filtro (alineación precisa)
+            this.pnlFiltros.BackColor = Color.White;
+
             int currentLeft = 15;
             int topBase = 15;
 
-            // === Fecha Desde ===
+            // --- FILTRO FECHA DESDE ---
             lblFiltroFechaDesde.Text = "Desde:";
             lblFiltroFechaDesde.AutoSize = true;
             pnlFiltros.Controls.Add(lblFiltroFechaDesde);
@@ -126,12 +127,11 @@ namespace GymManager.Views
             dtpFechaDesde.Format = DateTimePickerFormat.Short;
             dtpFechaDesde.Size = new Size(110, 25);
             pnlFiltros.Controls.Add(dtpFechaDesde);
-            dtpFechaDesde.Location = new Point(lblFiltroFechaDesde.Left + lblFiltroFechaDesde.PreferredWidth + 4, topBase);
+            dtpFechaDesde.Location = new Point(lblFiltroFechaDesde.Right + 5, topBase);
 
-            // Ajustamos el siguiente control
             currentLeft = dtpFechaDesde.Right + 20;
 
-            // === Fecha Hasta ===
+            // --- FILTRO FECHA HASTA ---
             lblFiltroFechaHasta.Text = "Hasta:";
             lblFiltroFechaHasta.AutoSize = true;
             pnlFiltros.Controls.Add(lblFiltroFechaHasta);
@@ -140,11 +140,11 @@ namespace GymManager.Views
             dtpFechaHasta.Format = DateTimePickerFormat.Short;
             dtpFechaHasta.Size = new Size(110, 25);
             pnlFiltros.Controls.Add(dtpFechaHasta);
-            dtpFechaHasta.Location = new Point(lblFiltroFechaHasta.Left + lblFiltroFechaHasta.PreferredWidth + 4, topBase);
+            dtpFechaHasta.Location = new Point(lblFiltroFechaHasta.Right + 5, topBase);
 
             currentLeft = dtpFechaHasta.Right + 20;
 
-            // === Género ===
+            // --- GÉNERO ---
             lblFiltroGenero.Text = "Género:";
             lblFiltroGenero.AutoSize = true;
             pnlFiltros.Controls.Add(lblFiltroGenero);
@@ -153,26 +153,23 @@ namespace GymManager.Views
             cmbGenero.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbGenero.Size = new Size(130, 25);
             pnlFiltros.Controls.Add(cmbGenero);
-            cmbGenero.Location = new Point(lblFiltroGenero.Left + lblFiltroGenero.PreferredWidth + 4, topBase);
+            cmbGenero.Location = new Point(lblFiltroGenero.Right + 5, topBase);
 
             currentLeft = cmbGenero.Right + 20;
 
-            // === Mostrar solo editadas ===
-            this.chkSoloEditadas = new CheckBox();
-            this.chkSoloEditadas.Text = "Mostrar solo editadas";
-            this.chkSoloEditadas.AutoSize = true;
-            this.chkSoloEditadas.Font = new Font("Segoe UI", 9);
-            this.chkSoloEditadas.ForeColor = Color.FromArgb(33, 37, 41);
-            this.chkSoloEditadas.Cursor = Cursors.Hand;
-            this.chkSoloEditadas.Checked = false;
-            this.pnlFiltros.Controls.Add(this.chkSoloEditadas);
-
-            // Ubicación: justo después del combo de género
-            this.chkSoloEditadas.Location = new Point(cmbGenero.Right + 20, topBase + 3);
+            // --- CHECK SOLO EDITADAS ---
+            chkSoloEditadas = new CheckBox();
+            chkSoloEditadas.Text = "Mostrar solo editadas";
+            chkSoloEditadas.AutoSize = true;
+            chkSoloEditadas.Font = new Font("Segoe UI", 9);
+            chkSoloEditadas.ForeColor = Color.FromArgb(33, 37, 41);
+            chkSoloEditadas.Cursor = Cursors.Hand;
+            pnlFiltros.Controls.Add(chkSoloEditadas);
+            chkSoloEditadas.Location = new Point(currentLeft, topBase + 3);
 
             currentLeft = chkSoloEditadas.Right + 20;
 
-            // === Botones ===
+            // --- BOTONES DE FILTRO ---
             btnFiltrar.Text = "🔍 FILTRAR";
             btnFiltrar.Size = new Size(120, 35);
             btnFiltrar.Location = new Point(currentLeft, topBase - 2);
@@ -185,75 +182,102 @@ namespace GymManager.Views
             btnLimpiarFiltros.Location = new Point(currentLeft, topBase - 2);
             pnlFiltros.Controls.Add(btnLimpiarFiltros);
 
+            // --- DATAGRIDVIEW ---
+            dgvPlanillas.Dock = DockStyle.Fill;
+            dgvPlanillas.Margin = new Padding(0, 5, 0, 0);
 
-            // Agregar controles al pnlFiltros
-            this.pnlFiltros.Controls.Add(lblFiltroFechaDesde);
-            this.pnlFiltros.Controls.Add(dtpFechaDesde);
-            this.pnlFiltros.Controls.Add(lblFiltroFechaHasta);
-            this.pnlFiltros.Controls.Add(dtpFechaHasta);
-            this.pnlFiltros.Controls.Add(lblFiltroGenero);
-            this.pnlFiltros.Controls.Add(cmbGenero);
-            this.pnlFiltros.Controls.Add(btnFiltrar);
-            this.pnlFiltros.Controls.Add(btnLimpiarFiltros);
+            colNombre.HeaderText = "NOMBRE DE LA RUTINA";
+            colNombre.Name = "colNombre";
+            colNombre.FillWeight = 35;
 
+            colProfesor.HeaderText = "PROFESOR";
+            colProfesor.Name = "colProfesor";
+            colProfesor.FillWeight = 25;
 
-            // DataGridView (debajo de filtros)
-            this.dgvPlanillas.Dock = DockStyle.Fill;
-            this.dgvPlanillas.Margin = new Padding(0, 5, 0, 0); // Espacio entre filtros y grid
+            colGenero.HeaderText = "GÉNERO";
+            colGenero.Name = "colGenero";
+            colGenero.FillWeight = 20;
 
-            // Columnas del DataGridView
-            this.colNombre.HeaderText = "NOMBRE DE LA RUTINA";
-            this.colNombre.Name = "colNombre";
-            this.colNombre.FillWeight = 35; // Ajustado
+            colFecha.HeaderText = "FECHA CREACIÓN";
+            colFecha.Name = "colFecha";
+            colFecha.FillWeight = 20;
 
-            this.colProfesor.HeaderText = "PROFESOR";
-            this.colProfesor.Name = "colProfesor";
-            this.colProfesor.FillWeight = 25; // Ajustado
-
-            this.colFecha.HeaderText = "FECHA CREACIÓN";
-            this.colFecha.Name = "colFecha";
-            this.colFecha.FillWeight = 20; // Ajustado
-
-            this.colGenero.HeaderText = "GÉNERO"; // Nueva
-            this.colGenero.Name = "colGenero";
-            this.colGenero.FillWeight = 20; // Nueva
-
-            this.dgvPlanillas.Columns.AddRange(new DataGridViewColumn[] {
-                this.colNombre,
-                this.colProfesor,
-                this.colGenero, // Nueva
-                this.colFecha
+            dgvPlanillas.Columns.AddRange(new DataGridViewColumn[]
+            {
+                colNombre,
+                colProfesor,
+                colGenero,
+                colFecha
             });
 
-            // Footer Panel (para Exportar)
-            this.footerPanel.Dock = DockStyle.Bottom;
-            this.footerPanel.Height = 60; // Más compacto
-            this.footerPanel.BackColor = Color.Transparent;
-            this.footerPanel.Padding = new Padding(0, 0, 25, 10); // Padding para alinear botón
+            // --- FOOTER PANEL ---
+            footerPanel.Dock = DockStyle.Bottom;
+            footerPanel.Height = 70;
+            footerPanel.BackColor = Color.Transparent;
+            footerPanel.Padding = new Padding(20, 10, 25, 10);
 
-            // Botón Exportar
-            this.btnExportar.Text = "📤 EXPORTAR";
-            this.btnExportar.Size = new Size(150, 40); // Ajustado
-            this.btnExportar.Anchor = AnchorStyles.Bottom | AnchorStyles.Right; // Anclado a la derecha
+            // --- BOTÓN EXPORTAR ---
+            btnExportar.Text = "📤 EXPORTAR";
+            btnExportar.Size = new Size(150, 40);
+            btnExportar.BackColor = Color.FromArgb(41, 128, 185);
+            btnExportar.ForeColor = Color.White;
+            btnExportar.FlatStyle = FlatStyle.Flat;
+            btnExportar.FlatAppearance.BorderSize = 0;
+            btnExportar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnExportar.Cursor = Cursors.Hand;
 
-            // Ensamblar controles
-            this.headerPanel.Controls.Add(lblDescripcion);
-            this.headerPanel.Controls.Add(lblTitulo);
+            // --- BOTÓN IMPRIMIR ---
+            Button btnImprimir = new Button();
+            btnImprimir.Text = "🖨️ IMPRIMIR";
+            btnImprimir.Size = new Size(150, 40);
+            btnImprimir.BackColor = Color.FromArgb(40, 167, 69);
+            btnImprimir.ForeColor = Color.White;
+            btnImprimir.FlatStyle = FlatStyle.Flat;
+            btnImprimir.FlatAppearance.BorderSize = 0;
+            btnImprimir.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnImprimir.Cursor = Cursors.Hand;
 
-            this.contentPanel.Controls.Add(dgvPlanillas); // Grid primero (para que ocupe el espacio restante)
-            this.contentPanel.Controls.Add(pnlFiltros);   // Filtros arriba
+            // --- BOTÓN MODO TV ---
+            btnModoTV.Text = "🖥️ MODO TV";
+            btnModoTV.BackColor = Color.FromArgb(52, 73, 94);
+            btnModoTV.ForeColor = Color.White;
+            btnModoTV.FlatStyle = FlatStyle.Flat;
+            btnModoTV.FlatAppearance.BorderSize = 0;
+            btnModoTV.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnModoTV.Size = new Size(150, 40);
+            btnModoTV.Cursor = Cursors.Hand;
+            btnModoTV.Click += BtnModoTV_Click;
 
-            this.footerPanel.Controls.Add(btnExportar);
+            // --- BOTÓN CERRAR ---
+            Button btnCerrar = new Button();
+            btnCerrar.Text = "❌ CERRAR";
+            btnCerrar.Size = new Size(150, 40);
+            btnCerrar.BackColor = Color.FromArgb(108, 117, 125);
+            btnCerrar.ForeColor = Color.White;
+            btnCerrar.FlatStyle = FlatStyle.Flat;
+            btnCerrar.FlatAppearance.BorderSize = 0;
+            btnCerrar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnCerrar.Cursor = Cursors.Hand;
+            btnCerrar.Click += (s, e) => OcultarDetalle();
 
-            this.mainPanel.Controls.Add(contentPanel);
-            this.mainPanel.Controls.Add(footerPanel);
-            this.mainPanel.Controls.Add(headerPanel);
+            // --- ARMADO ---
+            footerPanel.Controls.Add(btnCerrar);
+            footerPanel.Controls.Add(btnExportar);
+            footerPanel.Controls.Add(btnImprimir);
+            footerPanel.Controls.Add(btnModoTV);
 
-            this.Controls.Add(mainPanel);
+            // 📏 Evento para reposicionar dinámicamente los botones
+            footerPanel.Resize += (s, e) =>
+            {
+                int marginRight = 25;
+                int spacing = 10;
+                int bottom = 10;
 
-            // Eventos (se asignarán en el .cs)
-
-            this.ResumeLayout(false);
+                btnModoTV.Location = new Point(footerPanel.Width - btnModoTV.Width - marginRight, bottom);
+                btnImprimir.Location = new Point(btnModoTV.Left - btnImprimir.Width - spacing, bottom);
+                btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - spacing, bottom);
+                btnCerrar.Location = new Point(marginRight, bottom);
+            };
         }
     }
 }

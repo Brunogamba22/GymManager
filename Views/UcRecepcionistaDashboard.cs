@@ -9,6 +9,7 @@ using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Globalization;
 
 
 namespace GymManager.Views
@@ -74,6 +75,7 @@ namespace GymManager.Views
             btnLimpiarFiltros.Click += BtnLimpiarFiltros_Click;
             chkTodasLasFechas.CheckedChanged += (s, e) => { dtpFecha.Enabled = !chkTodasLasFechas.Checked; };
             dgvPlanillas.CellDoubleClick += DgvPlanillas_CellDoubleClick;
+            this.BackColor = backgroundColor;
         }
 
 
@@ -355,14 +357,40 @@ namespace GymManager.Views
 
         private void BtnLimpiarFiltros_Click(object sender, EventArgs e)
         {
-            dtpFecha.Value = DateTime.Now.Date;
-            chkTodasLasFechas.Checked = false;
-            cmbProfesor.SelectedIndex = 0;
-            cmbGenero.SelectedIndex = 0;
-            if (chkSoloEditadas != null) chkSoloEditadas.Checked = false;
+            try
+            {
+                // 1. Restablecer visualmente los filtros
+                cmbProfesor.SelectedIndex = 0;
+                cmbGenero.SelectedIndex = 0;
 
-            CargarGrillaConFiltros();
-            MostrarNotificacion("🧹 Filtros limpiados", Color.FromArgb(241, 196, 15));
+                // 💡 Es crucial que el filtro de fecha quede en "Todas las fechas" o en la fecha actual.
+                // Si quieres que la grilla quede vacía, debes dejar los filtros en un estado que NO devuelva rutinas,
+                // o forzar CargarGrillaConFiltros a usar un filtro que sepas que no tiene resultados.
+                // La convención normal es: Limpiar = Mostrar TODOS los datos disponibles o Ninguno.
+
+                // Opcion A: Mostrar todos los disponibles (Recomendado)
+                chkTodasLasFechas.Checked = true;
+                if (chkSoloEditadas != null) chkSoloEditadas.Checked = false;
+                dtpFecha.Value = DateTime.Now.Date; // El valor real es ignorado por el check
+
+                // 2. Ejecutar la carga (esto llama a CargarGrillaConFiltros)
+                CargarGrillaConFiltros();
+
+                // 3. Quitar selección y feedback
+                dgvPlanillas.ClearSelection();
+                HabilitarBotonesDeAccion(false);
+                //MostrarNotificacion("🧹 Filtros limpiados. Mostrando todas las rutinas.", Color.FromArgb(241, 196, 15));
+
+                // Si prefieres que la grilla quede vacía después de limpiar, haz esto:
+                 dgvPlanillas.Rows.Clear();
+                 MostrarNotificacion("🧹 Grilla vacía.", Color.FromArgb(241, 196, 15));
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al limpiar filtros: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void CargarGrillaConFiltros()
@@ -528,10 +556,29 @@ namespace GymManager.Views
 
         private void OcultarDetalle()
         {
-            if (ucDetalle != null) ucDetalle.Visible = false;
-            mainPanel.Visible = true;
-            mainPanel.BringToFront();
+            if (ucDetalle != null)
+            {
+                ucDetalle.Visible = false;
+                ucDetalle.SendToBack();
+            }
+
+            if (mainPanel != null)
+            {
+                // 🔹 Forzamos a repintar correctamente el fondo
+                mainPanel.Visible = true;
+                mainPanel.Dock = DockStyle.Fill;
+                mainPanel.Padding = new Padding(0);
+                mainPanel.Margin = new Padding(0);
+                mainPanel.BackColor = backgroundColor; // vuelve a aplicar el color del panel principal
+                mainPanel.BringToFront();
+                mainPanel.Refresh();
+            }
+
+            // 🔹 También repintamos el fondo del UserControl
+            this.BackColor = backgroundColor;
+            this.Refresh();
         }
+
 
         // =========================================================
         // BOTONES DE ACCIÓN
@@ -827,38 +874,6 @@ namespace GymManager.Views
             }
         }
 
-
-        //---------------------------------------------------------------------
-
-        private List<DetalleRutina> ObtenerDetallesPorGenero(DateTime fecha, string nombreGenero)
-        {
-            // 1. Encontrar el Género por Nombre
-            var genero = _generoController.ObtenerTodos().FirstOrDefault(g =>
-                g.Nombre.Equals(nombreGenero, StringComparison.OrdinalIgnoreCase) ||
-                // Añadimos lógica flexible si los nombres en la DB son Masc./Fem.
-                (nombreGenero == "Hombre" && g.Nombre.StartsWith("Masculino", StringComparison.OrdinalIgnoreCase)) ||
-                (nombreGenero == "Mujer" && g.Nombre.StartsWith("Femenino", StringComparison.OrdinalIgnoreCase))
-            );
-
-            if (genero == null) return new List<DetalleRutina>();
-
-            // 2. Obtener la ÚLTIMA rutina creada para ese género en esa fecha
-            // Usamos la fecha como filtro (sin el filtro de 'todas las fechas')
-            var rutinas = _rutinaController.ObtenerTodasParaPlanilla(fecha, fecha, genero.Id);
-
-            if (rutinas.Count > 0)
-            {
-                // Tomamos la rutina más reciente.
-                var rutinaActiva = rutinas.OrderByDescending(r => r.FechaCreacion).First();
-
-                // 3. Obtener los Detalles de la Rutina Activa
-                return _detalleController.ObtenerPorRutina(rutinaActiva.IdRutina);
-            }
-
-            return new List<DetalleRutina>();
-        }
-
-
         private void BtnModoTV_Click(object sender, EventArgs e)
         {
             try
@@ -898,6 +913,7 @@ namespace GymManager.Views
                 FormTV pantallaTV = new FormTV(
                     rutinaSeleccionada.NombreProfesor,
                     rutinaSeleccionada.Nombre,
+                    rutinaSeleccionada.NombreGenero, // 👈 se envía el tipo de rutina
                     detalles
                 );
 
@@ -1029,28 +1045,48 @@ namespace GymManager.Views
 
         // 🔹 Fuentes "base" (se escalan dinámicamente)
         private float baseTitleSize = 28f;   // título
+        private float baseSubSize = 14f;   // subtítulo (género)
         private float baseHeaderSize = 12f;  // encabezado de columnas
         private float baseGridSize = 11f;    // filas
-        private int baseRowHeight = 60;    // alto de fila
-        private int baseHeaderHeight = 56; // alto encabezado
+        private int baseRowHeight = 60;      // alto de fila
+        private int baseHeaderHeight = 56;   // alto encabezado
+
+        private string generoRutina;         // ⬅️ nuevo
 
         private Label lblTituloTV;
+        private Label lblGenero;             // ⬅️ nuevo
         private DataGridView dgvRutina;
         private TableLayoutPanel tlpMain;
 
-        public FormTV(string nombreProfesor, string nombreRutina, List<DetalleRutina> detalles)
+        // ✅ NUEVO: ctor principal (4 parámetros)
+        public FormTV(string nombreProfesor, string nombreRutina, string genero, List<DetalleRutina> detalles)
         {
+            this.generoRutina = genero ?? string.Empty;
             InitializeForm();
 
             this.Text = $"Modo TV - {nombreProfesor}";
             lblTituloTV.Text = $"RUTINA DEL PROFESOR: {nombreProfesor.ToUpper()}";
 
+            var etiqueta = EtiquetaGenero(this.generoRutina);
+            if (etiqueta != null)
+            {
+                lblGenero.Text = etiqueta;
+                lblGenero.Visible = true;
+            }
+            else
+            {
+                lblGenero.Visible = false;
+            }
+
             CargarRutina(detalles, nombreRutina);
 
-            // 🔸 aplicar escala inicial y volver a aplicar ante cambios de tamaño
             ApplyResponsiveScale();
             this.Resize += (s, e) => ApplyResponsiveScale();
         }
+
+        // ✅ COMPATIBILIDAD: ctor antiguo (3 parámetros)
+        public FormTV(string nombreProfesor, string nombreRutina, List<DetalleRutina> detalles)
+            : this(nombreProfesor, nombreRutina, null, detalles) { }
 
         private void InitializeForm()
         {
@@ -1068,11 +1104,12 @@ namespace GymManager.Views
                 Dock = DockStyle.Fill,
                 Padding = new Padding(30),
                 BackColor = tvBackColor,
-                RowCount = 2,
+                RowCount = 3,                     // ⬅️ antes 2
                 ColumnCount = 1
             };
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // título se ajusta al contenido
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // la grilla ocupa el resto
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // título
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // subtítulo (género)
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // grilla
             this.Controls.Add(tlpMain);
 
             lblTituloTV = new Label
@@ -1082,15 +1119,50 @@ namespace GymManager.Views
                 ForeColor = tvTitleColor,
                 Text = "RUTINA DEL PROFESOR",
                 TextAlign = ContentAlignment.MiddleCenter,
-                Height = 110, // se re-calcula en ApplyResponsiveScale()
+                Height = 110,
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
             tlpMain.Controls.Add(lblTituloTV, 0, 0);
 
+            // ⬅️ NUEVO: subtítulo para el género
+            lblGenero = new Label
+            {
+                Dock = DockStyle.Top,
+                AutoSize = false,
+                ForeColor = Color.Gainsboro,
+                Text = "",
+                TextAlign = ContentAlignment.MiddleCenter,
+                Height = 36,
+                Visible = false, // se muestra sólo si hay género
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+            };
+            tlpMain.Controls.Add(lblGenero, 0, 1);
+
             dgvRutina = CrearGrillaTV();
             dgvRutina.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            tlpMain.Controls.Add(dgvRutina, 0, 1);
+            tlpMain.Controls.Add(dgvRutina, 0, 2);
         }
+
+        private static string EtiquetaGenero(string genero)
+        {
+            if (string.IsNullOrWhiteSpace(genero)) return null;
+
+            var g = genero.Trim().ToLower();
+
+            // Variantes comunes
+            if (g.Contains("masc") || g.Contains("hombre")) return "PARA: HOMBRES";
+            if (g.Contains("fem") || g.Contains("mujer")) return "PARA: MUJERES";
+            if (g.Contains("deport")) return "PARA: DEPORTISTAS";
+
+            // Fallback: lo mostramos capitalizado
+            try
+            {
+                var nice = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(g);
+                return $"PARA: {nice}";
+            }
+            catch { return $"PARA: {genero.ToUpper()}"; }
+        }
+
 
         private DataGridView CrearGrillaTV()
         {
@@ -1111,20 +1183,17 @@ namespace GymManager.Views
                 AllowUserToResizeRows = false
             };
 
-            // Encabezado
             dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            // Filas
             dgv.DefaultCellStyle.BackColor = tvBackColor;
             dgv.DefaultCellStyle.ForeColor = Color.White;
             dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor; // sin resaltado molesto
+            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor; // sin resaltado
             dgv.DefaultCellStyle.SelectionForeColor = Color.White;
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
 
-            // Columnas (EJERCICIO con más espacio)
             var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 52 };
             var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 16 };
             var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 16 };
@@ -1134,28 +1203,24 @@ namespace GymManager.Views
             return dgv;
         }
 
-        // 📐 Escalado responsivo según ancho de ventana (base 1366px)
+        // 📐 Escalado responsivo
         private void ApplyResponsiveScale()
         {
-            // factor entre 1.00 y 1.70 aprox (ajustable)
             float factor = Math.Max(1.0f, Math.Min(1.7f, this.ClientSize.Width / 1366f));
 
-            // Fuentes recalculadas
             lblTituloTV.Font = new Font("Segoe UI", baseTitleSize * factor, FontStyle.Bold);
+            lblGenero.Font = new Font("Segoe UI", baseSubSize * factor, FontStyle.Bold);
+
             dgvRutina.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", baseHeaderSize * factor, FontStyle.Bold);
             dgvRutina.DefaultCellStyle.Font = new Font("Segoe UI", baseGridSize * factor, FontStyle.Regular);
 
-            // Alturas recalculadas
             dgvRutina.ColumnHeadersHeight = (int)Math.Round(baseHeaderHeight * factor);
             dgvRutina.RowTemplate.Height = (int)Math.Round(baseRowHeight * factor);
 
-            // Altura del bloque de título
             lblTituloTV.Height = (int)Math.Round(90 * factor);
+            lblGenero.Height = (int)Math.Round(32 * factor);
 
-            // Padding agradable
             dgvRutina.DefaultCellStyle.Padding = new Padding((int)(8 * factor), (int)(6 * factor), (int)(8 * factor), (int)(6 * factor));
-
-            // Re-ajusta columnas
             dgvRutina.AutoResizeColumns();
         }
 
@@ -1175,12 +1240,13 @@ namespace GymManager.Views
                     d.EjercicioNombre,
                     d.Series,
                     d.Repeticiones,
-                    d.Carga?.ToString() ?? "-"
+                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga
                 );
             }
             dgvRutina.AutoResizeColumns();
         }
     }
+
 
 }
 
