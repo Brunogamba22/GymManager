@@ -2,6 +2,7 @@
 using GymManager.Utils;
 using GymManager.Views;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
@@ -415,6 +416,43 @@ namespace GymManager.Forms
         private void MostrarDashboard(Rol rol)
         {
             panelDashboard.BringToFront();
+        }
+
+        /// <summary>
+        /// Navega a la pantalla de edición, cargando una rutina existente desde el detalle.
+        /// </summary>
+        /// <param name="rutinaHeader">El objeto Rutina con los datos del encabezado.</param>
+        /// <param name="detalles">La lista de ejercicios para cargar en la grilla.</param>
+        public void NavegarAEditor(Rutina rutinaHeader, List<DetalleRutina> detalles)
+        {
+            
+            try
+            {
+                // 1. Mapear el nombre del género (ej. "Masculino") al "tipoRutina" 
+                //    que espera el editor (ej. "Hombres")
+                string tipoRutina = rutinaHeader.NombreGenero switch
+                {
+                    "Masculino" => "Hombres",
+                    "Femenino" => "Mujeres",
+                    "Deportistas" => "Deportistas",
+                    _ => rutinaHeader.NombreGenero // Fallback por si acaso
+                };
+
+                // 2. Llamar al método público del UserControl de edición.
+                //    Usamos el que ya tenías, 'CargarRutinaGeneradaParaEditar'.
+                ucEditarRutina.CargarRutinaGeneradaParaEditar(detalles, tipoRutina);
+
+                // 3. Traer el UserControl de edición al frente
+                ucEditarRutina.BringToFront();
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al navegar al editor de rutinas: " + ex.Message,
+                                "Error de Navegación",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+            }
         }
     }
 }

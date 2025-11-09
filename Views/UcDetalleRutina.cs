@@ -1,9 +1,10 @@
-﻿using GymManager.Utils;
+﻿using GymManager.Forms;
+using GymManager.Models;
+using GymManager.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using GymManager.Models;
 
 namespace GymManager.Views
 {
@@ -19,11 +20,15 @@ namespace GymManager.Views
         public event EventHandler OnCerrarDetalle;
         public Rutina RutinaActual { get; private set; }
 
+        private List<DetalleRutina> _detallesActuales;
+
         public UcDetalleRutina()
         {
             InitializeComponent();
             ApplyModernStyles();
             ConfigurarGrid();
+
+            this.btnEditar.Click += this.btnEditar_Click;
         }
 
         private void ApplyModernStyles()
@@ -88,6 +93,8 @@ namespace GymManager.Views
                 NombreProfesor = profesor,
                 FechaCreacion = fecha
             };
+
+            _detallesActuales = ejercicios;
 
             // 🔹 Título principal
             lblTitulo.Text = nombreRutina;
@@ -175,6 +182,47 @@ namespace GymManager.Views
             {
                 MessageBox.Show($"Error al exportar rutina: {ex.Message}",
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnEditar_Click(object sender, EventArgs e)
+        {
+            
+            if (RutinaActual == null || _detallesActuales == null)
+            {
+                MessageBox.Show("No hay una rutina cargada para editar.",
+                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var confirmacion = MessageBox.Show(
+                                        "¿Estás seguro de que deseas editar esta rutina?" +
+                                        "\n\nSe cargará en el panel de edición.",
+                                        "Confirmar Edición", // Título de la ventana
+                                        MessageBoxButtons.YesNo, // Botones Sí y No
+                                        MessageBoxIcon.Question); // Ícono de pregunta
+
+            // Si el usuario presiona "No", simplemente salimos del método.
+            if (confirmacion == DialogResult.No)
+            {
+                return;
+            }
+
+            // Buscar el formulario principal (FrmMain)
+            var frmMain = this.ParentForm as FrmMain;
+            if (frmMain != null)
+            {
+                
+                // Pedirle a FrmMain que inicie la navegación
+                frmMain.NavegarAEditor(RutinaActual, _detallesActuales);
+
+                // Disparar el evento 'Cerrar' para que el panel de 
+                // historial sepa que debe ocultar esta vista de detalle.
+                OnCerrarDetalle?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                MessageBox.Show("Error fatal: No se pudo encontrar el formulario principal...", "Error");
             }
         }
     }

@@ -84,7 +84,7 @@ namespace GymManager.Views
             chartGeneros.Legends.Clear(); // Sin leyenda
 
             // Añadir título
-            Title title = new Title("Distribución por Audiencia", Docking.Top, new Font("Segoe UI", 14f, FontStyle.Bold), Color.Black);
+            Title title = new Title("Distribución por Genero", Docking.Top, new Font("Segoe UI", 14f, FontStyle.Bold), Color.Black);
             title.Alignment = ContentAlignment.TopCenter;
             
             chartGeneros.Titles.Add(title);

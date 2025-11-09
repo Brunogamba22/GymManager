@@ -313,7 +313,7 @@ namespace GymManager.Views
                     MessageBoxIcon.Warning);
                 if (confirm == DialogResult.No) return;
             }
-            MostrarPanelEdicion(false);
+            _frmMain?.MostrarEditarRutina();
         }
 
         // ====================================================================

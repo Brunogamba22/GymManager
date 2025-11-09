@@ -18,6 +18,7 @@ namespace GymManager.Views
         private Button btnCerrar;
         private Button btnImprimir;
         private Button btnExportar;
+        private Button btnEditar;
 
         private DataGridViewTextBoxColumn colEjercicio;
         private DataGridViewTextBoxColumn colSeries;
@@ -45,6 +46,7 @@ namespace GymManager.Views
             this.btnCerrar = new Button();
             this.btnImprimir = new Button();
             this.btnExportar = new Button();
+            this.btnEditar = new Button();
 
             this.colEjercicio = new DataGridViewTextBoxColumn();
             this.colSeries = new DataGridViewTextBoxColumn();
@@ -141,6 +143,10 @@ namespace GymManager.Views
             this.btnExportar.Text = "📤 EXPORTAR";
             this.btnExportar.Size = new Size(120, 40);
 
+            // Botón Editar
+            this.btnEditar.Text = "✏️ EDITAR";
+            this.btnEditar.Size = new Size(120, 40);
+
             // Agregar controles a los paneles
             this.headerPanel.Controls.Add(lblContador);
             this.headerPanel.Controls.Add(lblDetalles);
@@ -151,6 +157,7 @@ namespace GymManager.Views
             // Panel de botones
             var panelBotones = new Panel();
             panelBotones.Dock = DockStyle.Fill;
+            panelBotones.Controls.Add(this.btnEditar);
             panelBotones.Controls.Add(btnExportar);
             panelBotones.Controls.Add(btnImprimir);
             panelBotones.Controls.Add(btnCerrar);
@@ -172,14 +179,23 @@ namespace GymManager.Views
                 StyleButton(btnCerrar, Color.FromArgb(108, 117, 125));
                 StyleButton(btnImprimir, successColor);
                 StyleButton(btnExportar, primaryColor);
+                StyleButton(btnEditar, Color.FromArgb(220, 53, 69));
 
-                // Posicionar botones
-                btnCerrar.Location = new Point(panelBotones.Width - btnCerrar.Width - 10,
-                                             (panelBotones.Height - btnCerrar.Height) / 2);
-                btnImprimir.Location = new Point(btnCerrar.Left - btnImprimir.Width - 10,
-                                               (panelBotones.Height - btnImprimir.Height) / 2);
-                btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - 10,
-                                               (panelBotones.Height - btnExportar.Height) / 2);
+                // Posicionar botones (de derecha a izquierda)
+                int vPadding = (panelBotones.Height - btnCerrar.Height) / 2;
+                int hPadding = 10;
+
+                // Botón CERRAR (más a la derecha)
+                btnCerrar.Location = new Point(panelBotones.Width - btnCerrar.Width - hPadding, vPadding);
+
+                // Botón EDITAR (ahora a la izquierda de CERRAR)
+                btnEditar.Location = new Point(btnCerrar.Left - btnEditar.Width - hPadding, vPadding);
+
+                // Botón IMPRIMIR (a la izquierda de EDITAR)
+                btnImprimir.Location = new Point(btnEditar.Left - btnImprimir.Width - hPadding, vPadding);
+
+                // Botón EXPORTAR (a la izquierda de IMPRIMIR)
+                btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - hPadding, vPadding);
             };
 
             this.ResumeLayout(false);
