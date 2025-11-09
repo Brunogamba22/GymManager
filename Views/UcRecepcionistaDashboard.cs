@@ -1194,11 +1194,13 @@ namespace GymManager.Views
             dgv.DefaultCellStyle.SelectionForeColor = Color.White;
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
 
-            var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 52 };
-            var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 16 };
-            var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 16 };
-            var colCa = new DataGridViewTextBoxColumn { Name = "CARGA", HeaderText = "CARGA %", FillWeight = 16 };
-            dgv.Columns.AddRange(colEj, colSe, colRe, colCa);
+            var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 48 };
+            var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 12 };
+            var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 12 };
+            var colCa = new DataGridViewTextBoxColumn { Name = "CARGA", HeaderText = "CARGA %", FillWeight = 12 };
+            var colGif = new DataGridViewImageColumn { Name = "GIF", HeaderText = "GIF", ImageLayout = DataGridViewImageCellLayout.Zoom, FillWeight = 16 };
+
+            dgv.Columns.AddRange(colEj, colSe, colRe, colCa, colGif);
 
             return dgv;
         }
@@ -1236,15 +1238,70 @@ namespace GymManager.Views
 
             foreach (var d in detalles)
             {
+                Image imgGif = null;
+
+                try
+                {
+                    // Intentar buscar el GIF por nombre de ejercicio
+                    string nombre = d.EjercicioNombre ?? "";
+                    string carpeta = DetectarCarpetaMuscular(nombre);
+
+                    if (!string.IsNullOrWhiteSpace(carpeta))
+                    {
+                        // Buscar el primer archivo GIF que contenga parte del nombre del ejercicio
+                        string rutaCarpeta = Path.Combine(Application.StartupPath, "Resources", "Ejercicios", carpeta);
+                        if (Directory.Exists(rutaCarpeta))
+                        {
+                            var posibles = Directory.GetFiles(rutaCarpeta, "*.gif", SearchOption.TopDirectoryOnly)
+                                .Where(f => Path.GetFileNameWithoutExtension(f)
+                                .ToLower()
+                                .Contains(nombre.ToLower().Split(' ')[0])) // busca coincidencia parcial
+                                .ToList();
+
+                            if (posibles.Any())
+                            {
+                                using (var temp = Image.FromFile(posibles.First()))
+                                    imgGif = new Bitmap(temp);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("⚠️ Error cargando GIF: " + ex.Message);
+                }
+
                 dgvRutina.Rows.Add(
                     d.EjercicioNombre,
                     d.Series,
                     d.Repeticiones,
-                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga
+                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga,
+                    imgGif
                 );
             }
+
             dgvRutina.AutoResizeColumns();
         }
+        private string DetectarCarpetaMuscular(string nombreEjercicio)
+        {
+            nombreEjercicio = nombreEjercicio.ToLower();
+
+            if (nombreEjercicio.Contains("pecho")) return "Pecho";
+            if (nombreEjercicio.Contains("espalda")) return "Espalda";
+            if (nombreEjercicio.Contains("hombro") || nombreEjercicio.Contains("deltoide")) return "Hombros";
+            if (nombreEjercicio.Contains("bicep")) return "Biceps";
+            if (nombreEjercicio.Contains("tricep")) return "Triceps";
+            if (nombreEjercicio.Contains("pierna") || nombreEjercicio.Contains("cuadricep")) return "Piernas";
+            if (nombreEjercicio.Contains("gluteo")) return "Gluteos";
+            if (nombreEjercicio.Contains("abdominal")) return "Abdominales";
+            if (nombreEjercicio.Contains("pantorrilla")) return "Pantorrillas";
+            if (nombreEjercicio.Contains("trapecio")) return "Trapecio";
+            if (nombreEjercicio.Contains("cardio")) return "Cardio";
+
+            return null;
+        }
+
+
     }
 
 
