@@ -1,0 +1,30 @@
+﻿Objetivo,TipoCarga,GrupoMuscular,Ejercicio,Series,Repeticiones,Carga
+Fuerza,Carga Ascendente,Pecho,Press banca,5,3,90
+Fuerza,Carga Ascendente,Pecho,Press inclinado,5,3,85
+Fuerza,Carga Ascendente,Espalda,Remo con barra,5,3,85
+Fuerza,Carga Ascendente,Pierna,Sentadillas,5,3,90
+Fuerza,Carga Ascendente,Pierna,Peso muerto,5,3,90
+Fuerza,Carga Ascendente,Bíceps,Curl con barra,5,5,80
+Fuerza,Carga Ascendente,Tríceps,Press francés,5,5,80
+Fuerza,Carga Ascendente,Hombros,Press militar,5,4,85
+Hipertrofia,Carga Constante,Pecho,Aperturas con mancuernas,4,10,75
+Hipertrofia,Carga Constante,Pecho,Press declinado,4,10,70
+Hipertrofia,Carga Constante,Espalda,Pull-over,4,12,70
+Hipertrofia,Carga Constante,Pierna,Prensa inclinada,4,10,75
+Hipertrofia,Carga Constante,Pierna,Zancadas,4,12,70
+Hipertrofia,Carga Constante,Bíceps,Curl alternado,4,10,65
+Hipertrofia,Carga Constante,Tríceps,Extensión en polea,4,12,65
+Hipertrofia,Carga Constante,Hombros,Elevaciones laterales,4,12,60
+Resistencia,Sin carga,Cardio,Bicicleta,3,20,0
+Resistencia,Sin carga,Cardio,Elíptico,3,20,0
+Resistencia,Sin carga,Core,Plancha frontal,3,30,0
+Resistencia,Sin carga,Core,Abdominales,3,25,0
+Resistencia,Sin carga,Pierna,Sentadillas con peso corporal,3,20,0
+Resistencia,Sin carga,Brazos,Fondos en paralelas,3,15,0
+Resistencia,Sin carga,Hombros,Elevaciones frontales,3,15,0
+Resistencia,Sin carga,Espalda,Superman,3,20,0
+Carga Invertida (Hipertrofia),Carga Descendente,Pecho,Press inclinado,3,8,80
+Carga Invertida (Hipertrofia),Carga Descendente,Pierna,Prensa inclinada,3,10,75
+Carga Invertida (Hipertrofia),Carga Descendente,Bíceps,Curl concentrado,3,10,70
+Carga Invertida (Hipertrofia),Carga Descendente,Tríceps,Press francés,3,10,70
+Carga Invertida (Hipertrofia),Carga Descendente,Hombros,Press Arnold,3,10,75
