@@ -1027,38 +1027,32 @@ namespace GymManager.Views
             }
         }
     }
-
-    // ============================================================================
-    // 🖥️ FORMULARIO MODO TV (versión mejorada y comentada)
-    // ----------------------------------------------------------------------------
-    // Muestra la rutina de un profesor en pantalla completa, con opción de 
-    // minimizar, abrir múltiples rutinas en paralelo, y cerrar con la tecla ESC.
-    // ============================================================================
-
     public class FormTV : Form
     {
-        // 🎨 Colores y fuentes base
-        private Color tvBackColor = Color.FromArgb(33, 37, 41);
-        private Color tvGridColor = Color.FromArgb(52, 58, 64);
-        private Color tvHeaderColor = Color.FromArgb(41, 128, 185);
-        private Color tvTitleColor = Color.FromArgb(241, 196, 15);
+        // 🎨 Colores principales del modo TV
+        private Color tvBackColor = Color.FromArgb(33, 37, 41);     // Fondo oscuro
+        private Color tvGridColor = Color.FromArgb(52, 58, 64);     // Color de líneas de la grilla
+        private Color tvHeaderColor = Color.FromArgb(41, 128, 185); // Azul encabezado
+        private Color tvTitleColor = Color.FromArgb(241, 196, 15);  // Amarillo dorado (título)
 
-        // 🔹 Fuentes "base" (se escalan dinámicamente)
-        private float baseTitleSize = 28f;   // título
-        private float baseSubSize = 14f;   // subtítulo (género)
-        private float baseHeaderSize = 12f;  // encabezado de columnas
-        private float baseGridSize = 11f;    // filas
-        private int baseRowHeight = 60;      // alto de fila
-        private int baseHeaderHeight = 56;   // alto encabezado
+        // 🔹 Tamaños base para escalado
+        private float baseTitleSize = 34f;    // Título ligeramente más chico
+        private float baseSubSize = 15f;      // Subtítulo (género)
+        private float baseHeaderSize = 13f;   // Encabezado de columnas
+        private float baseGridSize = 12f;     // Texto de filas
+        private int baseRowHeight = 58;       // Altura de filas
+        private int baseHeaderHeight = 56;    // Altura encabezado
 
-        private string generoRutina;         // ⬅️ nuevo
-
+        // 📋 Variables de clase
+        private string generoRutina;
         private Label lblTituloTV;
-        private Label lblGenero;             // ⬅️ nuevo
+        private Label lblGenero;
         private DataGridView dgvRutina;
         private TableLayoutPanel tlpMain;
 
-        // ✅ NUEVO: ctor principal (4 parámetros)
+        // =====================================================================
+        // 🧩 CONSTRUCTOR PRINCIPAL
+        // =====================================================================
         public FormTV(string nombreProfesor, string nombreRutina, string genero, List<DetalleRutina> detalles)
         {
             this.generoRutina = genero ?? string.Empty;
@@ -1068,50 +1062,46 @@ namespace GymManager.Views
             lblTituloTV.Text = $"RUTINA DEL PROFESOR: {nombreProfesor.ToUpper()}";
 
             var etiqueta = EtiquetaGenero(this.generoRutina);
-            if (etiqueta != null)
-            {
-                lblGenero.Text = etiqueta;
-                lblGenero.Visible = true;
-            }
-            else
-            {
-                lblGenero.Visible = false;
-            }
+            lblGenero.Text = etiqueta ?? "";
+            lblGenero.Visible = etiqueta != null;
 
             CargarRutina(detalles, nombreRutina);
-
             ApplyResponsiveScale();
             this.Resize += (s, e) => ApplyResponsiveScale();
         }
 
-        // ✅ COMPATIBILIDAD: ctor antiguo (3 parámetros)
+        // Versión sin género
         public FormTV(string nombreProfesor, string nombreRutina, List<DetalleRutina> detalles)
             : this(nombreProfesor, nombreRutina, null, detalles) { }
 
+        // =====================================================================
+        // ⚙️ MÉTODO: InitializeForm
+        // =====================================================================
         private void InitializeForm()
         {
+            // Configuración base de ventana
             this.BackColor = tvBackColor;
             this.WindowState = FormWindowState.Maximized;
             this.FormBorderStyle = FormBorderStyle.Sizable;
-            this.MinimizeBox = true;
-            this.MaximizeBox = true;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.KeyPreview = true;
             this.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) this.Close(); };
 
+            // Layout general reducido en padding superior
             tlpMain = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(30),
+                Padding = new Padding(20, 10, 20, 20), // ⬅️ menos espacio arriba
                 BackColor = tvBackColor,
-                RowCount = 3,                     // ⬅️ antes 2
+                RowCount = 3,
                 ColumnCount = 1
             };
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // título
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));      // subtítulo (género)
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // grilla
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // fila 1: título
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // fila 2: subtítulo
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // fila 3: grilla
             this.Controls.Add(tlpMain);
 
+            // Título principal reducido
             lblTituloTV = new Label
             {
                 Dock = DockStyle.Top,
@@ -1119,42 +1109,43 @@ namespace GymManager.Views
                 ForeColor = tvTitleColor,
                 Text = "RUTINA DEL PROFESOR",
                 TextAlign = ContentAlignment.MiddleCenter,
-                Height = 110,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                Height = 90,                      // ⬅️ antes 130
+                Padding = new Padding(0, 6, 0, 4),
             };
             tlpMain.Controls.Add(lblTituloTV, 0, 0);
 
-            // ⬅️ NUEVO: subtítulo para el género
+            // Subtítulo (género)
             lblGenero = new Label
             {
                 Dock = DockStyle.Top,
                 AutoSize = false,
-                ForeColor = Color.Gainsboro,
+                ForeColor = Color.FromArgb(220, 225, 230),
                 Text = "",
                 TextAlign = ContentAlignment.MiddleCenter,
-                Height = 36,
-                Visible = false, // se muestra sólo si hay género
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                Height = 30,                      // ⬅️ antes 40
+                Padding = new Padding(0, 0, 0, 4),
+                Visible = false
             };
             tlpMain.Controls.Add(lblGenero, 0, 1);
 
+            // Grilla principal
             dgvRutina = CrearGrillaTV();
             dgvRutina.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tlpMain.Controls.Add(dgvRutina, 0, 2);
         }
 
+        // =====================================================================
+        // 🏷️ Etiqueta de género
+        // =====================================================================
         private static string EtiquetaGenero(string genero)
         {
             if (string.IsNullOrWhiteSpace(genero)) return null;
 
             var g = genero.Trim().ToLower();
-
-            // Variantes comunes
             if (g.Contains("masc") || g.Contains("hombre")) return "PARA: HOMBRES";
             if (g.Contains("fem") || g.Contains("mujer")) return "PARA: MUJERES";
             if (g.Contains("deport")) return "PARA: DEPORTISTAS";
 
-            // Fallback: lo mostramos capitalizado
             try
             {
                 var nice = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(g);
@@ -1163,7 +1154,9 @@ namespace GymManager.Views
             catch { return $"PARA: {genero.ToUpper()}"; }
         }
 
-
+        // =====================================================================
+        // 🧱 Crear DataGridView de rutina
+        // =====================================================================
         private DataGridView CrearGrillaTV()
         {
             var dgv = new DataGridView
@@ -1183,48 +1176,60 @@ namespace GymManager.Views
                 AllowUserToResizeRows = false
             };
 
+            // Encabezado visual
             dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor;
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
+            // Celdas
             dgv.DefaultCellStyle.BackColor = tvBackColor;
             dgv.DefaultCellStyle.ForeColor = Color.White;
             dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor; // sin resaltado
+            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor;
             dgv.DefaultCellStyle.SelectionForeColor = Color.White;
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
 
+            // Columnas visibles
             var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 50 };
             var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 16 };
             var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 16 };
             var colCa = new DataGridViewTextBoxColumn { Name = "CARGA", HeaderText = "CARGA %", FillWeight = 16 };
 
             dgv.Columns.AddRange(colEj, colSe, colRe, colCa);
-
             return dgv;
         }
 
-        // 📐 Escalado responsivo
+        // =====================================================================
+        // 🔠 Escalado responsivo
+        // =====================================================================
         private void ApplyResponsiveScale()
         {
-            float factor = Math.Max(1.0f, Math.Min(1.7f, this.ClientSize.Width / 1366f));
+            // Calcula factor de escala según ancho actual
+            float factor = Math.Max(0.9f, Math.Min(1.5f, this.ClientSize.Width / 1366f));
 
+            // Escala textos
             lblTituloTV.Font = new Font("Segoe UI", baseTitleSize * factor, FontStyle.Bold);
             lblGenero.Font = new Font("Segoe UI", baseSubSize * factor, FontStyle.Bold);
-
             dgvRutina.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", baseHeaderSize * factor, FontStyle.Bold);
             dgvRutina.DefaultCellStyle.Font = new Font("Segoe UI", baseGridSize * factor, FontStyle.Regular);
 
+            // Ajusta alturas (más comprimido)
             dgvRutina.ColumnHeadersHeight = (int)Math.Round(baseHeaderHeight * factor);
             dgvRutina.RowTemplate.Height = (int)Math.Round(baseRowHeight * factor);
 
-            lblTituloTV.Height = (int)Math.Round(90 * factor);
-            lblGenero.Height = (int)Math.Round(32 * factor);
+            // Reduce espacio superior para aprovechar más altura visible
+            lblTituloTV.Height = (int)Math.Round(80 * factor);
+            lblGenero.Height = (int)Math.Round(28 * factor);
 
-            dgvRutina.DefaultCellStyle.Padding = new Padding((int)(8 * factor), (int)(6 * factor), (int)(8 * factor), (int)(6 * factor));
+            // Padding en celdas
+            dgvRutina.DefaultCellStyle.Padding = new Padding((int)(6 * factor), (int)(4 * factor), (int)(6 * factor), (int)(4 * factor));
+
             dgvRutina.AutoResizeColumns();
         }
 
+        // =====================================================================
+        // 📋 CargarRutina
+        // =====================================================================
         private void CargarRutina(List<DetalleRutina> detalles, string nombreRutina)
         {
             dgvRutina.Rows.Clear();
@@ -1247,10 +1252,13 @@ namespace GymManager.Views
 
             dgvRutina.AutoResizeColumns();
         }
+
+        // =====================================================================
+        // 🧠 DetectarCarpetaMuscular (sin uso actual)
+        // =====================================================================
         private string DetectarCarpetaMuscular(string nombreEjercicio)
         {
             nombreEjercicio = nombreEjercicio.ToLower();
-
             if (nombreEjercicio.Contains("pecho")) return "Pecho";
             if (nombreEjercicio.Contains("espalda")) return "Espalda";
             if (nombreEjercicio.Contains("hombro") || nombreEjercicio.Contains("deltoide")) return "Hombros";
@@ -1262,11 +1270,8 @@ namespace GymManager.Views
             if (nombreEjercicio.Contains("pantorrilla")) return "Pantorrillas";
             if (nombreEjercicio.Contains("trapecio")) return "Trapecio";
             if (nombreEjercicio.Contains("cardio")) return "Cardio";
-
             return null;
         }
-
-
     }
 
 
