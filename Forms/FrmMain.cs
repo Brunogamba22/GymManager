@@ -2,6 +2,7 @@
 using GymManager.Utils;
 using GymManager.Views;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
@@ -19,6 +20,9 @@ namespace GymManager.Forms
         private UcEditarRutina ucEditarRutina;
         private UcPlanillasRutinas ucPlanillasRutinas;
         private UcReportesDashboard ucReportesDashboard;
+        // Propiedad compartida entre controles ---
+        public string ObjetivoSeleccionado { get; set; } = "Hipertrofia";
+
 
         // Botón global de Backup y su etiqueta informativa
         private Button btnBackup;
@@ -416,5 +420,64 @@ namespace GymManager.Forms
         {
             panelDashboard.BringToFront();
         }
+
+        /// <summary>
+        /// Navega a la pantalla de edición, cargando una rutina existente desde el detalle.
+        /// </summary>
+        /// <param name="rutinaHeader">El objeto Rutina con los datos del encabezado.</param>
+        /// <param name="detalles">La lista de ejercicios para cargar en la grilla.</param>
+        public void NavegarAEditor(Rutina rutinaHeader, List<DetalleRutina> detalles)
+        {
+            
+            try
+            {
+                // 1. Mapear el nombre del género (ej. "Masculino") al "tipoRutina" 
+                //    que espera el editor (ej. "Hombres")
+                string tipoRutina = rutinaHeader.NombreGenero switch
+                {
+                    "Masculino" => "Hombres",
+                    "Femenino" => "Mujeres",
+                    "Deportistas" => "Deportistas",
+                    _ => rutinaHeader.NombreGenero // Fallback por si acaso
+                };
+
+                // 2. Llamar al método público del UserControl de edición.
+                //    Usamos el que ya tenías, 'CargarRutinaGeneradaParaEditar'.
+                ucEditarRutina.CargarRutinaGeneradaParaEditar(detalles, tipoRutina);
+
+                // 3. Traer el UserControl de edición al frente
+                ucEditarRutina.BringToFront();
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al navegar al editor de rutinas: " + ex.Message,
+                                "Error de Navegación",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                EntrenadorIA.EntrenarModelo();
+                Console.WriteLine("✅ Reentrenamiento IA completado automáticamente al cerrar la app.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error en reentrenamiento automático: " + ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+
     }
 }

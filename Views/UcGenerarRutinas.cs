@@ -83,6 +83,29 @@ namespace GymManager.Views
             if (cmbObjetivoHombres != null) { cmbObjetivoHombres.Items.AddRange(objetivos); cmbObjetivoHombres.SelectedIndex = 0; }
             if (cmbObjetivoMujeres != null) { cmbObjetivoMujeres.Items.AddRange(objetivos); cmbObjetivoMujeres.SelectedIndex = 0; }
             if (cmbObjetivoDeportistas != null) { cmbObjetivoDeportistas.Items.AddRange(objetivos); cmbObjetivoDeportistas.SelectedIndex = 0; }
+
+            // --- 🔹 NUEVO: Vincular evento de cambio de objetivo ---
+            cmbObjetivoHombres.SelectedIndexChanged += (s, e) =>
+            {
+                var frm = this.ParentForm as FrmMain;
+                if (frm != null)
+                    frm.ObjetivoSeleccionado = cmbObjetivoHombres.SelectedItem?.ToString() ?? "Hipertrofia";
+            };
+
+            cmbObjetivoMujeres.SelectedIndexChanged += (s, e) =>
+            {
+                var frm = this.ParentForm as FrmMain;
+                if (frm != null)
+                    frm.ObjetivoSeleccionado = cmbObjetivoMujeres.SelectedItem?.ToString() ?? "Hipertrofia";
+            };
+
+            cmbObjetivoDeportistas.SelectedIndexChanged += (s, e) =>
+            {
+                var frm = this.ParentForm as FrmMain;
+                if (frm != null)
+                    frm.ObjetivoSeleccionado = cmbObjetivoDeportistas.SelectedItem?.ToString() ?? "Hipertrofia";
+            };
+
         }
 
         #region "Lógica de UI (Tabs, Estilos, etc.)"
@@ -190,38 +213,15 @@ namespace GymManager.Views
                     int repeticiones = 0;
                     string cargaString = "";
 
-                    switch (objetivo)
-                    {
-                        case "Fuerza":
-                            totalSets = 5;
-                            repeticiones = 5;
-                            cargaString = usaCarga ? "85%" : "";
-                            break;
-                        case "Resistencia":
-                            totalSets = 3;
-                            repeticiones = 15;
-                            cargaString = usaCarga ? "60%" : "";
-                            break;
+                    string tipoCarga = objetivo.Contains("Fuerza") ? "Carga Ascendente" :
+                   objetivo.Contains("Hipertrofia") ? "Carga Constante" :
+                   "Sin carga";
 
-                        case "Carga Ascendente (Fuerza)":
-                            totalSets = 5; // 5 sets en total
-                            repeticiones = 3; // El usuario puede editar esto, pero ponemos un default
-                            cargaString = usaCarga ? "50%-60%-70%-80%-90%" : "";
-                            break;
+                    var pred = IAHelper.Predecir(objetivo, tipoCarga, grupoDelEjercicio?.Nombre ?? "", ejercicio.Nombre);
 
-                        case "Carga Invertida (Hipertrofia)":
-                            totalSets = 3;
-                            repeticiones = 10;
-                            cargaString = usaCarga ? "80%-75%-70%" : "";
-                            break;
-
-                        case "Hipertrofia":
-                        default:
-                            totalSets = 4;
-                            repeticiones = 10;
-                            cargaString = usaCarga ? "75%" : "";
-                            break;
-                    }
+                    totalSets = pred.series;
+                    repeticiones = pred.reps;
+                    cargaString = usaCarga ? pred.cargaStr : "";
 
                     // Añadimos UNA SOLA FILA por ejercicio
                     listaRutina.Add(new DetalleRutina

@@ -140,6 +140,7 @@ namespace GymManager.Views
             dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
             dgvPlanillas.CellMouseEnter += dgvPlanillas_CellMouseEnter;
             dgvPlanillas.CellMouseLeave += dgvPlanillas_CellMouseLeave;
+            dgvPlanillas.CellClick += DgvPlanillas_CellClick;
         }
 
         // =========================================================
@@ -234,15 +235,39 @@ namespace GymManager.Views
             }
 
             dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
+<<<<<<< HEAD
             if (dgvPlanillas.Rows.Count > 0)
                 dgvPlanillas.ClearSelection();
+=======
+            // 🔥 Evitar selección automática de la primera fila
+            dgvPlanillas.ClearSelection();
+
+            // 🔥 Refrescar manualmente para asegurar consistencia visual
+            dgvPlanillas.CurrentCell = null;
+            dgvPlanillas.Refresh();
+>>>>>>> Jonathan
         }
 
         private void DgvPlanillas_SelectionChanged(object sender, EventArgs e)
         {
+<<<<<<< HEAD
             if (dgvPlanillas.SelectedRows.Count > 0 && dgvPlanillas.SelectedRows[0].Index >= 0)
             {
                 int selectedIndex = dgvPlanillas.SelectedRows[0].Index;
+=======
+           
+            // Este evento solo mantiene sincronizada la selección
+            // pero ya no abre los detalles directamente
+
+        }
+
+        private void DgvPlanillas_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                int selectedIndex = e.RowIndex;
+
+>>>>>>> Jonathan
                 if (selectedIndex < rutinasGuardadas.Count)
                 {
                     var rutinaSeleccionada = rutinasGuardadas[selectedIndex];
@@ -251,9 +276,13 @@ namespace GymManager.Views
             }
         }
 
+<<<<<<< HEAD
         // =========================================================
         // 📄 MOSTRAR DETALLE DE RUTINA
         // =========================================================
+=======
+
+>>>>>>> Jonathan
         private void MostrarDetalleRutina(Rutina rutinaHeader)
         {
             try
@@ -304,7 +333,13 @@ namespace GymManager.Views
 
             mainPanel.Visible = true;
             mainPanel.BringToFront();
+<<<<<<< HEAD
             ReajustarLayout();
+=======
+
+            ReajustarLayout(); // ✅ corrige el layout y elimina la franja gris
+            dgvPlanillas.ClearSelection();
+>>>>>>> Jonathan
         }
 
         private void ReajustarLayout()

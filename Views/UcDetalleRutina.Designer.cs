@@ -21,8 +21,12 @@ namespace GymManager.Views
         private Button btnCerrar;
         private Button btnImprimir;
         private Button btnExportar;
+<<<<<<< HEAD
         private Button btnModoTV;
 
+=======
+        private Button btnEditar;
+>>>>>>> Jonathan
 
         private DataGridViewTextBoxColumn colEjercicio;
         private DataGridViewTextBoxColumn colSeries;
@@ -50,7 +54,11 @@ namespace GymManager.Views
             this.btnCerrar = new Button();
             this.btnImprimir = new Button();
             this.btnExportar = new Button();
+<<<<<<< HEAD
             this.btnModoTV = new Button(); // 🖥️ Nuevo botón
+=======
+            this.btnEditar = new Button();
+>>>>>>> Jonathan
 
             this.colEjercicio = new DataGridViewTextBoxColumn();
             this.colSeries = new DataGridViewTextBoxColumn();
@@ -142,6 +150,7 @@ namespace GymManager.Views
             StyleButton(btnExportar, primaryColor);
             this.btnExportar.Click += btnExportar_Click;
 
+<<<<<<< HEAD
             this.btnImprimir.Text = "🖨️ IMPRIMIR";
             this.btnImprimir.Size = new Size(btnW, btnH);
             StyleButton(btnImprimir, successColor);
@@ -208,15 +217,67 @@ namespace GymManager.Views
 
 
             // ARMADO FINAL
+=======
+            // Botón Editar
+            this.btnEditar.Text = "✏️ EDITAR";
+            this.btnEditar.Size = new Size(120, 40);
+
+            // Agregar controles a los paneles
+>>>>>>> Jonathan
             this.headerPanel.Controls.Add(lblContador);
             this.headerPanel.Controls.Add(lblDetalles);
             this.headerPanel.Controls.Add(lblTitulo);
             this.contentPanel.Controls.Add(dgvEjercicios);
+<<<<<<< HEAD
+=======
+
+            // Panel de botones
+            var panelBotones = new Panel();
+            panelBotones.Dock = DockStyle.Fill;
+            panelBotones.Controls.Add(this.btnEditar);
+            panelBotones.Controls.Add(btnExportar);
+            panelBotones.Controls.Add(btnImprimir);
+            panelBotones.Controls.Add(btnCerrar);
+            this.footerPanel.Controls.Add(panelBotones);
+
+>>>>>>> Jonathan
             this.mainPanel.Controls.Add(contentPanel);
             this.mainPanel.Controls.Add(footerPanel);
             this.mainPanel.Controls.Add(headerPanel);
             this.Controls.Add(mainPanel);
 
+<<<<<<< HEAD
+=======
+            // Eventos
+            this.btnCerrar.Click += new System.EventHandler(btnCerrar_Click);
+            this.btnImprimir.Click += new System.EventHandler(btnImprimir_Click);
+            this.btnExportar.Click += new System.EventHandler(btnExportar_Click);
+
+            // Aplicar estilos después de la inicialización
+            this.Load += (sender, e) => {
+                StyleButton(btnCerrar, Color.FromArgb(108, 117, 125));
+                StyleButton(btnImprimir, successColor);
+                StyleButton(btnExportar, primaryColor);
+                StyleButton(btnEditar, Color.FromArgb(220, 53, 69));
+
+                // Posicionar botones (de derecha a izquierda)
+                int vPadding = (panelBotones.Height - btnCerrar.Height) / 2;
+                int hPadding = 10;
+
+                // Botón CERRAR (más a la derecha)
+                btnCerrar.Location = new Point(panelBotones.Width - btnCerrar.Width - hPadding, vPadding);
+
+                // Botón EDITAR (ahora a la izquierda de CERRAR)
+                btnEditar.Location = new Point(btnCerrar.Left - btnEditar.Width - hPadding, vPadding);
+
+                // Botón IMPRIMIR (a la izquierda de EDITAR)
+                btnImprimir.Location = new Point(btnEditar.Left - btnImprimir.Width - hPadding, vPadding);
+
+                // Botón EXPORTAR (a la izquierda de IMPRIMIR)
+                btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - hPadding, vPadding);
+            };
+
+>>>>>>> Jonathan
             this.ResumeLayout(false);
         }
     }

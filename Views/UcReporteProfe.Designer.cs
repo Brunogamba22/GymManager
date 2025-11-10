@@ -1,5 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using System;
 using System.Drawing;
+using System.Windows.Forms;
 // --- 🔥 IMPORTANTE: Añade el using del Charting ---
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -29,6 +30,8 @@ namespace GymManager.Views
 
         private void InitializeComponent()
         {
+            
+
             // --- Definición del Chart ---
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
@@ -45,6 +48,8 @@ namespace GymManager.Views
             this.btnGenerarReporte = new Button();
             this.pnlChart = new Panel();
             this.chartBalance = new System.Windows.Forms.DataVisualization.Charting.Chart();
+
+            Console.WriteLine($"[DEBUG] ChartBalance init: Height={this.chartBalance.Height}, Width={this.chartBalance.Width}");
 
             ((System.ComponentModel.ISupportInitialize)(this.chartBalance)).BeginInit();
             this.SuspendLayout();

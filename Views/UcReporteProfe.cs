@@ -65,7 +65,7 @@ namespace GymManager.Views
                 List<ReporteProfesor> datos = _reporteController.ObtenerBalanceGruposMusculares(idProfesor, fechaDesde, fechaHasta);
 
                 // 4. Poblar el gráfico
-                PoblarGrafico(datos);
+                PoblarGrafico(datos, idProfesor, fechaDesde, fechaHasta);
             }
             catch (Exception ex)
             {
@@ -73,9 +73,8 @@ namespace GymManager.Views
             }
         }
 
-        private void PoblarGrafico(List<ReporteProfesor> datos)
+        private void PoblarGrafico(List<ReporteProfesor> datos, int idProfesor, DateTime fechaDesde, DateTime fechaHasta)
         {
-            // Limpiar datos anteriores
             chartBalance.Series["Default"].Points.Clear();
 
             if (datos == null || datos.Count == 0)
@@ -85,37 +84,48 @@ namespace GymManager.Views
             }
 
             chartBalance.Titles[0].Text = "Balance de Grupos Musculares";
-
-            // Opcional: Hacer el gráfico 3D
             chartBalance.ChartAreas[0].Area3DStyle.Enable3D = true;
             chartBalance.ChartAreas[0].Area3DStyle.Inclination = 15;
 
-            // =========================================================
-            // 🔥 LÓGICA DE GRÁFICO CORREGIDA 🔥
-            // =========================================================
-
-            // 1. Calculamos el total para sacar los porcentajes manualmente
             double total = datos.Sum(d => d.Conteo);
 
-            // 2. Añadimos los datos al gráfico
             foreach (var item in datos)
             {
-                // Añadimos el punto de datos
                 int pointIndex = chartBalance.Series["Default"].Points.AddXY(item.GrupoMuscular, item.Conteo);
-
-                // Obtenemos el punto que acabamos de añadir
                 DataPoint point = chartBalance.Series["Default"].Points[pointIndex];
 
-                // 3. Asignamos el texto de la LEYENDA explícitamente
-                point.LegendText = $"{item.GrupoMuscular} ({item.Conteo})";
+                
+                // 🔥 LÓGICA DE TOOLTIP AÑADIDA 🔥
+                // 1. Buscar el Top 5 para este grupo muscular
+                List<ReportePopularidad> top5 = _reporteController.ObtenerTop5EjerciciosPorGrupo(
+                    idProfesor, fechaDesde, fechaHasta, item.GrupoMuscular);
 
-                // 4. Asignamos el texto del PORCENTAJE (que va sobre el "quesito")
-                point.Label = (item.Conteo / total).ToString("P0"); // "P0" = formato Porcentaje sin decimales
+                // 2. Construir el texto del tooltip
+                System.Text.StringBuilder tooltipTexto = new System.Text.StringBuilder();
+                tooltipTexto.AppendLine($"Top 5 - {item.GrupoMuscular}:"); // Título
+
+                if (top5.Count == 0)
+                {
+                    tooltipTexto.AppendLine("  (No hay datos de ejercicios)");
+                }
+                else
+                {
+                    for (int i = 0; i < top5.Count; i++)
+                    {
+                        tooltipTexto.AppendLine($"  {i + 1}. {top5[i].EjercicioNombre} ({top5[i].Conteo} usos)");
+                    }
+                }
+
+                // 3. Asignar el tooltip al "quesito"
+                point.ToolTip = tooltipTexto.ToString();
+
+                // =========================================================
+
+                point.LegendText = $"{item.GrupoMuscular} ({item.Conteo})";
+                point.Label = (item.Conteo / total).ToString("P0");
             }
 
-            // (Asegúrate de que la serie NO tenga un Label general)
             chartBalance.Series["Default"].Label = "";
-            // =========================================================
         }
 
         // (Tu método StyleButton)

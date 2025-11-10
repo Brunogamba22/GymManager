@@ -37,6 +37,7 @@ namespace GymManager.Views
             if (ucReporteActividad == null) // Solo crear si no existe
             {
                 ucReporteActividad = new UcReporteActividad();
+                ucReporteActividad.Size = tabActividad.ClientSize;
                 ucReporteActividad.Dock = DockStyle.Fill;
                 tabActividad.Controls.Add(ucReporteActividad);
             }
