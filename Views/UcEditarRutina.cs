@@ -286,7 +286,52 @@ namespace GymManager.Views
                 {
                     detalle.IdRutina = nuevoIdRutina;
                     _rutinaController.AgregarDetalle(detalle);
+
+                    // === 🧠 NUEVO: Guardar en dataset para IA ===
+                    try
+                    {
+                        // 🔹 Obtener el objetivo real del combo de la UI
+                        // (este valor viene de la rutina que se está editando)
+                        string objetivoSeleccionado = "";
+
+                        // Buscar si el UcGenerarRutinas sigue abierto o si guardaste el objetivo en sesión
+                        if (_frmMain?.ObjetivoSeleccionado != null)
+                            objetivoSeleccionado = _frmMain.ObjetivoSeleccionado;
+                        else
+                            objetivoSeleccionado = "Hipertrofia"; // fallback seguro
+
+                        // 🔹 Deducir tipo de carga según el objetivo
+                        string tipoCarga = objetivoSeleccionado switch
+                        {
+                            "Fuerza" => "Carga Ascendente",
+                            "Hipertrofia" => "Carga Constante",
+                            "Resistencia" => "Sin carga",
+                            "Carga Ascendente (Fuerza)" => "Carga Ascendente",
+                            "Carga Invertida (Hipertrofia)" => "Carga Descendente",
+                            _ => "Carga Constante"
+                        };
+
+                        // 🔹 Obtener nombre del grupo muscular real
+                        string grupoMuscular = _listaEjerciciosBD
+                            .FirstOrDefault(e => e.Id == detalle.IdEjercicio)?.GrupoMuscularNombre ?? "Desconocido";
+
+                        // 🔹 Registrar la rutina editada en el dataset IA
+                        IAHelper.AgregarRutinaAlDataset(
+                            objetivoSeleccionado,
+                            tipoCarga,
+                            grupoMuscular,
+                            detalle.EjercicioNombre,
+                            detalle.Series,
+                            detalle.Repeticiones,
+                            detalle.Carga
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("⚠️ Error agregando rutina editada al dataset IA: " + ex.Message);
+                    }
                 }
+
                 MessageBox.Show("Rutina modificada guardada con éxito.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 // 1. Avisa a FrmMain que limpie la lista generada
                 _frmMain?.LimpiarRutinaGeneradaEnPanel(_tipoRutinaActual);

@@ -20,6 +20,9 @@ namespace GymManager.Forms
         private UcEditarRutina ucEditarRutina;
         private UcPlanillasRutinas ucPlanillasRutinas;
         private UcReportesDashboard ucReportesDashboard;
+        // Propiedad compartida entre controles ---
+        public string ObjetivoSeleccionado { get; set; } = "Hipertrofia";
+
 
         // Botón global de Backup y su etiqueta informativa
         private Button btnBackup;
@@ -454,5 +457,27 @@ namespace GymManager.Forms
                                 MessageBoxIcon.Error);
             }
         }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            try
+            {
+                Cursor = Cursors.WaitCursor;
+                EntrenadorIA.EntrenarModelo();
+                Console.WriteLine("✅ Reentrenamiento IA completado automáticamente al cerrar la app.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error en reentrenamiento automático: " + ex.Message);
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+            }
+        }
+
+
     }
 }

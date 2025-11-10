@@ -105,5 +105,37 @@ namespace GymManager.Utils
                 return (4, 10, "70%"); // fallback por defecto
             }
         }
+
+        public static void AgregarRutinaAlDataset(string objetivo, string tipoCarga, string grupoMuscular,
+                                          string ejercicio, int series, int repeticiones, string carga)
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string projectRoot = Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\"));
+                string dataPath = Path.Combine(projectRoot, "ML", "dataset_rutinas.csv");
+                bool existe = File.Exists(dataPath);
+
+                // Asegurarse de que la carpeta exista
+                Directory.CreateDirectory(Path.GetDirectoryName(dataPath));
+
+                using (var sw = new StreamWriter(dataPath, append: true))
+                {
+                    if (!existe)
+                        sw.WriteLine("Objetivo,TipoCarga,GrupoMuscular,Ejercicio,Series,Repeticiones,Carga");
+
+                    sw.WriteLine($"{objetivo},{tipoCarga},{grupoMuscular},{ejercicio},{series},{repeticiones},{carga}");
+                }
+
+                Console.WriteLine("✅ Nueva rutina agregada al dataset IA.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("⚠️ Error agregando rutina al dataset: " + ex.Message);
+            }
+        }
+
+
+
     }
 }

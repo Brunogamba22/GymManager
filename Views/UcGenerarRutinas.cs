@@ -83,6 +83,29 @@ namespace GymManager.Views
             if (cmbObjetivoHombres != null) { cmbObjetivoHombres.Items.AddRange(objetivos); cmbObjetivoHombres.SelectedIndex = 0; }
             if (cmbObjetivoMujeres != null) { cmbObjetivoMujeres.Items.AddRange(objetivos); cmbObjetivoMujeres.SelectedIndex = 0; }
             if (cmbObjetivoDeportistas != null) { cmbObjetivoDeportistas.Items.AddRange(objetivos); cmbObjetivoDeportistas.SelectedIndex = 0; }
+
+            // --- 🔹 NUEVO: Vincular evento de cambio de objetivo ---
+            cmbObjetivoHombres.SelectedIndexChanged += (s, e) =>
+            {
+                var frm = this.ParentForm as FrmMain;
+                if (frm != null)
+                    frm.ObjetivoSeleccionado = cmbObjetivoHombres.SelectedItem?.ToString() ?? "Hipertrofia";
+            };
+
+            cmbObjetivoMujeres.SelectedIndexChanged += (s, e) =>
+            {
+                var frm = this.ParentForm as FrmMain;
+                if (frm != null)
+                    frm.ObjetivoSeleccionado = cmbObjetivoMujeres.SelectedItem?.ToString() ?? "Hipertrofia";
+            };
+
+            cmbObjetivoDeportistas.SelectedIndexChanged += (s, e) =>
+            {
+                var frm = this.ParentForm as FrmMain;
+                if (frm != null)
+                    frm.ObjetivoSeleccionado = cmbObjetivoDeportistas.SelectedItem?.ToString() ?? "Hipertrofia";
+            };
+
         }
 
         #region "Lógica de UI (Tabs, Estilos, etc.)"
