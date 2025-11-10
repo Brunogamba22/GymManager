@@ -32,7 +32,7 @@ namespace GymManager.Views
         // --- Controles de Footer ---
         private Panel footerPanel;
         private Button btnExportar;
-        private Button btnModoTV;
+        
 
         // --- Columnas del DataGridView ---
         private DataGridViewTextBoxColumn colNombre;
@@ -69,7 +69,7 @@ namespace GymManager.Views
             this.btnLimpiarFiltros = new Button();
 
             this.btnExportar = new Button();
-            this.btnModoTV = new Button();
+            
 
             this.colNombre = new DataGridViewTextBoxColumn();
             this.colProfesor = new DataGridViewTextBoxColumn();
@@ -226,58 +226,54 @@ namespace GymManager.Views
             btnExportar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btnExportar.Cursor = Cursors.Hand;
 
-            // --- BOTÓN IMPRIMIR ---
-            Button btnImprimir = new Button();
-            btnImprimir.Text = "🖨️ IMPRIMIR";
-            btnImprimir.Size = new Size(150, 40);
-            btnImprimir.BackColor = Color.FromArgb(40, 167, 69);
-            btnImprimir.ForeColor = Color.White;
-            btnImprimir.FlatStyle = FlatStyle.Flat;
-            btnImprimir.FlatAppearance.BorderSize = 0;
-            btnImprimir.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnImprimir.Cursor = Cursors.Hand;
+            
 
-            // --- BOTÓN MODO TV ---
-            btnModoTV.Text = "🖥️ MODO TV";
-            btnModoTV.BackColor = Color.FromArgb(52, 73, 94);
-            btnModoTV.ForeColor = Color.White;
-            btnModoTV.FlatStyle = FlatStyle.Flat;
-            btnModoTV.FlatAppearance.BorderSize = 0;
-            btnModoTV.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnModoTV.Size = new Size(150, 40);
-            btnModoTV.Cursor = Cursors.Hand;
-            btnModoTV.Click += BtnModoTV_Click;
-
-            // --- BOTÓN CERRAR ---
-            Button btnCerrar = new Button();
-            btnCerrar.Text = "❌ CERRAR";
-            btnCerrar.Size = new Size(150, 40);
-            btnCerrar.BackColor = Color.FromArgb(108, 117, 125);
-            btnCerrar.ForeColor = Color.White;
-            btnCerrar.FlatStyle = FlatStyle.Flat;
-            btnCerrar.FlatAppearance.BorderSize = 0;
-            btnCerrar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnCerrar.Cursor = Cursors.Hand;
-            btnCerrar.Click += (s, e) => OcultarDetalle();
-
+            
             // --- ARMADO ---
-            footerPanel.Controls.Add(btnCerrar);
+           
             footerPanel.Controls.Add(btnExportar);
-            footerPanel.Controls.Add(btnImprimir);
-            footerPanel.Controls.Add(btnModoTV);
 
-            // 📏 Evento para reposicionar dinámicamente los botones
+
+            // 📏 Reposicionar dinámicamente los botones
             footerPanel.Resize += (s, e) =>
             {
-                int marginRight = 25;
-                int spacing = 10;
                 int bottom = 10;
 
-                btnModoTV.Location = new Point(footerPanel.Width - btnModoTV.Width - marginRight, bottom);
-                btnImprimir.Location = new Point(btnModoTV.Left - btnImprimir.Width - spacing, bottom);
-                btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - spacing, bottom);
-                btnCerrar.Location = new Point(marginRight, bottom);
+                // 📍 Centrar horizontalmente el botón Exportar
+                btnExportar.Location = new Point(
+                    (footerPanel.Width - btnExportar.Width) / 2,
+                    bottom
+                );
             };
+
+            // =========================================================
+            // 🔧 ENSAMBLADO DE LA ESTRUCTURA VISUAL
+            // =========================================================
+
+            // 1️⃣ Agregar los subpaneles a sus contenedores
+            contentPanel.Controls.Add(dgvPlanillas);
+            contentPanel.Controls.Add(pnlFiltros);
+
+            headerPanel.Controls.Add(lblDescripcion);
+            headerPanel.Controls.Add(lblTitulo);
+
+            // 2️⃣ Agregar secciones principales al mainPanel
+            mainPanel.Controls.Add(contentPanel);
+            mainPanel.Controls.Add(footerPanel);
+            mainPanel.Controls.Add(headerPanel);
+
+            // 3️⃣ Agregar el mainPanel al UserControl
+            this.Controls.Add(mainPanel);
+
+            // 4️⃣ Configuración general del UserControl
+            this.Dock = DockStyle.Fill;
+            this.BackColor = Color.FromArgb(248, 249, 250);
+            this.Font = new Font("Segoe UI", 9);
+
+            // =========================================================
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
     }
 }

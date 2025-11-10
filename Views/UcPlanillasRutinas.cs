@@ -42,54 +42,11 @@ namespace GymManager.Views
             btnFiltrar.Click += BtnFiltrar_Click;
             btnLimpiarFiltros.Click += BtnLimpiarFiltros_Click;
             btnExportar.Click += btnExportar_Click;
-            btnModoTV.Click += BtnModoTV_Click;
+
+            
         }
 
-        // =========================================================
-        // 🎥 EVENTO MODO TV
-        // =========================================================
-        private void BtnModoTV_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (dgvPlanillas.SelectedRows.Count == 0)
-                {
-                    MessageBox.Show("Debe seleccionar una rutina para abrir el Modo TV.",
-                                    "Sin selección", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                int index = dgvPlanillas.SelectedRows[0].Index;
-                if (index < 0 || index >= rutinasGuardadas.Count)
-                    return;
-
-                var rutinaSeleccionada = rutinasGuardadas[index];
-                var detalles = _detalleController.ObtenerPorRutina(rutinaSeleccionada.IdRutina);
-
-                if (detalles == null || detalles.Count == 0)
-                {
-                    MessageBox.Show("Esta rutina no tiene ejercicios cargados para mostrar.",
-                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                // 🔹 Abrir modo TV (agregamos género)
-                FormTV pantallaTV = new FormTV(
-                    rutinaSeleccionada.NombreProfesor,
-                    rutinaSeleccionada.Nombre,
-                    rutinaSeleccionada.NombreGenero,
-                    detalles
-                );
-
-                pantallaTV.Text = $"Modo TV - {rutinaSeleccionada.NombreProfesor}";
-                pantallaTV.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al iniciar Modo TV: {ex.Message}",
-                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        
 
         // =========================================================
         // 💅 ESTILOS Y CONFIGURACIÓN VISUAL
@@ -102,7 +59,7 @@ namespace GymManager.Views
             StyleButton(btnFiltrar, primaryColor);
             StyleButton(btnLimpiarFiltros, warningColor);
             StyleButton(btnExportar, successColor);
-            StyleButton(btnModoTV, Color.FromArgb(52, 73, 94));
+            
         }
 
         private void ConfigurarGrid()
@@ -177,8 +134,22 @@ namespace GymManager.Views
 
         public void CargarDatos()
         {
-            AplicarFiltrosYCargarGrid();
-            OcultarDetalle();
+            try
+            {
+                // 🔹 Aseguramos que el panel principal siempre esté visible
+                if (mainPanel != null)
+                {
+                    mainPanel.Visible = true;
+                    mainPanel.BringToFront();
+                }
+
+                AplicarFiltrosYCargarGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al cargar planillas: {ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void AplicarFiltrosYCargarGrid()
@@ -190,8 +161,8 @@ namespace GymManager.Views
 
                 int? idGenero = null;
 
-                // ✅ Validación segura: el combo y el valor seleccionado no deben ser nulos
-                if (cmbGenero != null && cmbGenero.SelectedValue != null && int.TryParse(cmbGenero.SelectedValue.ToString(), out int valor))
+                if (cmbGenero != null && cmbGenero.SelectedValue != null &&
+                    int.TryParse(cmbGenero.SelectedValue.ToString(), out int valor))
                 {
                     idGenero = (valor != 0) ? valor : (int?)null;
                 }
@@ -199,14 +170,37 @@ namespace GymManager.Views
                 bool soloEditadas = chkSoloEditadas?.Checked ?? false;
 
                 rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla(fechaDesde, fechaHasta, idGenero, soloEditadas);
+
                 ActualizarGrid();
+
+                // 🔹 Si no hay datos, mostramos mensaje visual en la grilla
+                if (rutinasGuardadas == null || rutinasGuardadas.Count == 0)
+                {
+                    dgvPlanillas.Rows.Clear();
+                    dgvPlanillas.Rows.Add("—", "—", "—", "No se encontraron rutinas para los filtros seleccionados");
+                }
+
+                // 🔹 Aseguramos que el panel principal esté activo
+                if (mainPanel != null)
+                {
+                    mainPanel.Visible = true;
+                    mainPanel.BringToFront();
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al cargar planillas filtradas: {ex.Message}",
                     "Error de Base de Datos", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                // 🔹 Evita quedarse en blanco si algo falla
+                if (mainPanel != null)
+                {
+                    mainPanel.Visible = true;
+                    mainPanel.BringToFront();
+                }
             }
         }
+
 
 
         private void BtnFiltrar_Click(object sender, EventArgs e)

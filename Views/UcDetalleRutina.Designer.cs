@@ -22,7 +22,6 @@ namespace GymManager.Views
         private Button btnImprimir;
         private Button btnExportar;
 
-        private Button btnModoTV;
 
 
         private Button btnEditar;
@@ -55,7 +54,7 @@ namespace GymManager.Views
             this.btnImprimir = new Button();
             this.btnExportar = new Button();
 
-            this.btnModoTV = new Button(); // 🖥️ Nuevo botón
+            
 
             this.btnEditar = new Button();
 
@@ -119,10 +118,10 @@ namespace GymManager.Views
             this.dgvEjercicios.Margin = new Padding(0, 5, 0, 0);
             this.dgvEjercicios.Columns.AddRange(new DataGridViewColumn[]
             {
-        this.colEjercicio,
-        this.colSeries,
-        this.colRepeticiones,
-        this.colCarga
+                this.colEjercicio,
+                this.colSeries,
+                this.colRepeticiones,
+                this.colCarga
             });
 
             // COLUMNAS
@@ -156,39 +155,7 @@ namespace GymManager.Views
             StyleButton(btnImprimir, successColor);
             this.btnImprimir.Click += btnImprimir_Click;
 
-            this.btnModoTV.Text = "🖥️ MODO TV";
-            this.btnModoTV.Size = new Size(btnW, btnH);
-            StyleButton(btnModoTV, Color.FromArgb(52, 73, 94));
-            this.btnModoTV.Click += (s, e) =>
-            {
-                if (RutinaActual == null)
-                {
-                    MessageBox.Show("No hay rutina cargada para mostrar en modo TV.",
-                        "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                var detalles = new List<DetalleRutina>();
-                foreach (DataGridViewRow row in dgvEjercicios.Rows)
-                {
-                    if (row.Cells["colEjercicio"].Value == null) continue;
-                    detalles.Add(new DetalleRutina
-                    {
-                        EjercicioNombre = row.Cells["colEjercicio"].Value.ToString(),
-                        Series = Convert.ToInt32(row.Cells["colSeries"].Value ?? 0),
-                        Repeticiones = Convert.ToInt32(row.Cells["colRepeticiones"].Value ?? 0),
-                        Carga = row.Cells["colCarga"].Value?.ToString()
-                    });
-                }
-
-                FormTV form = new FormTV(
-                    RutinaActual.NombreProfesor,
-                    RutinaActual.Nombre,
-                    RutinaActual.NombreGenero,
-                    detalles
-                );
-                form.Show();
-            };
+            
 
             this.btnCerrar.Text = "❌ CERRAR";
             this.btnCerrar.Size = new Size(btnW, btnH);
@@ -199,21 +166,20 @@ namespace GymManager.Views
             this.footerPanel.Controls.Add(btnCerrar);
             this.footerPanel.Controls.Add(btnExportar);
             this.footerPanel.Controls.Add(btnImprimir);
-            this.footerPanel.Controls.Add(btnModoTV);
+
 
             // 📏 Reposicionar dinámicamente al redimensionar
-            this.footerPanel.Resize += (s, e) =>
+            footerPanel.Resize += (s, e) =>
             {
-                int spacing = 10;
-                int bottom = (footerPanel.Height - btnCerrar.Height) / 2;
                 int marginRight = 25;
+                int spacing = 10;
+                int bottom = 10;
 
-                btnModoTV.Location = new Point(footerPanel.Width - btnModoTV.Width - marginRight, bottom);
-                btnImprimir.Location = new Point(btnModoTV.Left - btnImprimir.Width - spacing, bottom);
+                btnImprimir.Location = new Point(footerPanel.Width - btnImprimir.Width - marginRight, bottom);
                 btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - spacing, bottom);
+                btnEditar.Location = new Point(btnExportar.Left - btnEditar.Width - spacing, bottom);
                 btnCerrar.Location = new Point(marginRight, bottom);
             };
-
 
 
             // ARMADO FINAL

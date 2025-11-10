@@ -30,6 +30,11 @@ namespace GymManager.Views
             ConfigurarGrid();
 
             this.btnEditar.Click += this.btnEditar_Click;
+
+            if (Sesion.Actual.Rol != Rol.Profesor)  // o la variable que uses
+            {
+                btnEditar.Visible = false;
+            }
         }
 
         private void ApplyModernStyles()
@@ -182,56 +187,7 @@ namespace GymManager.Views
             }
         }
 
-        // =========================================================
-        // 🖥️ Modo TV
-        // =========================================================
-        private void btnModoTV_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (RutinaActual == null)
-                {
-                    MessageBox.Show("No hay una rutina cargada para mostrar en modo TV.",
-                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                if (dgvEjercicios.Rows.Count == 0)
-                {
-                    MessageBox.Show("No hay ejercicios para mostrar.",
-                                    "Sin datos", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                var detalles = new List<DetalleRutina>();
-                foreach (DataGridViewRow row in dgvEjercicios.Rows)
-                {
-                    if (row.Cells["colEjercicio"].Value == null) continue;
-                    detalles.Add(new DetalleRutina
-                    {
-                        EjercicioNombre = row.Cells["colEjercicio"].Value.ToString(),
-                        Series = Convert.ToInt32(row.Cells["colSeries"].Value ?? 0),
-                        Repeticiones = Convert.ToInt32(row.Cells["colRepeticiones"].Value ?? 0),
-                        Carga = row.Cells["colCarga"].Value?.ToString()
-                    });
-                }
-
-                FormTV pantallaTV = new FormTV(
-                    RutinaActual.NombreProfesor,
-                    RutinaActual.Nombre,
-                    RutinaActual.NombreGenero,
-                    detalles
-                );
-
-                pantallaTV.Text = $"Modo TV - {RutinaActual.NombreProfesor}";
-                pantallaTV.Show();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al iniciar Modo TV: {ex.Message}",
-                                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+       
         private void btnEditar_Click(object sender, EventArgs e)
         {
             
