@@ -28,7 +28,6 @@ namespace GymManager.Views
         private readonly Color ColorFondo = Color.FromArgb(245, 247, 250);
         private readonly Color ColorBorde = Color.FromArgb(224, 230, 237);
         private readonly Color ColorTexto = Color.FromArgb(52, 73, 94);
-
         public UcGestionUsuarios()
         {
             InitializeComponent();
@@ -37,6 +36,9 @@ namespace GymManager.Views
             ConfigurarComboBusqueda();
             ConfigurarPlaceholder();
             EstilizarBotones();
+
+            txtBuscar.KeyPress += new KeyPressEventHandler(txtBuscar_KeyPress);
+
             ActualizarPlaceholderBusqueda();
         }
 
@@ -558,7 +560,52 @@ namespace GymManager.Views
             if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
                 e.Handled = true;
         }
+        // ============================================================
+        // VALIDACIÓN DE BÚSQUEDA (KEYPRESS)
+        // ============================================================
+        private void txtBuscar_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Obtener el modo de búsqueda actual. El ComboBox de usuarios es cboBuscarPor.
+            string modo = cboBuscarPor.SelectedItem?.ToString() ?? "Nombre";
 
+            // Permitir siempre teclas de control (Backspace, Delete, etc.)
+            if (char.IsControl(e.KeyChar))
+            {
+                return;
+            }
+
+            switch (modo)
+            {
+                case "ID":
+                    // Restricción: Solo números (dígitos)
+                    if (!char.IsDigit(e.KeyChar))
+                    {
+                        e.Handled = true; // Ignorar el carácter presionado
+                    }
+                    break;
+
+                case "Nombre":
+                    // Restricción: Solo letras y espacios.
+                    // Los nombres y apellidos de usuarios no deberían contener números o símbolos.
+                    if (!char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+                    {
+                        e.Handled = true; // Ignorar el carácter presionado
+                    }
+                    break;
+
+                case "Rol":
+                    // Restricción: Solo letras y espacios (los roles son Administrador, Profesor, Recepcionista).
+                    if (!char.IsLetter(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+                    {
+                        e.Handled = true; // Ignorar el carácter presionado
+                    }
+                    break;
+
+                default:
+                    // Sin restricciones si el modo no está definido
+                    break;
+            }
+        }
         private void btnLimpiar_Click(object sender, EventArgs e)
         {
             DialogResult r = MessageBox.Show(

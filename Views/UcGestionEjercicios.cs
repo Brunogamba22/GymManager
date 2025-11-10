@@ -675,21 +675,39 @@ namespace GymManager.Views
 
         private void txtBuscar_KeyPress(object sender, KeyPressEventArgs e)
         {
-            string tipo = cmbTipoBusqueda.SelectedItem?.ToString() ?? "Todos";
+            // Obtener el modo de búsqueda actual. El ComboBox de ejercicios es cmbTipoBusqueda.
+            string modo = cmbTipoBusqueda.SelectedItem?.ToString() ?? "Todos";
 
-            if (tipo == "ID")
+            // Permitir siempre teclas de control (Backspace, Delete, etc.)
+            if (char.IsControl(e.KeyChar))
             {
-                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-                    e.Handled = true;
+                return;
             }
-            else if (tipo == "Nombre" || tipo == "Grupo Muscular")
+
+            switch (modo)
             {
-                if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar) && e.KeyChar != ' ')
-                    e.Handled = true;
-            }
-            else
-            {
-                e.Handled = false;
+                case "ID":
+                    // Restricción: Solo números (dígitos)
+                    if (!char.IsDigit(e.KeyChar))
+                    {
+                        e.Handled = true; // Ignorar el carácter presionado
+                    }
+                    break;
+
+                case "Nombre":
+                case "Grupo Muscular":
+                    // Restricción: Solo letras, números y espacios
+                    // Esto es necesario porque los nombres de ejercicios/grupos pueden contener números (Ej: Press Banca 45°)
+                    if (!char.IsLetterOrDigit(e.KeyChar) && !char.IsWhiteSpace(e.KeyChar))
+                    {
+                        e.Handled = true; // Ignorar el carácter presionado
+                    }
+                    break;
+
+                case "Todos":
+                default:
+                    // Sin restricciones, permite todo tipo de caracteres para búsquedas generales
+                    break;
             }
         }
 

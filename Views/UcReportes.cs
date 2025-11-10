@@ -71,44 +71,65 @@ namespace GymManager.Views
         }
 
         // ============================================================
-        // 🥧 GRÁFICO USUARIOS
+        // 🥧 GRÁFICO USUARIOS (ACTUALIZADO Y FUNCIONANDO)
         // ============================================================
         private void CargarGraficoUsuarios()
         {
- 
             var lista = controladorUsuarios.ObtenerTodos()
-                               .Where(u => u.Activo) // solo activos
-                               .ToList();
-
+                                           .Where(u => u.Activo) // solo activos
+                                           .ToList();
 
             int admins = lista.Count(u => u.Rol == Rol.Administrador);
             int profes = lista.Count(u => u.Rol == Rol.Profesor);
             int receps = lista.Count(u => u.Rol == Rol.Recepcionista);
 
+            // Colores modernos y contrastantes
+            Color colorAdmin = Color.FromArgb(75, 192, 192); // Teal/Cian
+            Color colorProfesor = Color.FromArgb(255, 159, 64); // Naranja
+            Color colorRecepcionista = Color.FromArgb(153, 102, 255); // Púrpura
+
             chartUsuarios.Series.Clear();
             var serie = new Series("Usuarios")
             {
-                ChartType = SeriesChartType.Pie,
+                ChartType = SeriesChartType.Doughnut, // 1. Estilo Doughnut
                 IsValueShownAsLabel = true,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                LabelForeColor = Color.Black
+
+                // 2. Propiedades que pueden ir en el inicializador:
+                LabelForeColor = Color.White, // Color blanco para contrastar
+                LegendText = "#VALX", // **CORREGIDO:** Propiedad de la leyenda
+
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                BorderColor = Color.White,
+                BorderWidth = 2
             };
 
+            serie.Label = "#VALY";
+
+            // Agregamos los puntos y asignamos los colores
             serie.Points.AddXY("Administradores", admins);
             serie.Points.AddXY("Profesores", profes);
             serie.Points.AddXY("Recepcionistas", receps);
 
-            serie.Points[0].Color = Color.FromArgb(54, 162, 235);
-            serie.Points[1].Color = Color.FromArgb(255, 206, 86);
-            serie.Points[2].Color = Color.FromArgb(255, 99, 132);
-            serie["PieDrawingStyle"] = "Concave";
-            serie["PieLabelStyle"] = "Outside";
-            serie.SmartLabelStyle.Enabled = true;
+            serie.Points[0].Color = colorAdmin;
+            serie.Points[1].Color = colorProfesor;
+            serie.Points[2].Color = colorRecepcionista;
+
+            // 4. Estilos visuales y posición de la etiqueta
+            serie["PieDrawingStyle"] = "SoftEdge";
+            serie["DoughnutRadius"] = "50";
+            serie["PieLabelStyle"] = "Inside"; // Posiciona el número dentro
+
             chartUsuarios.Series.Add(serie);
+
+            // 5. Estilo 3D sutil
+            chartUsuarios.ChartAreas[0].Area3DStyle.Enable3D = true;
+            chartUsuarios.ChartAreas[0].Area3DStyle.Perspective = 10;
+            chartUsuarios.ChartAreas[0].Area3DStyle.Rotation = 0;
+            chartUsuarios.ChartAreas[0].Area3DStyle.Inclination = 40;
         }
 
         // ============================================================
-        // 📊 GRÁFICO EJERCICIOS
+        // 📊 GRÁFICO EJERCICIOS (ACTUALIZADO)
         // ============================================================
         private void CargarGraficoEjercicios()
         {
@@ -125,21 +146,42 @@ namespace GymManager.Views
                 ChartType = SeriesChartType.Column,
                 IsValueShownAsLabel = true,
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                LabelForeColor = Color.Black
+                LabelForeColor = Color.Black,
+
+                // **MEJORA VISUAL 1: Ajuste de Borde y Apariencia**
+                BorderWidth = 1, // Borde delgado para definir la barra
+                BorderColor = Color.FromArgb(40, 100, 200), // Un azul oscuro para el borde
+                ShadowOffset = 0 // Quitamos sombras si las hubiera por defecto
             };
+
+            // **Color principal para las barras (Teal más oscuro)**
+            Color colorBarra = Color.FromArgb(75, 192, 192);
 
             foreach (var grupo in grupos)
             {
                 int idx = serie.Points.AddXY(grupo.Grupo, grupo.Cantidad);
-                serie.Points[idx].Color = Color.FromArgb(54, 162, 235);
+
+                // Asignamos el color moderno
+                serie.Points[idx].Color = colorBarra;
+
+                // Opcional: Se puede usar un color más suave para el fondo de la columna si se necesita contraste con la etiqueta
+                // serie.Points[idx].BackSecondaryColor = Color.FromArgb(75, 192, 192); 
             }
 
-            serie["PointWidth"] = "0.55";
+            // **MEJORA VISUAL 2: Ancho de la barra**
+            serie["PointWidth"] = "0.7"; // Aumentamos ligeramente el ancho para que se vean más robustas
             chartEjercicios.Series.Add(serie);
 
             var area = chartEjercicios.ChartAreas[0];
             area.AxisX.Interval = 1;
-            area.AxisX.LabelStyle.Angle = -30;
+
+            // **MEJORA VISUAL 3: Angulo de las etiquetas X**
+            // Si la lista de grupos es muy larga, -30 grados puede ser mucho. Probamos con -45 para mejor legibilidad.
+            area.AxisX.LabelStyle.Angle = -45;
+
+            // **MEJORA VISUAL 4: Ajuste del eje Y**
+            area.AxisY.Minimum = 0; // Aseguramos que la base sea 0 para evitar distorsión visual
+            area.AxisY.Interval = 2; // Mostrar las líneas de la cuadrícula cada 2 unidades para un eje más limpio
         }
 
         // ============================================================
