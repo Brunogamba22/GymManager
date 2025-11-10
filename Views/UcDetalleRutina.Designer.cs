@@ -21,12 +21,12 @@ namespace GymManager.Views
         private Button btnCerrar;
         private Button btnImprimir;
         private Button btnExportar;
-<<<<<<< HEAD
+
         private Button btnModoTV;
 
-=======
+
         private Button btnEditar;
->>>>>>> Jonathan
+
 
         private DataGridViewTextBoxColumn colEjercicio;
         private DataGridViewTextBoxColumn colSeries;
@@ -54,11 +54,11 @@ namespace GymManager.Views
             this.btnCerrar = new Button();
             this.btnImprimir = new Button();
             this.btnExportar = new Button();
-<<<<<<< HEAD
+
             this.btnModoTV = new Button(); // 🖥️ Nuevo botón
-=======
+
             this.btnEditar = new Button();
->>>>>>> Jonathan
+
 
             this.colEjercicio = new DataGridViewTextBoxColumn();
             this.colSeries = new DataGridViewTextBoxColumn();
@@ -150,7 +150,7 @@ namespace GymManager.Views
             StyleButton(btnExportar, primaryColor);
             this.btnExportar.Click += btnExportar_Click;
 
-<<<<<<< HEAD
+
             this.btnImprimir.Text = "🖨️ IMPRIMIR";
             this.btnImprimir.Size = new Size(btnW, btnH);
             StyleButton(btnImprimir, successColor);
@@ -217,19 +217,19 @@ namespace GymManager.Views
 
 
             // ARMADO FINAL
-=======
+
             // Botón Editar
             this.btnEditar.Text = "✏️ EDITAR";
             this.btnEditar.Size = new Size(120, 40);
 
             // Agregar controles a los paneles
->>>>>>> Jonathan
+
             this.headerPanel.Controls.Add(lblContador);
             this.headerPanel.Controls.Add(lblDetalles);
             this.headerPanel.Controls.Add(lblTitulo);
             this.contentPanel.Controls.Add(dgvEjercicios);
-<<<<<<< HEAD
-=======
+
+
 
             // Panel de botones
             var panelBotones = new Panel();
@@ -240,14 +240,14 @@ namespace GymManager.Views
             panelBotones.Controls.Add(btnCerrar);
             this.footerPanel.Controls.Add(panelBotones);
 
->>>>>>> Jonathan
+
             this.mainPanel.Controls.Add(contentPanel);
             this.mainPanel.Controls.Add(footerPanel);
             this.mainPanel.Controls.Add(headerPanel);
             this.Controls.Add(mainPanel);
 
-<<<<<<< HEAD
-=======
+
+
             // Eventos
             this.btnCerrar.Click += new System.EventHandler(btnCerrar_Click);
             this.btnImprimir.Click += new System.EventHandler(btnImprimir_Click);
@@ -277,7 +277,7 @@ namespace GymManager.Views
                 btnExportar.Location = new Point(btnImprimir.Left - btnExportar.Width - hPadding, vPadding);
             };
 
->>>>>>> Jonathan
+
             this.ResumeLayout(false);
         }
     }

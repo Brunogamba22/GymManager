@@ -188,10 +188,15 @@ namespace GymManager.Views
                 DateTime fechaDesde = dtpFechaDesde.Value.Date;
                 DateTime fechaHasta = dtpFechaHasta.Value.Date.AddDays(1).AddSeconds(-1);
 
-                int? idGenero = (int)cmbGenero.SelectedValue;
-                if (idGenero == 0) idGenero = null;
+                int? idGenero = null;
 
-                bool soloEditadas = chkSoloEditadas.Checked;
+                // ✅ Validación segura: el combo y el valor seleccionado no deben ser nulos
+                if (cmbGenero != null && cmbGenero.SelectedValue != null && int.TryParse(cmbGenero.SelectedValue.ToString(), out int valor))
+                {
+                    idGenero = (valor != 0) ? valor : (int?)null;
+                }
+
+                bool soloEditadas = chkSoloEditadas?.Checked ?? false;
 
                 rutinasGuardadas = _rutinaController.ObtenerTodasParaPlanilla(fechaDesde, fechaHasta, idGenero, soloEditadas);
                 ActualizarGrid();
@@ -202,6 +207,7 @@ namespace GymManager.Views
                     "Error de Base de Datos", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private void BtnFiltrar_Click(object sender, EventArgs e)
         {
@@ -235,30 +241,27 @@ namespace GymManager.Views
             }
 
             dgvPlanillas.SelectionChanged += DgvPlanillas_SelectionChanged;
-<<<<<<< HEAD
-            if (dgvPlanillas.Rows.Count > 0)
-                dgvPlanillas.ClearSelection();
-=======
+
             // 🔥 Evitar selección automática de la primera fila
             dgvPlanillas.ClearSelection();
 
             // 🔥 Refrescar manualmente para asegurar consistencia visual
             dgvPlanillas.CurrentCell = null;
             dgvPlanillas.Refresh();
->>>>>>> Jonathan
+
         }
 
         private void DgvPlanillas_SelectionChanged(object sender, EventArgs e)
         {
-<<<<<<< HEAD
+
             if (dgvPlanillas.SelectedRows.Count > 0 && dgvPlanillas.SelectedRows[0].Index >= 0)
             {
                 int selectedIndex = dgvPlanillas.SelectedRows[0].Index;
-=======
-           
-            // Este evento solo mantiene sincronizada la selección
-            // pero ya no abre los detalles directamente
 
+                // Este evento solo mantiene sincronizada la selección
+                // pero ya no abre los detalles directamente
+
+            }
         }
 
         private void DgvPlanillas_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -267,7 +270,7 @@ namespace GymManager.Views
             {
                 int selectedIndex = e.RowIndex;
 
->>>>>>> Jonathan
+
                 if (selectedIndex < rutinasGuardadas.Count)
                 {
                     var rutinaSeleccionada = rutinasGuardadas[selectedIndex];
@@ -276,13 +279,9 @@ namespace GymManager.Views
             }
         }
 
-<<<<<<< HEAD
-        // =========================================================
-        // 📄 MOSTRAR DETALLE DE RUTINA
-        // =========================================================
-=======
 
->>>>>>> Jonathan
+
+
         private void MostrarDetalleRutina(Rutina rutinaHeader)
         {
             try
@@ -333,13 +332,13 @@ namespace GymManager.Views
 
             mainPanel.Visible = true;
             mainPanel.BringToFront();
-<<<<<<< HEAD
-            ReajustarLayout();
-=======
 
-            ReajustarLayout(); // ✅ corrige el layout y elimina la franja gris
+            ReajustarLayout();
+
+
+             // ✅ corrige el layout y elimina la franja gris
             dgvPlanillas.ClearSelection();
->>>>>>> Jonathan
+
         }
 
         private void ReajustarLayout()

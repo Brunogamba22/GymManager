@@ -88,12 +88,12 @@ namespace GymManager.Views
                 FechaCreacion = fecha
             };
 
-<<<<<<< HEAD
-=======
+
+
             _detallesActuales = ejercicios;
 
             // 🔹 Título principal
->>>>>>> Jonathan
+
             lblTitulo.Text = nombreRutina;
             lblDetalles.Text = $"🏷️ {tipoRutina.ToUpper()} | 👤 {profesor} | 📅 {fecha:dd/MM/yyyy HH:mm}";
             lblContador.Text = $"📊 Total de ejercicios: {ejercicios.Count}";
@@ -182,7 +182,6 @@ namespace GymManager.Views
             }
         }
 
-<<<<<<< HEAD
         // =========================================================
         // 🖥️ Modo TV
         // =========================================================
@@ -231,7 +230,8 @@ namespace GymManager.Views
             {
                 MessageBox.Show($"Error al iniciar Modo TV: {ex.Message}",
                                 "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-=======
+            }
+        }
         private void btnEditar_Click(object sender, EventArgs e)
         {
             
@@ -270,7 +270,7 @@ namespace GymManager.Views
             else
             {
                 MessageBox.Show("Error fatal: No se pudo encontrar el formulario principal...", "Error");
->>>>>>> Jonathan
+
             }
         }
     }
