@@ -76,8 +76,8 @@ namespace GymManager.Views
                 "Hipertrofia",
                 "Fuerza",
                 "Resistencia",
-                "Carga Ascendente (Fuerza)",
-                "Carga Invertida (Hipertrofia)"
+                //"Carga Ascendente (Fuerza)",
+                //"Carga Invertida (Hipertrofia)"
             };
 
             if (cmbObjetivoHombres != null) { cmbObjetivoHombres.Items.AddRange(objetivos); cmbObjetivoHombres.SelectedIndex = 0; }
