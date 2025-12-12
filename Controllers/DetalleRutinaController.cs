@@ -29,9 +29,12 @@ namespace GymManager.Controllers
                             e.nombre AS EjercicioNombre,
                             dr.series AS Series,
                             dr.repeticiones AS Repeticiones,
-                            dr.carga AS Carga
+                            dr.carga AS Carga,
+                            e.imagen AS Imagen,                    
+                            gm.nombre AS GrupoMuscularNombre
                         FROM DetalleRutina dr
                         INNER JOIN Ejercicios e ON dr.id_ejercicio = e.id_ejercicio
+                        INNER JOIN Grupo_Muscular gm ON e.id_grupo_muscular = gm.id_grupo_muscular
                         WHERE dr.id_rutina = @IdRutina;";
 
                     using (var cmd = new SqlCommand(query, conn))
@@ -50,7 +53,9 @@ namespace GymManager.Controllers
                                     EjercicioNombre = reader.GetString(reader.GetOrdinal("EjercicioNombre")),
                                     Series = reader.GetInt32(reader.GetOrdinal("Series")),
                                     Repeticiones = reader.GetInt32(reader.GetOrdinal("Repeticiones")),
-                                    Carga = reader.IsDBNull(reader.GetOrdinal("Carga")) ? "" : reader.GetString(reader.GetOrdinal("Carga"))
+                                    Carga = reader.IsDBNull(reader.GetOrdinal("Carga")) ? "" : reader.GetString(reader.GetOrdinal("Carga")),
+                                    Imagen = reader.IsDBNull(reader.GetOrdinal("Imagen")) ? "" : reader.GetString(reader.GetOrdinal("Imagen")),
+                                    GrupoMuscular = reader.IsDBNull(reader.GetOrdinal("GrupoMuscularNombre")) ? "" : reader.GetString(reader.GetOrdinal("GrupoMuscularNombre"))
                                 };
                                 detalles.Add(detalle);
                             }

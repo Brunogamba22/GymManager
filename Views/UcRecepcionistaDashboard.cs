@@ -3,13 +3,14 @@ using GymManager.Models;
 using GymManager.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Globalization;
 
 
 namespace GymManager.Views
@@ -1043,6 +1044,10 @@ namespace GymManager.Views
         private int baseRowHeight = 58;       // Altura de filas
         private int baseHeaderHeight = 56;    // Altura encabezado
 
+        private FlowLayoutPanel flpGifs;
+        private SplitContainer splitContainer;
+        private List<DetalleRutina> detallesActuales;  // Para almacenar los detalles
+
         // 📋 Variables de clase
         private string generoRutina;
         private Label lblTituloTV;
@@ -1055,6 +1060,9 @@ namespace GymManager.Views
         // =====================================================================
         public FormTV(string nombreProfesor, string nombreRutina, string genero, List<DetalleRutina> detalles)
         {
+            // 🔥 INICIALIZAR detallesActuales
+            this.detallesActuales = detalles;
+
             this.generoRutina = genero ?? string.Empty;
             InitializeForm();
 
@@ -1079,7 +1087,7 @@ namespace GymManager.Views
         // =====================================================================
         private void InitializeForm()
         {
-            // Configuración base de ventana
+            // Configuración base de ventana (sin cambios)
             this.BackColor = tvBackColor;
             this.WindowState = FormWindowState.Maximized;
             this.FormBorderStyle = FormBorderStyle.Sizable;
@@ -1087,21 +1095,21 @@ namespace GymManager.Views
             this.KeyPreview = true;
             this.KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) this.Close(); };
 
-            // Layout general reducido en padding superior
+            // Layout principal (sin cambios)
             tlpMain = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(20, 10, 20, 20), // ⬅️ menos espacio arriba
+                Padding = new Padding(20, 10, 20, 20),
                 BackColor = tvBackColor,
                 RowCount = 3,
                 ColumnCount = 1
             };
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // fila 1: título
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));     // fila 2: subtítulo
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // fila 3: grilla
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             this.Controls.Add(tlpMain);
 
-            // Título principal reducido
+            // Título y subtítulo (sin cambios)
             lblTituloTV = new Label
             {
                 Dock = DockStyle.Top,
@@ -1109,12 +1117,11 @@ namespace GymManager.Views
                 ForeColor = tvTitleColor,
                 Text = "RUTINA DEL PROFESOR",
                 TextAlign = ContentAlignment.MiddleCenter,
-                Height = 90,                      // ⬅️ antes 130
+                Height = 90,
                 Padding = new Padding(0, 6, 0, 4),
             };
             tlpMain.Controls.Add(lblTituloTV, 0, 0);
 
-            // Subtítulo (género)
             lblGenero = new Label
             {
                 Dock = DockStyle.Top,
@@ -1122,16 +1129,480 @@ namespace GymManager.Views
                 ForeColor = Color.FromArgb(220, 225, 230),
                 Text = "",
                 TextAlign = ContentAlignment.MiddleCenter,
-                Height = 30,                      // ⬅️ antes 40
+                Height = 30,
                 Padding = new Padding(0, 0, 0, 4),
                 Visible = false
             };
             tlpMain.Controls.Add(lblGenero, 0, 1);
 
-            // Grilla principal
+            // ============ CREAR SPLIT CONTAINER ============
+            splitContainer = new SplitContainer
+            {
+                Dock = DockStyle.Fill,
+                Orientation = Orientation.Horizontal,
+                SplitterDistance = 250,  // Altura del DataGridView
+                Panel1 = { BackColor = tvBackColor },
+                Panel2 = { BackColor = Color.Black }
+            };
+
+            // Panel superior: DataGridView (60% altura)
             dgvRutina = CrearGrillaTV();
-            dgvRutina.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            tlpMain.Controls.Add(dgvRutina, 0, 2);
+            dgvRutina.Dock = DockStyle.Fill;
+            splitContainer.Panel1.Controls.Add(dgvRutina);
+
+            // ============ PANEL INFERIOR: GRID DE GIFs ============
+            var pnlGifs = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black,
+                AutoScroll = true
+            };
+
+            // FlowLayoutPanel para organizar los GIFs en cuadrícula
+            flpGifs = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black,
+                AutoScroll = true,
+                WrapContents = true,
+                FlowDirection = FlowDirection.LeftToRight
+            };
+
+            pnlGifs.Controls.Add(flpGifs);
+            splitContainer.Panel2.Controls.Add(pnlGifs);
+
+            // Agregar SplitContainer al layout principal
+            tlpMain.Controls.Add(splitContainer, 0, 2);
+
+            // Evento para cuando se selecciona una fila (opcional, ya que mostramos todos)
+            dgvRutina.SelectionChanged += DgvRutina_SelectionChanged;
+        }
+
+        private void DgvRutina_SelectionChanged(object sender, EventArgs e)
+        {
+            // Opcional: Puedes destacar el ejercicio seleccionado en el grid de GIFs
+            if (dgvRutina.SelectedRows.Count == 0 || detallesActuales == null || detallesActuales.Count == 0)
+                return;
+
+            int index = dgvRutina.SelectedRows[0].Index;
+            if (index >= 0 && index < detallesActuales.Count)
+            {
+                // Puedes agregar lógica para destacar el GIF seleccionado
+                // Por ejemplo, cambiar el borde o color de fondo del panel correspondiente
+            }
+        }
+
+        // =====================================================================
+        // MÉTODO: CargarTodosLosGifs
+        // =====================================================================
+        private void CargarTodosLosGifs(List<DetalleRutina> detalles)
+        {
+            flpGifs.Controls.Clear();
+
+            if (detalles == null || detalles.Count == 0)
+                return;
+
+            // Lista para evitar GIFs duplicados
+            List<string> gifsUsados = new List<string>();
+
+            foreach (var detalle in detalles)
+            {
+                // Crear contenedor para cada ejercicio
+                var pnlEjercicio = new Panel
+                {
+                    Width = 250,
+                    Height = 200,
+                    Margin = new Padding(10),
+                    BackColor = Color.FromArgb(40, 40, 40),
+                    BorderStyle = BorderStyle.FixedSingle
+                };
+
+                // PictureBox para el GIF
+                var picGif = new PictureBox
+                {
+                    Width = 200,
+                    Height = 120,
+                    Location = new Point(25, 10),
+                    SizeMode = PictureBoxSizeMode.Zoom,
+                    BackColor = Color.Black
+                };
+
+                // Label para el nombre (más corto si es muy largo)
+                string nombreMostrar = detalle.EjercicioNombre;
+                if (nombreMostrar.Length > 25)
+                    nombreMostrar = nombreMostrar.Substring(0, 22) + "...";
+
+                var lblNombre = new Label
+                {
+                    Text = nombreMostrar,
+                    Width = 220,
+                    Height = 40,
+                    Location = new Point(15, 140),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = Color.Transparent
+                };
+
+                // Buscar GIF
+                string gifPath = BuscarGif(detalle.Imagen, detalle.GrupoMuscular);
+
+                if (!string.IsNullOrEmpty(gifPath) && File.Exists(gifPath))
+                {
+                    // Verificar si este GIF ya fue usado
+                    if (gifsUsados.Contains(gifPath))
+                    {
+                        // Si ya fue usado, buscar uno diferente
+                        string nuevoGifPath = BuscarGifAlternativo(detalle.Imagen, detalle.GrupoMuscular, gifsUsados);
+                        if (!string.IsNullOrEmpty(nuevoGifPath))
+                        {
+                            gifPath = nuevoGifPath;
+                        }
+                    }
+
+                    try
+                    {
+                        picGif.Image = Image.FromFile(gifPath);
+                        gifsUsados.Add(gifPath); // Marcar como usado
+                    }
+                    catch
+                    {
+                        MostrarMensajeError(picGif, "Error GIF");
+                    }
+                }
+                else
+                {
+                    MostrarMensajeError(picGif, "Sin GIF");
+                }
+
+                pnlEjercicio.Controls.Add(picGif);
+                pnlEjercicio.Controls.Add(lblNombre);
+                flpGifs.Controls.Add(pnlEjercicio);
+            }
+        }
+
+        // Método auxiliar para buscar GIF alternativo
+        private string BuscarGifAlternativo(string nombreArchivo, string grupoMuscular, List<string> gifsUsados)
+        {
+            // Similar a BuscarGif pero evitando los ya usados
+            string appPath = Application.StartupPath;
+            string rutaBaseGifs = Path.Combine(appPath, "Resources", "Ejercicios");
+
+            string carpetaGrupo = "Biceps"; // Por defecto para ejercicios de curl
+            if (!string.IsNullOrEmpty(grupoMuscular))
+            {
+                // Mapeo simple
+                if (grupoMuscular.ToLower().Contains("bíceps") || grupoMuscular.ToLower().Contains("biceps"))
+                    carpetaGrupo = "Biceps";
+                else if (grupoMuscular.ToLower().Contains("pecho"))
+                    carpetaGrupo = "Pecho";
+                // ... agregar más grupos según necesites
+            }
+
+            string rutaCarpeta = Path.Combine(rutaBaseGifs, carpetaGrupo);
+
+            if (Directory.Exists(rutaCarpeta))
+            {
+                string[] todosGifs = Directory.GetFiles(rutaCarpeta, "*.gif");
+
+                // Buscar un GIF no usado
+                foreach (string gif in todosGifs)
+                {
+                    if (!gifsUsados.Contains(gif))
+                        return gif;
+                }
+            }
+
+            return null;
+        }
+
+        private void MostrarMensajeError(PictureBox picGif, string mensaje)
+        {
+            var lblMensaje = new Label
+            {
+                Text = mensaje,
+                ForeColor = Color.Gray,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 9)
+            };
+            picGif.Controls.Add(lblMensaje);
+        }
+
+        // =====================================================================
+        // MÉTODO: CargarRutina
+        // =====================================================================
+        private void CargarRutina(List<DetalleRutina> detalles, string nombreRutina)
+        {
+            dgvRutina.Rows.Clear();
+            detallesActuales = detalles;
+
+            if (detalles == null || detalles.Count == 0)
+            {
+                dgvRutina.Rows.Add("Sin ejercicios disponibles", "", "", "");
+                return;
+            }
+
+            foreach (var d in detalles)
+            {
+                dgvRutina.Rows.Add(
+                    d.EjercicioNombre,
+                    d.Series,
+                    d.Repeticiones,
+                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga
+                );
+            }
+
+            dgvRutina.AutoResizeColumns();
+
+            // 🔥 Cargar TODOS los GIFs
+            CargarTodosLosGifs(detalles);
+        }
+
+        // =====================================================================
+        // MÉTODO: Buscar archivo GIF
+        // =====================================================================
+        private string BuscarGif(string nombreArchivo, string grupoMuscular)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(nombreArchivo))
+                {
+                    Debug.WriteLine($"❌ nombreArchivo está vacío");
+                    return null;
+                }
+
+                string nombreBuscar = Path.GetFileNameWithoutExtension(nombreArchivo).ToLower();
+                Debug.WriteLine($"\n🔍 BUSCANDO GIF: '{nombreBuscar}' en grupo: '{grupoMuscular}'");
+
+                string appPath = Application.StartupPath;
+                string rutaBaseGifs = Path.Combine(appPath, "Resources", "Ejercicios");
+
+                if (!Directory.Exists(rutaBaseGifs))
+                {
+                    Debug.WriteLine($"❌ Carpeta base no existe: {rutaBaseGifs}");
+                    return null;
+                }
+
+                // 1. Primero buscar en carpeta específica del grupo muscular
+                string carpetaGrupo = "";
+                if (!string.IsNullOrEmpty(grupoMuscular))
+                {
+                    string grupoLower = grupoMuscular.ToLower();
+
+                    // Mapeo manual de grupos a carpetas (más preciso)
+                    if (grupoLower.Contains("bíceps") || grupoLower.Contains("biceps"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Biceps");
+                    else if (grupoLower.Contains("pecho"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Pecho");
+                    else if (grupoLower.Contains("hombro"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Hombros");
+                    else if (grupoLower.Contains("tríceps") || grupoLower.Contains("triceps"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Triceps");
+                    else if (grupoLower.Contains("abdominal"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Abdominales");
+                    else if (grupoLower.Contains("pierna") || grupoLower.Contains("piema"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Piemas");
+                    else if (grupoLower.Contains("espalda"))
+                        carpetaGrupo = Path.Combine(rutaBaseGifs, "Espalda");
+                    else
+                    {
+                        // Buscar carpeta por coincidencia
+                        string[] carpetas = Directory.GetDirectories(rutaBaseGifs);
+                        foreach (string carpeta in carpetas)
+                        {
+                            string nombreCarpeta = Path.GetFileName(carpeta).ToLower();
+                            if (grupoLower.Contains(nombreCarpeta) || nombreCarpeta.Contains(grupoLower))
+                            {
+                                carpetaGrupo = carpeta;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Si no se encontró carpeta específica, buscar en todas
+                if (string.IsNullOrEmpty(carpetaGrupo))
+                {
+                    carpetaGrupo = rutaBaseGifs;
+                    Debug.WriteLine($"📂 Buscando en TODAS las carpetas");
+                }
+                else
+                {
+                    Debug.WriteLine($"📂 Buscando en carpeta: {Path.GetFileName(carpetaGrupo)}");
+                }
+
+                // 2. Buscar archivo GIF con coincidencia EXACTA primero
+                string[] todosGifs = Directory.GetFiles(carpetaGrupo, "*.gif", SearchOption.AllDirectories);
+                Debug.WriteLine($"🎯 Encontrados {todosGifs.Length} GIFs");
+
+                if (todosGifs.Length == 0)
+                {
+                    Debug.WriteLine($"❌ No hay GIFs en {carpetaGrupo}");
+                    return null;
+                }
+
+                // Lista de GIFs ya usados para evitar repeticiones
+                List<string> gifsUsados = new List<string>();
+
+                // ESTRATEGIA 1: Buscar coincidencia EXACTA (ignorando guiones y espacios)
+                foreach (string gifPath in todosGifs)
+                {
+                    string nombreGif = Path.GetFileNameWithoutExtension(gifPath).ToLower();
+
+                    // Normalizar nombres (quitar guiones, espacios, acentos)
+                    string nombreBuscarNormalizado = NormalizarNombre(nombreBuscar);
+                    string nombreGifNormalizado = NormalizarNombre(nombreGif);
+
+                    Debug.WriteLine($"   🔎 Comparando: '{nombreBuscarNormalizado}' vs '{nombreGifNormalizado}'");
+
+                    // Coincidencia exacta normalizada
+                    if (nombreBuscarNormalizado == nombreGifNormalizado && !gifsUsados.Contains(gifPath))
+                    {
+                        Debug.WriteLine($"   ✅ COINCIDENCIA EXACTA: {Path.GetFileName(gifPath)}");
+                        gifsUsados.Add(gifPath);
+                        return gifPath;
+                    }
+
+                    // Coincidencia parcial fuerte (80% del nombre)
+                    if (CoincidenciaParcialFuerte(nombreBuscarNormalizado, nombreGifNormalizado) && !gifsUsados.Contains(gifPath))
+                    {
+                        Debug.WriteLine($"   ✅ COINCIDENCIA FUERTE: {Path.GetFileName(gifPath)}");
+                        gifsUsados.Add(gifPath);
+                        return gifPath;
+                    }
+                }
+
+                // ESTRATEGIA 2: Buscar por PALABRAS CLAVE principales
+                foreach (string gifPath in todosGifs)
+                {
+                    if (gifsUsados.Contains(gifPath)) continue;
+
+                    string nombreGif = Path.GetFileNameWithoutExtension(gifPath).ToLower();
+                    string nombreGifNormalizado = NormalizarNombre(nombreGif);
+
+                    // Extraer palabras clave del ejercicio buscado
+                    string[] palabrasClave = ExtraerPalabrasClave(nombreBuscar);
+
+                    int coincidencias = 0;
+                    foreach (string palabra in palabrasClave)
+                    {
+                        if (nombreGifNormalizado.Contains(palabra))
+                        {
+                            coincidencias++;
+                            Debug.WriteLine($"   ✓ Palabra coincidente: '{palabra}'");
+                        }
+                    }
+
+                    // Si al menos 2 palabras clave coinciden (o 1 si es palabra clave fuerte)
+                    if (coincidencias >= 2 || (coincidencias == 1 && EsPalabraClaveFuerte(palabrasClave[0])))
+                    {
+                        Debug.WriteLine($"   ✅ {coincidencias} palabras coincidentes: {Path.GetFileName(gifPath)}");
+                        gifsUsados.Add(gifPath);
+                        return gifPath;
+                    }
+                }
+
+                // ESTRATEGIA 3: Buscar cualquier GIF no usado del mismo grupo
+                foreach (string gifPath in todosGifs)
+                {
+                    if (!gifsUsados.Contains(gifPath))
+                    {
+                        Debug.WriteLine($"   ⚠️ Usando GIF disponible: {Path.GetFileName(gifPath)}");
+                        gifsUsados.Add(gifPath);
+                        return gifPath;
+                    }
+                }
+
+                // Si no hay GIFs disponibles, usar el primero
+                Debug.WriteLine($"   ⚠️ Todos los GIFs usados, usando el primero");
+                return todosGifs[0];
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"💥 ERROR en BuscarGif: {ex.Message}");
+                return null;
+            }
+        }
+
+        // =====================================================================
+        // MÉTODOS AUXILIARES PARA MEJORAR LA BÚSQUEDA
+        // =====================================================================
+
+        private string NormalizarNombre(string nombre)
+        {
+            if (string.IsNullOrEmpty(nombre)) return "";
+
+            // Quitar acentos, guiones, espacios y convertir a minúsculas
+            string normalizado = nombre.ToLower()
+                .Replace("_", "")
+                .Replace(" ", "")
+                .Replace("-", "")
+                .Replace("á", "a").Replace("é", "e").Replace("í", "i")
+                .Replace("ó", "o").Replace("ú", "u").Replace("ñ", "n");
+
+            // Quitar palabras comunes
+            normalizado = normalizado
+                .Replace("de", "")
+                .Replace("con", "")
+                .Replace("la", "")
+                .Replace("las", "")
+                .Replace("los", "")
+                .Replace("el", "")
+                .Replace("un", "")
+                .Replace("una", "")
+                .Replace("y", "")
+                .Replace("en", "");
+
+            return normalizado;
+        }
+
+        private bool CoincidenciaParcialFuerte(string nombre1, string nombre2)
+        {
+            // Si un nombre contiene al otro (o viceversa) en más del 80%
+            if (nombre1.Contains(nombre2) && nombre2.Length >= nombre1.Length * 0.8)
+                return true;
+
+            if (nombre2.Contains(nombre1) && nombre1.Length >= nombre2.Length * 0.8)
+                return true;
+
+            return false;
+        }
+
+        private string[] ExtraerPalabrasClave(string nombreEjercicio)
+        {
+            // Dividir en palabras y filtrar las importantes
+            string[] separadores = new string[] { "_", " ", "de", "con", "la", "los", "las", "en", "y", "del" };
+            string[] palabras = nombreEjercicio.Split(separadores, StringSplitOptions.RemoveEmptyEntries);
+
+            // Filtrar palabras cortas no significativas
+            var palabrasClave = new List<string>();
+            foreach (string palabra in palabras)
+            {
+                if (palabra.Length > 3 && !EsPalabraComun(palabra))
+                {
+                    palabrasClave.Add(NormalizarNombre(palabra));
+                }
+            }
+
+            return palabrasClave.ToArray();
+        }
+
+        private bool EsPalabraComun(string palabra)
+        {
+            string[] palabrasComunes = { "brazo", "brazos", "pierna", "piernas", "cuerpo", "cable", "barra",
+                                  "mancuerna", "mancuernas", "polea", "poleas", "maquina", "máquina" };
+
+            return palabrasComunes.Contains(palabra.ToLower());
+        }
+
+        private bool EsPalabraClaveFuerte(string palabra)
+        {
+            // Palabras clave que son muy específicas
+            string[] palabrasFuertes = { "curl", "press", "sentadilla", "remo", "prensa", "extension",
+                                  "flexion", "elevacion", "abduccion", "aduccion", "crunch" };
+
+            return palabrasFuertes.Contains(palabra.ToLower());
         }
 
         // =====================================================================
@@ -1213,11 +1684,14 @@ namespace GymManager.Views
             dgvRutina.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", baseHeaderSize * factor, FontStyle.Bold);
             dgvRutina.DefaultCellStyle.Font = new Font("Segoe UI", baseGridSize * factor, FontStyle.Regular);
 
-            // Ajusta alturas (más comprimido)
+            // Ajusta alturas
             dgvRutina.ColumnHeadersHeight = (int)Math.Round(baseHeaderHeight * factor);
             dgvRutina.RowTemplate.Height = (int)Math.Round(baseRowHeight * factor);
 
-            // Reduce espacio superior para aprovechar más altura visible
+            // Ajustar altura del SplitContainer (60% tabla, 40% GIFs)
+            int totalHeight = tlpMain.Height - lblTituloTV.Height - lblGenero.Height - 40;
+            splitContainer.SplitterDistance = (int)(totalHeight * 0.6);
+
             lblTituloTV.Height = (int)Math.Round(80 * factor);
             lblGenero.Height = (int)Math.Round(28 * factor);
 
@@ -1226,54 +1700,7 @@ namespace GymManager.Views
 
             dgvRutina.AutoResizeColumns();
         }
-
-        // =====================================================================
-        // 📋 CargarRutina
-        // =====================================================================
-        private void CargarRutina(List<DetalleRutina> detalles, string nombreRutina)
-        {
-            dgvRutina.Rows.Clear();
-
-            if (detalles == null || detalles.Count == 0)
-            {
-                dgvRutina.Rows.Add("Sin ejercicios disponibles", "", "", "");
-                return;
-            }
-
-            foreach (var d in detalles)
-            {
-                dgvRutina.Rows.Add(
-                    d.EjercicioNombre,
-                    d.Series,
-                    d.Repeticiones,
-                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga
-                );
-            }
-
-            dgvRutina.AutoResizeColumns();
-        }
-
-        // =====================================================================
-        // 🧠 DetectarCarpetaMuscular (sin uso actual)
-        // =====================================================================
-        private string DetectarCarpetaMuscular(string nombreEjercicio)
-        {
-            nombreEjercicio = nombreEjercicio.ToLower();
-            if (nombreEjercicio.Contains("pecho")) return "Pecho";
-            if (nombreEjercicio.Contains("espalda")) return "Espalda";
-            if (nombreEjercicio.Contains("hombro") || nombreEjercicio.Contains("deltoide")) return "Hombros";
-            if (nombreEjercicio.Contains("bicep")) return "Biceps";
-            if (nombreEjercicio.Contains("tricep")) return "Triceps";
-            if (nombreEjercicio.Contains("pierna") || nombreEjercicio.Contains("cuadricep")) return "Piernas";
-            if (nombreEjercicio.Contains("gluteo")) return "Gluteos";
-            if (nombreEjercicio.Contains("abdominal")) return "Abdominales";
-            if (nombreEjercicio.Contains("pantorrilla")) return "Pantorrillas";
-            if (nombreEjercicio.Contains("trapecio")) return "Trapecio";
-            if (nombreEjercicio.Contains("cardio")) return "Cardio";
-            return null;
-        }
     }
-
 
 }
 

@@ -17,6 +17,10 @@ namespace GymManager.Models
         //public int Descanso { get; set; } // en segundos
         // AGREGA ESTA PROPIEDAD:
         public string EjercicioNombre { get; set; } = "";
+
+        // AGREGAR ESTAS DOS PROPIEDADES NUEVAS:
+        public string Imagen { get; set; } = "";          // Nombre del archivo GIF
+        public string GrupoMuscular { get; set; } = "";   // Para buscar en subcarpetas
     }
 
 }
