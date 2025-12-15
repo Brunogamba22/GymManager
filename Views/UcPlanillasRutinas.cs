@@ -41,7 +41,7 @@ namespace GymManager.Views
             // Eventos
             btnFiltrar.Click += BtnFiltrar_Click;
             btnLimpiarFiltros.Click += BtnLimpiarFiltros_Click;
-            btnExportar.Click += btnExportar_Click;
+           //btnExportar.Click += btnExportar_Click;
 
             
         }

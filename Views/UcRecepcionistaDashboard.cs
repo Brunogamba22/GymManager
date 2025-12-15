@@ -1067,218 +1067,238 @@ public class FormTV : Form
         // =====================================================================
         public FormTV(string nombreProfesor, string nombreRutina, string genero, List<DetalleRutina> detalles)
         {
+            // Guarda la lista de ejercicios en una variable de clase
             this.detallesActuales = detalles;
+
+            // Guarda el género (si es null, usa string vacío)
             this.generoRutina = genero ?? string.Empty;
 
+            // Llama al método que crea todos los controles visuales
             InitializeForm();
 
+            // Establece el título de la ventana
             this.Text = $"Modo TV - {nombreProfesor}";
+
+            // Muestra el nombre del profesor en el título principal
             lblTituloTV.Text = $"RUTINA DEL PROFESOR: {nombreProfesor.ToUpper()}";
 
+            // Obtiene la etiqueta formateada del género (ej: "PARA: HOMBRES")
             var etiqueta = EtiquetaGenero(this.generoRutina);
+
+            // Asigna el texto y muestra/oculta el label según si hay género
             lblGenero.Text = etiqueta ?? "";
             lblGenero.Visible = etiqueta != null;
 
+            // Carga los ejercicios en la tabla (DataGridView)
             CargarRutina(detalles, nombreRutina);
+
+            // Inicia el carrusel automático de GIFs
             IniciarCarrusel(detalles);
+
+            // Aplica el escalado inicial de los controles
             ApplyResponsiveScale();
 
-            // Eventos para manejo seguro del redimensionamiento
+            // Configura el evento que se dispara cuando se cambia el tamaño de la ventana
             this.Resize += (s, e) =>
             {
+                // Solo re-escala si la ventana no está minimizada
                 if (this.WindowState != FormWindowState.Minimized)
-                    ApplyResponsiveScaleSafe();
+                    ApplyResponsiveScaleSafe(); // Versión segura del escalado
             };
         }
-
+        // Constructor alternativo que llama al principal con género = null
         public FormTV(string nombreProfesor, string nombreRutina, List<DetalleRutina> detalles)
             : this(nombreProfesor, nombreRutina, null, detalles) { }
 
-        // =====================================================================
-        // ⚙️ MÉTODO: InitializeForm
-        // =====================================================================
+        // Método que inicializa todos los controles visuales del formulario
         private void InitializeForm()
         {
             // Configuración base de ventana
-            this.BackColor = tvBackColor;
-            this.WindowState = FormWindowState.Maximized;
-            this.FormBorderStyle = FormBorderStyle.Sizable;
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.KeyPreview = true;
+            this.BackColor = tvBackColor; // Fondo oscuro
+            this.WindowState = FormWindowState.Maximized; // Abre en pantalla completa
+            this.FormBorderStyle = FormBorderStyle.Sizable; // Permite redimensionar
+            this.StartPosition = FormStartPosition.CenterScreen; // Centra en pantalla
+            this.KeyPreview = true; // Captura eventos de teclado primero
+
+            // Configura atajos de teclado
             this.KeyDown += (s, e) =>
             {
-                if (e.KeyCode == Keys.Escape) this.Close();
-                if (e.KeyCode == Keys.Space) PausarReanudarCarrusel();
-                if (e.KeyCode == Keys.Right) MostrarSiguienteGif();
-                if (e.KeyCode == Keys.Left) MostrarGifAnterior();
+                if (e.KeyCode == Keys.Escape) this.Close(); // ESC: Cierra ventana
+                if (e.KeyCode == Keys.Space) PausarReanudarCarrusel(); // Espacio: Pausa/Reanuda
+                if (e.KeyCode == Keys.Right) MostrarSiguienteGif(); // Flecha derecha: Siguiente GIF
+                if (e.KeyCode == Keys.Left) MostrarGifAnterior(); // Flecha izquierda: GIF anterior
             };
 
-            // Layout principal
+            // Layout principal - TableLayoutPanel organiza los controles
             tlpMain = new TableLayoutPanel
             {
-                Dock = DockStyle.Fill,
-                Padding = new Padding(20, 10, 20, 20),
-                BackColor = tvBackColor,
-                RowCount = 3,
-                ColumnCount = 1
+                Dock = DockStyle.Fill, // Ocupa toda la ventana
+                Padding = new Padding(20, 10, 20, 20), // Margen interno
+                BackColor = tvBackColor, // Fondo oscuro
+                RowCount = 3, // 3 filas: título, género, contenido
+                ColumnCount = 1 // 1 sola columna
             };
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            this.Controls.Add(tlpMain);
 
-            // Título y subtítulo
+            // Configura las filas: primeras dos auto-ajustables, tercera ocupa resto
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Fila 1: Título
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // Fila 2: Género
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Fila 3: Contenido (100% restante)
+            this.Controls.Add(tlpMain); // Agrega el layout al formulario
+
+            // Título principal de la rutina
             lblTituloTV = new Label
             {
-                Dock = DockStyle.Top,
-                AutoSize = false,
-                ForeColor = tvTitleColor,
-                Text = "RUTINA DEL PROFESOR",
-                TextAlign = ContentAlignment.MiddleCenter,
-                Height = 90,
-                Padding = new Padding(0, 6, 0, 4),
+                Dock = DockStyle.Top, // Se coloca en la parte superior
+                AutoSize = false, // Tamaño fijo (no auto-ajustable)
+                ForeColor = tvTitleColor, // Color amarillo
+                Text = "RUTINA DEL PROFESOR", // Texto inicial
+                TextAlign = ContentAlignment.MiddleCenter, // Centrado
+                Height = 90, // Altura fija
+                Padding = new Padding(0, 6, 0, 4), // Margen interno vertical
             };
-            tlpMain.Controls.Add(lblTituloTV, 0, 0);
+            tlpMain.Controls.Add(lblTituloTV, 0, 0); // Agrega a fila 0, columna 0
 
+            // Subtítulo para género
             lblGenero = new Label
             {
-                Dock = DockStyle.Top,
-                AutoSize = false,
-                ForeColor = Color.FromArgb(220, 225, 230),
-                Text = "",
-                TextAlign = ContentAlignment.MiddleCenter,
-                Height = 30,
-                Padding = new Padding(0, 0, 0, 4),
-                Visible = false
+                Dock = DockStyle.Top, // Se coloca debajo del título
+                AutoSize = false, // Tamaño fijo
+                ForeColor = Color.FromArgb(220, 225, 230), // Gris claro
+                Text = "", // Vacío inicialmente
+                TextAlign = ContentAlignment.MiddleCenter, // Centrado
+                Height = 30, // Altura fija
+                Padding = new Padding(0, 0, 0, 4), // Margen inferior
+                Visible = false // Oculto por defecto
             };
-            tlpMain.Controls.Add(lblGenero, 0, 1);
+            tlpMain.Controls.Add(lblGenero, 0, 1); // Agrega a fila 1, columna 0
 
             // ============ CREAR SPLIT CONTAINER ============
+            // Divide la pantalla en dos partes: tabla arriba, GIFs abajo
             splitContainer = new SplitContainer
             {
-                Dock = DockStyle.Fill,
-                Orientation = Orientation.Horizontal,
-                SplitterDistance = 250,
-                Panel1 = { BackColor = tvBackColor },
-                Panel2 = { BackColor = Color.Black }
+                Dock = DockStyle.Fill, // Ocupa toda el área restante
+                Orientation = Orientation.Horizontal, // División horizontal
+                SplitterDistance = 250, // Altura inicial de la parte superior (tabla)
+                Panel1 = { BackColor = tvBackColor }, // Fondo panel superior
+                Panel2 = { BackColor = Color.Black } // Fondo panel inferior (negro para GIFs)
             };
 
-            // 🔥 CONFIGURAR TAMAÑOS MÍNIMOS para evitar errores
-            splitContainer.Panel1MinSize = 100;
-            splitContainer.Panel2MinSize = 100;
+            // 🔥 CONFIGURAR TAMAÑOS MÍNIMOS para evitar errores al redimensionar
+            splitContainer.Panel1MinSize = 100; // Mínimo 100px para la tabla
+            splitContainer.Panel2MinSize = 100; // Mínimo 100px para los GIFs
 
-            // Panel superior: DataGridView
-            dgvRutina = CrearGrillaTV();
-            dgvRutina.Dock = DockStyle.Fill;
-            splitContainer.Panel1.Controls.Add(dgvRutina);
+            // Panel superior: DataGridView para mostrar la tabla de ejercicios
+            dgvRutina = CrearGrillaTV(); // Llama método que crea y configura el DataGridView
+            dgvRutina.Dock = DockStyle.Fill; // Ocupa todo el panel superior
+            splitContainer.Panel1.Controls.Add(dgvRutina); // Agrega tabla al panel superior
 
-            // Agregar SplitContainer al layout principal
+            // Agregar SplitContainer al layout principal (tercera fila)
             tlpMain.Controls.Add(splitContainer, 0, 2);
 
             // Eventos para manejo seguro del redimensionamiento
-            this.ResizeBegin += (s, e) => splitContainer.SuspendLayout();
-            this.ResizeEnd += (s, e) => splitContainer.ResumeLayout();
+            this.ResizeBegin += (s, e) => splitContainer.SuspendLayout(); // Pausa actualizaciones al empezar redimensionar
+            this.ResizeEnd += (s, e) => splitContainer.ResumeLayout(); // Reanuda al terminar
         }
 
-        // =====================================================================
-        // 🎬 MÉTODOS PARA EL CARRUSEL
-        // =====================================================================
+        // Método que configura el sistema de carrusel de GIFs
         private void IniciarCarrusel(List<DetalleRutina> detalles)
         {
-            if (detalles == null || detalles.Count == 0) return;
+            if (detalles == null || detalles.Count == 0) return; // Salir si no hay ejercicios
 
-            // Limpiar panel anterior si existe
+            // Limpiar panel anterior si existe (por si se vuelve a llamar)
             splitContainer.Panel2.Controls.Clear();
 
-            // Panel principal del carrusel
+            // Panel principal que contendrá todo el carrusel
             var pnlCarrusel = new Panel
             {
-                Dock = DockStyle.Fill,
-                BackColor = Color.Black
+                Dock = DockStyle.Fill, // Ocupa todo el espacio disponible
+                BackColor = Color.Black // Fondo negro para mejor contraste
             };
 
-            // PictureBox para el GIF grande
+            // PictureBox donde se mostrará el GIF grande
             picGifGrande = new PictureBox
             {
-                Dock = DockStyle.Fill,
-                SizeMode = PictureBoxSizeMode.Zoom,
-                BackColor = Color.Black
+                Dock = DockStyle.Fill, // Ocupa todo el panel
+                SizeMode = PictureBoxSizeMode.Zoom, // Escala manteniendo proporción
+                BackColor = Color.Black // Fondo negro
             };
 
-            // Panel inferior para información
+            // Panel inferior que muestra información sobre el ejercicio
             var pnlInfo = new Panel
             {
-                Dock = DockStyle.Bottom,
-                Height = 100,
-                BackColor = Color.FromArgb(40, 40, 40, 200) // Semi-transparente
+                Dock = DockStyle.Bottom, // Se fija en la parte inferior
+                Height = 100, // Altura fija
+                BackColor = Color.FromArgb(40, 40, 40, 200) // Negro semi-transparente
             };
 
-            // Label con información del ejercicio
+            // Label que muestra nombre, series y repeticiones del ejercicio
             lblInfoEjercicio = new Label
             {
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = Color.Transparent,
-                Padding = new Padding(0, 10, 0, 0)
+                Dock = DockStyle.Fill, // Ocupa todo el panel de info
+                TextAlign = ContentAlignment.MiddleCenter, // Texto centrado
+                Font = new Font("Segoe UI", 16, FontStyle.Bold), // Fuente grande y negrita
+                ForeColor = Color.White, // Texto blanco
+                BackColor = Color.Transparent, // Fondo transparente
+                Padding = new Padding(0, 10, 0, 0) // Margen superior
             };
 
-            // Label contador (ej: 1/5)
+            // Label que muestra el contador (ej: "2/8")
             lblContador = new Label
             {
-                Dock = DockStyle.Bottom,
-                Height = 30,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Segoe UI", 12, FontStyle.Regular),
-                ForeColor = Color.LightGray,
-                BackColor = Color.Transparent
+                Dock = DockStyle.Bottom, // Se coloca en la parte inferior del panel de info
+                Height = 30, // Altura fija
+                TextAlign = ContentAlignment.MiddleCenter, // Centrado
+                Font = new Font("Segoe UI", 12, FontStyle.Regular), // Fuente más pequeña
+                ForeColor = Color.LightGray, // Gris claro
+                BackColor = Color.Transparent // Fondo transparente
             };
 
-            // Botones de control (opcional, ocultos por defecto)
+            // Botón para ir al GIF anterior (←)
             var btnAnterior = new Button
             {
-                Text = "◀",
-                Font = new Font("Arial", 20, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = Color.FromArgb(60, 60, 60),
-                FlatStyle = FlatStyle.Flat,
-                Size = new Size(60, 60),
-                Location = new Point(20, (pnlCarrusel.Height - 60) / 2),
-                Visible = false,
-                TabStop = false
+                Text = "◀", // Símbolo de flecha izquierda
+                Font = new Font("Arial", 20, FontStyle.Bold), // Fuente grande
+                ForeColor = Color.White, // Texto blanco
+                BackColor = Color.FromArgb(60, 60, 60), // Fondo gris oscuro
+                FlatStyle = FlatStyle.Flat, // Estilo plano
+                Size = new Size(60, 60), // Tamaño cuadrado
+                Location = new Point(20, (pnlCarrusel.Height - 60) / 2), // Posición izquierda centrada
+                Visible = false, // Oculto por defecto
+                TabStop = false // No se puede navegar con Tab
             };
-            btnAnterior.Click += (s, e) => MostrarGifAnterior();
+            btnAnterior.Click += (s, e) => MostrarGifAnterior(); // Asigna evento click
 
+            // Botón para ir al GIF siguiente (→)
             var btnSiguiente = new Button
             {
-                Text = "▶",
+                Text = "▶", // Símbolo de flecha derecha
                 Font = new Font("Arial", 20, FontStyle.Bold),
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(60, 60, 60),
                 FlatStyle = FlatStyle.Flat,
                 Size = new Size(60, 60),
-                Location = new Point(pnlCarrusel.Width - 80, (pnlCarrusel.Height - 60) / 2),
+                Location = new Point(pnlCarrusel.Width - 80, (pnlCarrusel.Height - 60) / 2), // Posición derecha
                 Visible = false,
                 TabStop = false
             };
-            btnSiguiente.Click += (s, e) => MostrarSiguienteGif();
+            btnSiguiente.Click += (s, e) => MostrarSiguienteGif(); // Asigna evento click
 
+            // Botón para pausar/reanudar el carrusel (⏸)
             var btnPausa = new Button
             {
-                Text = "⏸",
+                Text = "⏸", // Símbolo de pausa
                 Font = new Font("Arial", 16, FontStyle.Bold),
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(60, 60, 60),
                 FlatStyle = FlatStyle.Flat,
                 Size = new Size(50, 50),
-                Location = new Point(pnlCarrusel.Width / 2 - 25, 20),
+                Location = new Point(pnlCarrusel.Width / 2 - 25, 20), // Posición superior centrada
                 Visible = false,
                 TabStop = false
             };
-            btnPausa.Click += (s, e) => PausarReanudarCarrusel();
+            btnPausa.Click += (s, e) => PausarReanudarCarrusel(); // Asigna evento click
 
-            // Mostrar controles al pasar el mouse
+            // Muestra los botones de control cuando el mouse entra al panel
             pnlCarrusel.MouseEnter += (s, e) =>
             {
                 btnAnterior.Visible = true;
@@ -1286,6 +1306,7 @@ public class FormTV : Form
                 btnPausa.Visible = true;
             };
 
+            // Oculta los botones cuando el mouse sale del panel
             pnlCarrusel.MouseLeave += (s, e) =>
             {
                 btnAnterior.Visible = false;
@@ -1293,125 +1314,132 @@ public class FormTV : Form
                 btnPausa.Visible = false;
             };
 
-            // Agregar controles
+            // Agregar controles al panel de información
             pnlInfo.Controls.Add(lblInfoEjercicio);
             pnlInfo.Controls.Add(lblContador);
 
-            pnlCarrusel.Controls.Add(picGifGrande);
-            pnlCarrusel.Controls.Add(pnlInfo);
-            pnlCarrusel.Controls.Add(btnAnterior);
-            pnlCarrusel.Controls.Add(btnSiguiente);
-            pnlCarrusel.Controls.Add(btnPausa);
+            // Agregar todos los controles al panel principal del carrusel
+            pnlCarrusel.Controls.Add(picGifGrande); // GIF grande
+            pnlCarrusel.Controls.Add(pnlInfo); // Panel de información
+            pnlCarrusel.Controls.Add(btnAnterior); // Botón anterior
+            pnlCarrusel.Controls.Add(btnSiguiente); // Botón siguiente
+            pnlCarrusel.Controls.Add(btnPausa); // Botón pausa
 
+            // Agregar el panel del carrusel al SplitContainer (parte inferior)
             splitContainer.Panel2.Controls.Add(pnlCarrusel);
 
-            // Configurar timer del carrusel (8 segundos por default)
+            // Configurar el Timer que controla el cambio automático
             timerCarrusel = new Timer
             {
-                Interval = 8000,
-                Enabled = true
+                Interval = 5000, // Cambia cada 5 segundos (5000 milisegundos)
+                Enabled = true // Se inicia automáticamente
             };
+            // Asigna el evento: cada vez que el Timer "tickea", muestra el siguiente GIF
             timerCarrusel.Tick += (s, e) => MostrarSiguienteGif();
 
-            // Mostrar primer GIF
+            // Muestra el primer GIF inmediatamente (ejercicio 1)
             MostrarSiguienteGif();
         }
-
         private void MostrarSiguienteGif()
         {
-            if (detallesActuales == null || detallesActuales.Count == 0) return;
+            if (detallesActuales == null || detallesActuales.Count == 0) return; // Verificar que haya ejercicios
 
-            var detalle = detallesActuales[indiceCarrusel];
-            string gifPath = BuscarGif(detalle.Imagen, detalle.GrupoMuscular);
+            var detalle = detallesActuales[indiceCarrusel]; // Obtener ejercicio actual según índice
+            string gifPath = BuscarGif(detalle.Imagen, detalle.GrupoMuscular); // Buscar archivo GIF correspondiente
 
-            // Actualizar imagen
-            if (!string.IsNullOrEmpty(gifPath) && File.Exists(gifPath))
+            // Actualizar imagen en el PictureBox
+            if (!string.IsNullOrEmpty(gifPath) && File.Exists(gifPath)) // Si se encontró GIF
             {
                 try
                 {
-                    // Liberar imagen anterior si existe
+                    // Liberar memoria de imagen anterior para evitar leaks
                     if (picGifGrande.Image != null)
                     {
                         picGifGrande.Image.Dispose();
                     }
-                    picGifGrande.Image = Image.FromFile(gifPath);
+                    picGifGrande.Image = Image.FromFile(gifPath); // Cargar nuevo GIF desde archivo
                 }
-                catch (Exception ex)
+                catch (Exception ex) // Manejar errores de carga
                 {
-                    Debug.WriteLine($"Error cargando GIF: {ex.Message}");
-                    picGifGrande.Image = null;
+                    Debug.WriteLine($"Error cargando GIF: {ex.Message}"); // Log en consola
+                    picGifGrande.Image = null; // Dejar PictureBox vacío
                 }
             }
-            else
+            else // Si no se encontró GIF
             {
-                picGifGrande.Image = null;
+                picGifGrande.Image = null; // Dejar PictureBox vacío
             }
 
-            // Actualizar información
-            string cargaDisplay = string.IsNullOrWhiteSpace(detalle.Carga) ? "Sin carga" : detalle.Carga;
-            lblInfoEjercicio.Text = $"{detalle.EjercicioNombre}\n" +
-                                   $"Series: {detalle.Series} × Reps: {detalle.Repeticiones} | Carga: {cargaDisplay}";
+            // Actualizar información textual del ejercicio
+            string cargaDisplay = string.IsNullOrWhiteSpace(detalle.Carga) ? "Sin carga" : detalle.Carga; // Formatear carga
+            lblInfoEjercicio.Text = $"{detalle.EjercicioNombre}\n" + // Nombre del ejercicio
+                                   $"Series: {detalle.Series} × Reps: {detalle.Repeticiones} | Carga: {cargaDisplay}"; // Series y reps
 
-            lblContador.Text = $"{indiceCarrusel + 1} / {detallesActuales.Count}";
+            lblContador.Text = $"{indiceCarrusel + 1} / {detallesActuales.Count}"; // Mostrar contador (ej: "3/8")
 
-            // Resaltar fila en el DataGridView
-            if (dgvRutina.Rows.Count > indiceCarrusel)
+            // Sincronizar con DataGridView: resaltar fila correspondiente
+            if (dgvRutina.Rows.Count > indiceCarrusel) // Verificar que la fila existe
             {
-                dgvRutina.ClearSelection();
-                dgvRutina.Rows[indiceCarrusel].Selected = true;
-                dgvRutina.FirstDisplayedScrollingRowIndex = indiceCarrusel;
+                dgvRutina.ClearSelection(); // Limpiar selección previa
+                dgvRutina.Rows[indiceCarrusel].Selected = true; // Seleccionar fila actual
+                dgvRutina.FirstDisplayedScrollingRowIndex = indiceCarrusel; // Hacer scroll si es necesario
             }
 
-            // Avanzar índice (circular)
-            indiceCarrusel = (indiceCarrusel + 1) % detallesActuales.Count;
+            // Avanzar índice para el próximo GIF (sistema circular)
+            indiceCarrusel = (indiceCarrusel + 1) % detallesActuales.Count; // Vuelve a 0 cuando llega al final
         }
-
         private void MostrarGifAnterior()
         {
-            if (detallesActuales == null || detallesActuales.Count == 0) return;
+            if (detallesActuales == null || detallesActuales.Count == 0) return; // Verificar que haya ejercicios
 
             // Retroceder índice (circular)
+            // Fórmula: (índice_actual - 1 + total_ejercicios) % total_ejercicios
+            // Esto permite ir al último ejercicio cuando estamos en el primero
             indiceCarrusel = (indiceCarrusel - 1 + detallesActuales.Count) % detallesActuales.Count;
-            MostrarSiguienteGif(); // Reutilizar la lógica de mostrar
+
+            MostrarSiguienteGif(); // Reutilizar la lógica de mostrar (ya maneja todo)
         }
 
         private void PausarReanudarCarrusel()
         {
-            if (timerCarrusel != null)
+            if (timerCarrusel != null) // Verificar que el Timer existe
             {
-                timerCarrusel.Enabled = !timerCarrusel.Enabled;
+                timerCarrusel.Enabled = !timerCarrusel.Enabled; // Alternar estado (pausa/reanuda)
 
-                // Mostrar indicador de estado
-                if (!timerCarrusel.Enabled)
-                    lblContador.Text += " ⏸ PAUSADO";
+                // Mostrar indicador visual de estado pausado
+                if (!timerCarrusel.Enabled) // Si se pausó
+                    lblContador.Text += " ⏸ PAUSADO"; // Agregar texto "PAUSADO" al contador
+                                                      // Nota: cuando se reanuda, no se quita "PAUSADO" automáticamente
+                                                      // Se sobreescribe en la siguiente llamada a MostrarSiguienteGif()
             }
         }
-
         // =====================================================================
         // 📋 MÉTODO: CargarRutina
         // =====================================================================
         private void CargarRutina(List<DetalleRutina> detalles, string nombreRutina)
         {
-            dgvRutina.Rows.Clear();
-            detallesActuales = detalles;
+            dgvRutina.Rows.Clear(); // Limpiar todas las filas existentes del DataGridView
+            detallesActuales = detalles; // Guardar referencia a la lista de ejercicios
 
-            if (detalles == null || detalles.Count == 0)
+            if (detalles == null || detalles.Count == 0) // Verificar si hay ejercicios
             {
+                // Mostrar mensaje de "sin ejercicios" en la primera fila
                 dgvRutina.Rows.Add("Sin ejercicios disponibles", "", "", "");
-                return;
+                return; // Salir del método
             }
 
-            foreach (var d in detalles)
+            foreach (var d in detalles) // Recorrer cada ejercicio en la lista
             {
+                // Agregar una fila al DataGridView con los datos del ejercicio
                 dgvRutina.Rows.Add(
-                    d.EjercicioNombre,
-                    d.Series,
-                    d.Repeticiones,
-                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga
+                    d.EjercicioNombre, // Nombre del ejercicio (columna 0)
+                    d.Series,          // Cantidad de series (columna 1)
+                    d.Repeticiones,    // Cantidad de repeticiones (columna 2)
+                    string.IsNullOrWhiteSpace(d.Carga) ? "-" : d.Carga // Carga o "-" si está vacía (columna 3)
                 );
             }
 
-            dgvRutina.AutoResizeColumns();
+            dgvRutina.AutoResizeColumns(); // Ajustar automáticamente el ancho de las columnas al contenido
         }
 
         // =====================================================================
@@ -1421,19 +1449,19 @@ public class FormTV : Form
         {
             try
             {
-                if (string.IsNullOrEmpty(nombreArchivo))
+                if (string.IsNullOrEmpty(nombreArchivo)) // Verificar que haya nombre de archivo
                 {
                     Debug.WriteLine($"❌ nombreArchivo está vacío");
                     return null;
                 }
 
-                string nombreBuscar = Path.GetFileNameWithoutExtension(nombreArchivo).ToLower();
-                Debug.WriteLine($"\n🔍 BUSCANDO GIF: '{nombreBuscar}' en grupo: '{grupoMuscular}'");
+                string nombreBuscar = Path.GetFileNameWithoutExtension(nombreArchivo).ToLower(); // Quitar extensión y convertir a minúsculas
+                Debug.WriteLine($"\n🔍 BUSCANDO GIF: '{nombreBuscar}' en grupo: '{grupoMuscular}'"); // Log de depuración
 
-                string appPath = Application.StartupPath;
-                string rutaBaseGifs = Path.Combine(appPath, "Resources", "Ejercicios");
+                string appPath = Application.StartupPath; // Ruta donde se ejecuta la aplicación
+                string rutaBaseGifs = Path.Combine(appPath, "Resources", "Ejercicios"); // Ruta base de GIFs
 
-                if (!Directory.Exists(rutaBaseGifs))
+                if (!Directory.Exists(rutaBaseGifs)) // Verificar que exista la carpeta
                 {
                     Debug.WriteLine($"❌ Carpeta base no existe: {rutaBaseGifs}");
                     return null;
@@ -1441,11 +1469,11 @@ public class FormTV : Form
 
                 // 1. Primero buscar en carpeta específica del grupo muscular
                 string carpetaGrupo = "";
-                if (!string.IsNullOrEmpty(grupoMuscular))
+                if (!string.IsNullOrEmpty(grupoMuscular)) // Si hay grupo muscular especificado
                 {
-                    string grupoLower = grupoMuscular.ToLower();
+                    string grupoLower = grupoMuscular.ToLower(); // Convertir a minúsculas
 
-                    // Mapeo manual de grupos a carpetas (más preciso)
+                    // Mapeo manual de nombres de grupos a carpetas (búsqueda por palabras clave)
                     if (grupoLower.Contains("bíceps") || grupoLower.Contains("biceps"))
                         carpetaGrupo = Path.Combine(rutaBaseGifs, "Biceps");
                     else if (grupoLower.Contains("pecho"))
@@ -1460,9 +1488,9 @@ public class FormTV : Form
                         carpetaGrupo = Path.Combine(rutaBaseGifs, "Piemas");
                     else if (grupoLower.Contains("espalda"))
                         carpetaGrupo = Path.Combine(rutaBaseGifs, "Espalda");
-                    else
+                    else // Si no coincide con ningún mapeo conocido
                     {
-                        // Buscar carpeta por coincidencia
+                        // Buscar carpeta por coincidencia de nombres
                         string[] carpetas = Directory.GetDirectories(rutaBaseGifs);
                         foreach (string carpeta in carpetas)
                         {
@@ -1487,17 +1515,17 @@ public class FormTV : Form
                     Debug.WriteLine($"📂 Buscando en carpeta: {Path.GetFileName(carpetaGrupo)}");
                 }
 
-                // 2. Buscar archivo GIF con coincidencia EXACTA primero
-                string[] todosGifs = Directory.GetFiles(carpetaGrupo, "*.gif", SearchOption.AllDirectories);
+                // 2. Buscar archivos GIF con coincidencia EXACTA primero
+                string[] todosGifs = Directory.GetFiles(carpetaGrupo, "*.gif", SearchOption.AllDirectories); // Buscar recursivamente
                 Debug.WriteLine($"🎯 Encontrados {todosGifs.Length} GIFs");
 
-                if (todosGifs.Length == 0)
+                if (todosGifs.Length == 0) // Si no hay GIFs en la carpeta
                 {
                     Debug.WriteLine($"❌ No hay GIFs en {carpetaGrupo}");
                     return null;
                 }
 
-                // Lista de GIFs ya usados para evitar repeticiones
+                // Lista para evitar devolver el mismo GIF múltiples veces
                 List<string> gifsUsados = new List<string>();
 
                 // ESTRATEGIA 1: Buscar coincidencia EXACTA (ignorando guiones y espacios)
@@ -1531,18 +1559,18 @@ public class FormTV : Form
                 // ESTRATEGIA 2: Buscar por PALABRAS CLAVE principales
                 foreach (string gifPath in todosGifs)
                 {
-                    if (gifsUsados.Contains(gifPath)) continue;
+                    if (gifsUsados.Contains(gifPath)) continue; // Saltar GIFs ya usados
 
                     string nombreGif = Path.GetFileNameWithoutExtension(gifPath).ToLower();
                     string nombreGifNormalizado = NormalizarNombre(nombreGif);
 
-                    // Extraer palabras clave del ejercicio buscado
+                    // Extraer palabras clave del nombre del ejercicio
                     string[] palabrasClave = ExtraerPalabrasClave(nombreBuscar);
 
                     int coincidencias = 0;
                     foreach (string palabra in palabrasClave)
                     {
-                        if (nombreGifNormalizado.Contains(palabra))
+                        if (nombreGifNormalizado.Contains(palabra)) // Si el nombre del GIF contiene la palabra clave
                         {
                             coincidencias++;
                             Debug.WriteLine($"   ✓ Palabra coincidente: '{palabra}'");
@@ -1561,7 +1589,7 @@ public class FormTV : Form
                 // ESTRATEGIA 3: Buscar cualquier GIF no usado del mismo grupo
                 foreach (string gifPath in todosGifs)
                 {
-                    if (!gifsUsados.Contains(gifPath))
+                    if (!gifsUsados.Contains(gifPath)) // Si no se ha usado antes
                     {
                         Debug.WriteLine($"   ⚠️ Usando GIF disponible: {Path.GetFileName(gifPath)}");
                         gifsUsados.Add(gifPath);
@@ -1569,88 +1597,96 @@ public class FormTV : Form
                     }
                 }
 
-                // Si no hay GIFs disponibles, usar el primero
+                // Si no hay GIFs disponibles, usar el primero (fallback)
                 Debug.WriteLine($"   ⚠️ Todos los GIFs usados, usando el primero");
                 return todosGifs[0];
             }
-            catch (Exception ex)
+            catch (Exception ex) // Manejar cualquier error
             {
                 Debug.WriteLine($"💥 ERROR en BuscarGif: {ex.Message}");
                 return null;
             }
         }
-
         // =====================================================================
         // 🛠️ MÉTODOS AUXILIARES
         // =====================================================================
         private string NormalizarNombre(string nombre)
         {
-            if (string.IsNullOrEmpty(nombre)) return "";
+            if (string.IsNullOrEmpty(nombre)) return ""; // Verificar que no esté vacío
 
+            // Convertir a minúsculas y quitar caracteres especiales
             string normalizado = nombre.ToLower()
-                .Replace("_", "")
-                .Replace(" ", "")
-                .Replace("-", "")
-                .Replace("á", "a").Replace("é", "e").Replace("í", "i")
-                .Replace("ó", "o").Replace("ú", "u").Replace("ñ", "n");
+                .Replace("_", "") // Quitar guiones bajos
+                .Replace(" ", "") // Quitar espacios
+                .Replace("-", "") // Quitar guiones medios
+                .Replace("á", "a").Replace("é", "e").Replace("í", "i") // Quitar acentos
+                .Replace("ó", "o").Replace("ú", "u").Replace("ñ", "n"); // Quitar eñe
 
+            // Eliminar palabras comunes que no son clave para la búsqueda
             normalizado = normalizado
-                .Replace("de", "")
-                .Replace("con", "")
-                .Replace("la", "")
-                .Replace("las", "")
-                .Replace("los", "")
-                .Replace("el", "")
-                .Replace("un", "")
-                .Replace("una", "")
-                .Replace("y", "")
-                .Replace("en", "");
+                .Replace("de", "") // Preposición
+                .Replace("con", "") // Preposición
+                .Replace("la", "") // Artículo
+                .Replace("las", "") // Artículo
+                .Replace("los", "") // Artículo
+                .Replace("el", "") // Artículo
+                .Replace("un", "") // Artículo
+                .Replace("una", "") // Artículo
+                .Replace("y", "") // Conjunción
+                .Replace("en", ""); // Preposición
 
-            return normalizado;
+            return normalizado; // Retorna nombre limpio para comparación
         }
 
         private bool CoincidenciaParcialFuerte(string nombre1, string nombre2)
         {
+            // Verificar si un nombre contiene al otro (al menos 80% del tamaño)
             if (nombre1.Contains(nombre2) && nombre2.Length >= nombre1.Length * 0.8)
-                return true;
+                return true; // Ej: "curlbarra" contiene "curl"
 
             if (nombre2.Contains(nombre1) && nombre1.Length >= nombre2.Length * 0.8)
-                return true;
+                return true; // Lo mismo al revés
 
-            return false;
+            return false; // No hay coincidencia fuerte
         }
 
         private string[] ExtraerPalabrasClave(string nombreEjercicio)
         {
+            // Separadores para dividir el nombre en palabras
             string[] separadores = new string[] { "_", " ", "de", "con", "la", "los", "las", "en", "y", "del" };
+
+            // Dividir el nombre del ejercicio en palabras individuales
             string[] palabras = nombreEjercicio.Split(separadores, StringSplitOptions.RemoveEmptyEntries);
 
             var palabrasClave = new List<string>();
             foreach (string palabra in palabras)
             {
+                // Filtrar: palabras de más de 3 letras y que no sean comunes
                 if (palabra.Length > 3 && !EsPalabraComun(palabra))
                 {
-                    palabrasClave.Add(NormalizarNombre(palabra));
+                    palabrasClave.Add(NormalizarNombre(palabra)); // Normalizar cada palabra
                 }
             }
 
-            return palabrasClave.ToArray();
+            return palabrasClave.ToArray(); // Retornar array de palabras clave
         }
 
         private bool EsPalabraComun(string palabra)
         {
+            // Lista de palabras que aparecen en muchos ejercicios (no son distintivas)
             string[] palabrasComunes = { "brazo", "brazos", "pierna", "piernas", "cuerpo", "cable", "barra",
-                               "mancuerna", "mancuernas", "polea", "poleas", "maquina", "máquina" };
+                       "mancuerna", "mancuernas", "polea", "poleas", "maquina", "máquina" };
 
-            return palabrasComunes.Contains(palabra.ToLower());
+            return palabrasComunes.Contains(palabra.ToLower()); // Verificar si la palabra está en la lista
         }
 
         private bool EsPalabraClaveFuerte(string palabra)
         {
+            // Lista de palabras que definen tipos de ejercicios (muy distintivas)
             string[] palabrasFuertes = { "curl", "press", "sentadilla", "remo", "prensa", "extension",
-                               "flexion", "elevacion", "abduccion", "aduccion", "crunch" };
+                       "flexion", "elevacion", "abduccion", "aduccion", "crunch" };
 
-            return palabrasFuertes.Contains(palabra.ToLower());
+            return palabrasFuertes.Contains(palabra.ToLower()); // Verificar si es palabra fuerte
         }
 
         // =====================================================================
@@ -1658,64 +1694,65 @@ public class FormTV : Form
         // =====================================================================
         private static string EtiquetaGenero(string genero)
         {
-            if (string.IsNullOrWhiteSpace(genero)) return null;
+            if (string.IsNullOrWhiteSpace(genero)) return null; // Si género está vacío, retorna null
 
-            var g = genero.Trim().ToLower();
-            if (g.Contains("masc") || g.Contains("hombre")) return "PARA: HOMBRES";
-            if (g.Contains("fem") || g.Contains("mujer")) return "PARA: MUJERES";
-            if (g.Contains("deport")) return "PARA: DEPORTISTAS";
+            var g = genero.Trim().ToLower(); // Limpiar espacios y convertir a minúsculas
+
+            // Búsqueda por palabras clave comunes
+            if (g.Contains("masc") || g.Contains("hombre")) return "PARA: HOMBRES"; // Masculino/Hombre
+            if (g.Contains("fem") || g.Contains("mujer")) return "PARA: MUJERES"; // Femenino/Mujer
+            if (g.Contains("deport")) return "PARA: DEPORTISTAS"; // Deportistas
 
             try
             {
+                // Intentar formatear bonito (primera letra mayúscula)
                 var nice = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(g);
-                return $"PARA: {nice}";
+                return $"PARA: {nice}"; // Ej: "para: Principiantes"
             }
-            catch { return $"PARA: {genero.ToUpper()}"; }
+            catch { return $"PARA: {genero.ToUpper()}"; } // Si falla, usar mayúsculas
         }
 
-        // =====================================================================
-        // 🧱 Crear DataGridView de rutina
-        // =====================================================================
+        // Método que crea y configura el DataGridView para mostrar la rutina
         private DataGridView CrearGrillaTV()
         {
             var dgv = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = tvBackColor,
-                BorderStyle = BorderStyle.None,
-                GridColor = tvGridColor,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                EnableHeadersVisualStyles = false,
-                AllowUserToAddRows = false,
-                ReadOnly = true,
-                RowHeadersVisible = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                ColumnHeadersHeight = baseHeaderHeight,
-                RowTemplate = { Height = baseRowHeight },
-                AllowUserToResizeRows = false
+                Dock = DockStyle.Fill, // Ocupa todo el espacio disponible
+                BackgroundColor = tvBackColor, // Fondo oscuro
+                BorderStyle = BorderStyle.None, // Sin bordes
+                GridColor = tvGridColor, // Color de las líneas de la grilla
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal, // Líneas solo horizontales
+                EnableHeadersVisualStyles = false, // Desactiva estilos por defecto para personalizar
+                AllowUserToAddRows = false, // No permite agregar filas manualmente
+                ReadOnly = true, // Solo lectura (no se puede editar)
+                RowHeadersVisible = false, // Oculta la columna de números de fila
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, // Ajusta columnas al ancho
+                ColumnHeadersHeight = baseHeaderHeight, // Altura del encabezado
+                RowTemplate = { Height = baseRowHeight }, // Altura de las filas
+                AllowUserToResizeRows = false // No permite cambiar altura de filas
             };
 
-            // Encabezado visual
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor;
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            // Configurar estilo del encabezado (fila superior con nombres de columnas)
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = tvHeaderColor; // Fondo azul
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White; // Texto blanco
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter; // Centrado
 
-            // Celdas
-            dgv.DefaultCellStyle.BackColor = tvBackColor;
-            dgv.DefaultCellStyle.ForeColor = Color.White;
-            dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor;
-            dgv.DefaultCellStyle.SelectionForeColor = Color.White;
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52);
+            // Configurar estilo de las celdas normales (contenido)
+            dgv.DefaultCellStyle.BackColor = tvBackColor; // Fondo oscuro
+            dgv.DefaultCellStyle.ForeColor = Color.White; // Texto blanco
+            dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter; // Centrado
+            dgv.DefaultCellStyle.SelectionBackColor = tvBackColor; // Fondo selección igual (no cambia)
+            dgv.DefaultCellStyle.SelectionForeColor = Color.White; // Texto selección igual
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 44, 52); // Color filas alternadas
 
-            // Columnas visibles
-            var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 50 };
-            var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 16 };
-            var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 16 };
-            var colCa = new DataGridViewTextBoxColumn { Name = "CARGA", HeaderText = "CARGA %", FillWeight = 16 };
+            // Crear las 4 columnas que mostrará la tabla
+            var colEj = new DataGridViewTextBoxColumn { Name = "EJERCICIO", HeaderText = "EJERCICIO", FillWeight = 50 }; // Columna ejercicio (50% del espacio)
+            var colSe = new DataGridViewTextBoxColumn { Name = "SERIES", HeaderText = "SERIES", FillWeight = 16 }; // Columna series (16%)
+            var colRe = new DataGridViewTextBoxColumn { Name = "REPS", HeaderText = "REPS", FillWeight = 16 }; // Columna repeticiones (16%)
+            var colCa = new DataGridViewTextBoxColumn { Name = "CARGA", HeaderText = "CARGA %", FillWeight = 16 }; // Columna carga (16%)
 
-            dgv.Columns.AddRange(colEj, colSe, colRe, colCa);
-            return dgv;
+            dgv.Columns.AddRange(colEj, colSe, colRe, colCa); // Agregar las 4 columnas al DataGridView
+            return dgv; // Retornar el DataGridView configurado
         }
 
         // =====================================================================
@@ -1725,11 +1762,11 @@ public class FormTV : Form
         {
             try
             {
-                ApplyResponsiveScaleSafe();
+                ApplyResponsiveScaleSafe(); // Llama a la versión segura
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error en ApplyResponsiveScale: {ex.Message}");
+                Debug.WriteLine($"Error en ApplyResponsiveScale: {ex.Message}"); // Log de error si falla
             }
         }
 
@@ -1737,78 +1774,85 @@ public class FormTV : Form
         {
             try
             {
-                if (this.ClientSize.Width <= 0 || this.ClientSize.Height <= 0)
-                    return;
+                if (this.ClientSize.Width <= 0 || this.ClientSize.Height <= 0) // Verificar que la ventana tenga tamaño
+                    return; // Salir si la ventana es muy pequeña
 
-                float factor = Math.Max(0.9f, Math.Min(1.5f, this.ClientSize.Width / 1366f));
+                // Calcular factor de escalado basado en el ancho actual (1366px es tamaño de referencia)
+                float factor = Math.Max(0.9f, Math.Min(1.5f, this.ClientSize.Width / 1366f)); // Limitar entre 0.9 y 1.5
 
-                // Escala textos
+                // Escala textos de todos los controles según el factor
                 lblTituloTV.Font = new Font("Segoe UI", baseTitleSize * factor, FontStyle.Bold);
                 lblGenero.Font = new Font("Segoe UI", baseSubSize * factor, FontStyle.Bold);
                 dgvRutina.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", baseHeaderSize * factor, FontStyle.Bold);
                 dgvRutina.DefaultCellStyle.Font = new Font("Segoe UI", baseGridSize * factor, FontStyle.Regular);
 
+                // Escalar textos del carrusel si existen
                 if (lblInfoEjercicio != null)
                     lblInfoEjercicio.Font = new Font("Segoe UI", 14 * factor, FontStyle.Bold);
 
                 if (lblContador != null)
                     lblContador.Font = new Font("Segoe UI", 10 * factor, FontStyle.Regular);
 
-                // Ajusta alturas
-                dgvRutina.ColumnHeadersHeight = (int)Math.Round(baseHeaderHeight * factor);
-                dgvRutina.RowTemplate.Height = (int)Math.Round(baseRowHeight * factor);
+                // Ajustar alturas del DataGridView
+                dgvRutina.ColumnHeadersHeight = (int)Math.Round(baseHeaderHeight * factor); // Altura encabezados
+                dgvRutina.RowTemplate.Height = (int)Math.Round(baseRowHeight * factor); // Altura filas
 
-                // 🔥 CORRECCIÓN SEGURA: Ajustar SplitterDistance
-                if (splitContainer != null && splitContainer.Visible && splitContainer.Height > 200)
+                // 🔥 CORRECCIÓN SEGURA: Ajustar posición del divisor (SplitterDistance)
+                if (splitContainer != null && splitContainer.Visible && splitContainer.Height > 200) // Verificar condiciones
                 {
-                    int alturaDisponible = splitContainer.Height;
+                    int alturaDisponible = splitContainer.Height; // Altura total del SplitContainer
 
-                    // Calcular nueva distancia (50% para la tabla, 50% para el carrusel)
+                    // Calcular nueva posición del divisor (50% para tabla, 50% para carrusel)
                     int nuevaDistancia = (int)(alturaDisponible * 0.5);
 
-                    // Limitar valores entre los mínimos permitidos
-                    int minDistancia = Math.Max(splitContainer.Panel1MinSize, 100);
-                    int maxDistancia = alturaDisponible - Math.Max(splitContainer.Panel2MinSize, 100);
+                    // Calcular límites mínimos y máximos permitidos
+                    int minDistancia = Math.Max(splitContainer.Panel1MinSize, 100); // Mínimo entre configuración y 100px
+                    int maxDistancia = alturaDisponible - Math.Max(splitContainer.Panel2MinSize, 100); // Máximo considerando panel inferior
 
                     // Asegurar que esté dentro de límites válidos
-                    if (nuevaDistancia < minDistancia) nuevaDistancia = minDistancia;
-                    if (nuevaDistancia > maxDistancia) nuevaDistancia = maxDistancia;
+                    if (nuevaDistancia < minDistancia) nuevaDistancia = minDistancia; // No menos del mínimo
+                    if (nuevaDistancia > maxDistancia) nuevaDistancia = maxDistancia; // No más del máximo
 
-                    // Solo asignar si es diferente y válido
+                    // Solo asignar si el valor es válido
                     if (nuevaDistancia > 0 && nuevaDistancia < alturaDisponible)
                     {
-                        splitContainer.SplitterDistance = nuevaDistancia;
+                        splitContainer.SplitterDistance = nuevaDistancia; // Aplicar nueva posición
                     }
                 }
 
+                // Ajustar alturas de labels según factor
                 lblTituloTV.Height = (int)Math.Round(80 * factor);
                 lblGenero.Height = (int)Math.Round(28 * factor);
 
-                dgvRutina.DefaultCellStyle.Padding = new Padding((int)(6 * factor), (int)(4 * factor), (int)(6 * factor), (int)(4 * factor));
-                dgvRutina.AutoResizeColumns();
+                // Ajustar padding interno de celdas del DataGridView
+                dgvRutina.DefaultCellStyle.Padding = new Padding(
+                    (int)(6 * factor), // Izquierda
+                    (int)(4 * factor), // Superior
+                    (int)(6 * factor), // Derecha
+                    (int)(4 * factor)  // Inferior
+                );
+
+                dgvRutina.AutoResizeColumns(); // Redimensionar columnas al nuevo contenido
             }
-            catch (Exception ex)
+            catch (Exception ex) // Capturar cualquier error durante el escalado
             {
-                Debug.WriteLine($"Error en ApplyResponsiveScaleSafe: {ex.Message}");
+                Debug.WriteLine($"Error en ApplyResponsiveScaleSafe: {ex.Message}"); // Log del error
             }
         }
-
-        // =====================================================================
-        // 🧹 Limpieza al cerrar
-        // =====================================================================
+        // Método que se ejecuta automáticamente cuando el formulario se está cerrando
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            base.OnFormClosing(e);
+            base.OnFormClosing(e); // Llamar al método base (importante para que .NET haga su limpieza)
 
-            if (timerCarrusel != null)
+            if (timerCarrusel != null) // Verificar si el Timer existe
             {
-                timerCarrusel.Stop();
-                timerCarrusel.Dispose();
+                timerCarrusel.Stop(); // Detener el timer para que no siga ejecutándose
+                timerCarrusel.Dispose(); // Liberar los recursos del timer
             }
 
-            if (picGifGrande != null && picGifGrande.Image != null)
+            if (picGifGrande != null && picGifGrande.Image != null) // Verificar si existe el PictureBox y tiene imagen
             {
-                picGifGrande.Image.Dispose();
+                picGifGrande.Image.Dispose(); // Liberar la memoria de la imagen GIF cargada
             }
         }
     }

@@ -147,20 +147,20 @@ namespace GymManager.Views
             this.btnExportar.Text = "📤 EXPORTAR";
             this.btnExportar.Size = new Size(btnW, btnH);
             StyleButton(btnExportar, primaryColor);
-            this.btnExportar.Click += btnExportar_Click;
+            //this.btnExportar.Click += btnExportar_Click;
 
 
             this.btnImprimir.Text = "🖨️ IMPRIMIR";
             this.btnImprimir.Size = new Size(btnW, btnH);
             StyleButton(btnImprimir, successColor);
-            this.btnImprimir.Click += btnImprimir_Click;
+            //this.btnImprimir.Click += btnImprimir_Click;
 
             
 
             this.btnCerrar.Text = "❌ CERRAR";
             this.btnCerrar.Size = new Size(btnW, btnH);
             StyleButton(btnCerrar, Color.FromArgb(108, 117, 125));
-            this.btnCerrar.Click += btnCerrar_Click;
+            //this.btnCerrar.Click += btnCerrar_Click;
 
             // AGREGAR BOTONES AL FOOTER
             this.footerPanel.Controls.Add(btnCerrar);

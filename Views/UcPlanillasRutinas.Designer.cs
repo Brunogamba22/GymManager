@@ -68,7 +68,7 @@ namespace GymManager.Views
             this.btnFiltrar = new Button();
             this.btnLimpiarFiltros = new Button();
 
-            this.btnExportar = new Button();
+            //this.btnExportar = new Button();
             
 
             this.colNombre = new DataGridViewTextBoxColumn();
@@ -216,6 +216,7 @@ namespace GymManager.Views
             footerPanel.BackColor = Color.Transparent;
             footerPanel.Padding = new Padding(20, 10, 25, 10);
 
+            /*
             // --- BOTÓN EXPORTAR ---
             btnExportar.Text = "📤 EXPORTAR";
             btnExportar.Size = new Size(150, 40);
@@ -226,14 +227,14 @@ namespace GymManager.Views
             btnExportar.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btnExportar.Cursor = Cursors.Hand;
 
-            
+            */
 
             
             // --- ARMADO ---
            
-            footerPanel.Controls.Add(btnExportar);
+            //footerPanel.Controls.Add(btnExportar);
 
-
+            /*
             // 📏 Reposicionar dinámicamente los botones
             footerPanel.Resize += (s, e) =>
             {
@@ -245,6 +246,7 @@ namespace GymManager.Views
                     bottom
                 );
             };
+            */
 
             // =========================================================
             // 🔧 ENSAMBLADO DE LA ESTRUCTURA VISUAL
